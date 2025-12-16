@@ -1,0 +1,72 @@
+<html>
+<head>
+    <title>Lista de Avistamentos</title>
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+</head>
+<body>
+    <h1>Lista de Avistamentos</h1>
+
+    <form method="get" action="{{ url_for('list_avistamentos') }}">
+        <label>
+            Dia:
+            <input type="number" name="dia_registro" value="{{ dia_registro or '' }}" min="1" max="31">
+        </label>
+        <label>
+            Mês:
+            <input type="number" name="mes_registro" value="{{ mes_registro or '' }}" min="1" max="12">
+        </label>
+        <label>
+            Ano:
+            <input type="number" name="ano_registro" value="{{ ano_registro or '' }}">
+        </label>
+        <label>
+            Itens por página:
+            <input type="number" name="page_size" value="{{ page_size }}" min="1" max="100">
+        </label>
+        <button type="submit">Filtrar</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Registro</th>
+                <th>Nome popular</th>
+                <th>Nome científico</th>
+                <th>Data</th>
+                <th>Local</th>
+                <th>Detalhes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in items %}
+            <tr>
+                <td>{{ a.registro }}</td>
+                <td>{{ a.nome_popular }}</td>
+                <td>{{ a.nome_cientifico }}</td>
+                <td>{{ a.dia_registro }}/{{ a.mes_registro }}/{{ a.ano_registro }}</td>
+                <td>{{ a.local }}</td>
+                <td>
+                    <a href="{{ url_for('read_avistamento', registro=a.registro) }}">
+                        Ver
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        {% if prev_page_url %}
+            <a href="{{ prev_page_url }}">« Página anterior</a>
+        {% endif %}
+
+        <span>Página {{ page }}</span>
+
+        {% if next_page_url %}
+            <a href="{{ next_page_url }}">Próxima página »</a>
+        {% endif %}
+    </div>
+</body>
+</html>
+
+
