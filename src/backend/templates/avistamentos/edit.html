@@ -1,0 +1,230 @@
+<html>
+<head>
+    <title>Editar Avistamento {{ registro }}</title>
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        form {
+            display: grid;
+            gap: 15px;
+        }
+        .form-group {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 10px;
+            align-items: center;
+        }
+        label {
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .form-actions {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+        }
+        button[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .btn-cancel {
+            background-color: #f44336;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 4px;
+        }
+        .btn-cancel:hover {
+            background-color: #da190b;
+        }
+    </style>
+</head>
+<body>
+    <h1>Editar Avistamento {{ registro }}</h1>
+
+    <form method="post" action="/avistamentos/{{ registro }}">
+        <div class="form-group">
+            <label for="registro">Registro:</label>
+            <input type="text" id="registro" name="registro" value="{{ avistamento.registro }}" readonly>
+        </div>
+
+        <div class="form-group">
+            <label for="nome_popular">Nome Popular:</label>
+            <input type="text" id="nome_popular" name="nome_popular" value="{{ avistamento.nome_popular or '' }}">
+        </div>
+
+        <div class="form-group">
+            <label for="nome_cientifico">Nome Científico:</label>
+            <input type="text" id="nome_cientifico" name="nome_cientifico" value="{{ avistamento.nome_cientifico or '' }}">
+        </div>
+
+        <div class="form-group">
+            <label for="observador">Observador:</label>
+            <input type="text" id="observador" name="observador" value="{{ avistamento.observador or '' }}">
+        </div>
+
+        <div class="form-group">
+            <label for="classificacao_observador">Classificação Observador:</label>
+            <select id="classificacao_observador" name="classificacao_observador">
+                <option value="">Selecione...</option>
+                <option value="Guia" {% if avistamento.classificacao_observador == 'Guia' %}selected{% endif %}>Guia</option>
+                <option value="Mergulhador" {% if avistamento.classificacao_observador == 'Mergulhador' %}selected{% endif %}>Mergulhador</option>
+                <option value="Fotógrafo" {% if avistamento.classificacao_observador == 'Fotógrafo' %}selected{% endif %}>Fotógrafo</option>
+                <option value="Cientista" {% if avistamento.classificacao_observador == 'Cientista' %}selected{% endif %}>Cientista</option>
+                <option value="Morador" {% if avistamento.classificacao_observador == 'Morador' %}selected{% endif %}>Morador</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Data de Registro:</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="number" id="dia_registro" name="dia_registro" value="{{ avistamento.dia_registro or '' }}" placeholder="Dia" min="1" max="31" style="width: 80px;">
+                <input type="number" id="mes_registro" name="mes_registro" value="{{ avistamento.mes_registro or '' }}" placeholder="Mês" min="1" max="12" style="width: 80px;">
+                <input type="number" id="ano_registro" name="ano_registro" value="{{ avistamento.ano_registro or '' }}" placeholder="Ano" style="width: 120px;">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="local">Local:</label>
+            <input type="text" id="local" name="local" value="{{ avistamento.local or '' }}">
+        </div>
+
+        <div class="form-group">
+            <label for="quantidade">Quantidade:</label>
+            <input type="number" id="quantidade" name="quantidade" value="{{ avistamento.quantidade or '' }}" min="1">
+        </div>
+
+        <div class="form-group">
+            <label for="comportamento">Comportamento:</label>
+            <select id="comportamento" name="comportamento">
+                <option value="">Selecione...</option>
+                <option value="Nadando" {% if avistamento.comportamento == 'Nadando' %}selected{% endif %}>Nadando</option>
+                <option value="Repouso" {% if avistamento.comportamento == 'Repouso' %}selected{% endif %}>Repouso</option>
+                <option value="Alimentando-se" {% if avistamento.comportamento == 'Alimentando-se' %}selected{% endif %}>Alimentando-se</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="tamanho_estimado">Tamanho Estimado:</label>
+            <select id="tamanho_estimado" name="tamanho_estimado">
+                <option value="">Selecione...</option>
+                <option value="Pequeno" {% if avistamento.tamanho_estimado == 'Pequeno' %}selected{% endif %}>Pequeno</option>
+                <option value="Médio" {% if avistamento.tamanho_estimado == 'Médio' %}selected{% endif %}>Médio</option>
+                <option value="Grande" {% if avistamento.tamanho_estimado == 'Grande' %}selected{% endif %}>Grande</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="sexo">Sexo:</label>
+            <select id="sexo" name="sexo">
+                <option value="">Selecione...</option>
+                <option value="M" {% if avistamento.sexo == 'M' %}selected{% endif %}>M</option>
+                <option value="F" {% if avistamento.sexo == 'F' %}selected{% endif %}>F</option>
+                <option value="NA" {% if avistamento.sexo == 'NA' %}selected{% endif %}>NA</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="interacao">Interação:</label>
+            <select id="interacao" name="interacao">
+                <option value="">Selecione...</option>
+                <option value="Mergulho" {% if avistamento.interacao == 'Mergulho' %}selected{% endif %}>Mergulho</option>
+                <option value="Snorkel" {% if avistamento.interacao == 'Snorkel' %}selected{% endif %}>Snorkel</option>
+                <option value="Observação fora d'água" {% if avistamento.interacao == "Observação fora d'água" %}selected{% endif %}>Observação fora d'água</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="modo_registro">Modo de Registro:</label>
+            <select id="modo_registro" name="modo_registro">
+                <option value="">Selecione...</option>
+                <option value="Foto" {% if avistamento.modo_registro == 'Foto' %}selected{% endif %}>Foto</option>
+                <option value="Vídeo" {% if avistamento.modo_registro == 'Vídeo' %}selected{% endif %}>Vídeo</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="link_instagram">Link Instagram:</label>
+            <input type="url" id="link_instagram" name="link_instagram" value="{{ avistamento.link_instagram or '' }}">
+        </div>
+
+        <div class="form-group">
+            <label>Data de Anotação:</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="number" id="dia_anotacao" name="dia_anotacao" value="{{ avistamento.dia_anotacao or '' }}" placeholder="Dia" min="1" max="31" style="width: 80px;">
+                <input type="number" id="mes_anotacao" name="mes_anotacao" value="{{ avistamento.mes_anotacao or '' }}" placeholder="Mês" min="1" max="12" style="width: 80px;">
+                <input type="number" id="ano_anotacao" name="ano_anotacao" value="{{ avistamento.ano_anotacao or '' }}" placeholder="Ano" style="width: 120px;">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="responsavel_anotacao">Responsável Anotação:</label>
+            <input type="text" id="responsavel_anotacao" name="responsavel_anotacao" value="{{ avistamento.responsavel_anotacao or '' }}">
+        </div>
+
+        <div class="form-group">
+            <label for="operadora_empresa_foto">Operadora/Empresa Foto:</label>
+            <input type="text" id="operadora_empresa_foto" name="operadora_empresa_foto" value="{{ avistamento.operadora_empresa_foto or '' }}">
+        </div>
+
+        <div class="form-group">
+            <label for="recebido_por">Recebido por:</label>
+            <select id="recebido_por" name="recebido_por">
+                <option value="">Selecione...</option>
+                <option value="Whatsapp" {% if avistamento.recebido_por == 'Whatsapp' %}selected{% endif %}>Whatsapp</option>
+                <option value="Instagram" {% if avistamento.recebido_por == 'Instagram' %}selected{% endif %}>Instagram</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="observacao">Observação:</label>
+            <textarea id="observacao" name="observacao">{{ avistamento.observacao or '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="outra_ID">Outra ID:</label>
+            <input type="text" id="outra_ID" name="outra_ID" value="{{ avistamento.outra_ID or '' }}">
+        </div>
+
+        <div class="form-group">
+            <label for="concatenado">Concatenado:</label>
+            <input type="text" id="concatenado" name="concatenado" value="{{ avistamento.concatenado or '' }}" readonly>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit">Salvar Alterações</button>
+            <a href="/avistamentos/{{ registro }}" class="btn-cancel">Cancelar</a>
+        </div>
+    </form>
+</body>
+</html>
+

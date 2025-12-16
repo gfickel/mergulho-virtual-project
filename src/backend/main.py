@@ -1,11 +1,11 @@
 import json
 
-from fastapi import FastAPI, Request, HTTPException, Header
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import FastAPI, Request, HTTPException, Header, Form
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from google.cloud import firestore
-from typing import Optional
+from typing import Optional, Dict, Any
 
 # Initialize Firestore client
 db = firestore.Client.from_service_account_json('./serviceAccountKey.json')
@@ -203,6 +203,93 @@ async def read_avistamento(
         name="avistamentos/view.html",
         context={"request": request, "registro": registro, "avistamento": avistamento},
     )
+
+
+@app.get("/avistamentos/{registro}/edit")
+async def edit_avistamento_form(request: Request, registro: str):
+    """
+    Exibe o formulário de edição de um avistamento.
+    """
+    doc_ref = db.collection("avistamentos").document(registro)
+    doc = doc_ref.get()
+
+    if not doc.exists:
+        raise HTTPException(status_code=404, detail="Avistamento não encontrado")
+
+    avistamento = doc.to_dict()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="avistamentos/edit.html",
+        context={"request": request, "registro": registro, "avistamento": avistamento},
+    )
+
+
+@app.put("/avistamentos/{registro}")
+async def update_avistamento(
+    registro: str,
+    avistamento_data: Dict[str, Any],
+    format: Optional[str] = None,
+    accept: Optional[str] = Header(None),
+):
+    """
+    Atualiza um avistamento existente.
+    
+    Aceita JSON no body. Para HTML, redireciona após atualização.
+    """
+    doc_ref = db.collection("avistamentos").document(registro)
+    doc = doc_ref.get()
+
+    if not doc.exists:
+        raise HTTPException(status_code=404, detail="Avistamento não encontrado")
+
+    # Atualiza o documento
+    doc_ref.update(avistamento_data)
+
+    # Busca o documento atualizado
+    updated_doc = doc_ref.get()
+    updated_avistamento = updated_doc.to_dict()
+
+    # Decide o formato: JSON se format=json ou Accept contém application/json
+    return_json = (
+        format == "json"
+        or (accept and "application/json" in accept and "text/html" not in accept)
+    )
+
+    if return_json:
+        return JSONResponse(
+            {"message": "Avistamento atualizado com sucesso", "avistamento": updated_avistamento}
+        )
+
+    # Para HTML, redireciona para a visualização
+    return RedirectResponse(url=f"/avistamentos/{registro}", status_code=303)
+
+
+@app.post("/avistamentos/{registro}")
+async def update_avistamento_form(registro: str, request: Request):
+    """
+    Atualiza um avistamento via formulário HTML.
+    """
+    doc_ref = db.collection("avistamentos").document(registro)
+    doc = doc_ref.get()
+
+    if not doc.exists:
+        raise HTTPException(status_code=404, detail="Avistamento não encontrado")
+
+    # Constrói o dicionário com os dados do formulário (apenas campos não vazios)
+    form_data = await request.form()
+    update_data = {}
+    for key, value in form_data.items():
+        # Ignora campos vazios, "None" como string, e o campo registro (não deve ser atualizado)
+        if key != "registro" and value and value != "None" and value != "":
+            update_data[key] = value
+
+    # Atualiza o documento apenas se houver dados para atualizar
+    if update_data:
+        doc_ref.update(update_data)
+
+    # Redireciona para a visualização
+    return RedirectResponse(url=f"/avistamentos/{registro}", status_code=303)
 
 @app.get("/telemetry")
 async def telemetry():
