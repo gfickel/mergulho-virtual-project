@@ -291,6 +291,55 @@ async def update_avistamento_form(registro: str, request: Request):
     # Redireciona para a visualização
     return RedirectResponse(url=f"/avistamentos/{registro}", status_code=303)
 
+
+@app.delete("/avistamentos/{registro}")
+async def delete_avistamento(
+    registro: str,
+    format: Optional[str] = None,
+    accept: Optional[str] = Header(None),
+):
+    """
+    Remove um avistamento.
+
+    - JSON: DELETE /avistamentos/{registro}?format=json
+    - HTML: redireciona para a lista após excluir.
+    """
+    doc_ref = db.collection("avistamentos").document(registro)
+    doc = doc_ref.get()
+
+    if not doc.exists:
+        raise HTTPException(status_code=404, detail="Avistamento não encontrado")
+
+    doc_ref.delete()
+
+    # Decide o formato: JSON se format=json ou Accept contém application/json
+    return_json = (
+        format == "json"
+        or (accept and "application/json" in accept and "text/html" not in accept)
+    )
+
+    if return_json:
+        return JSONResponse({"message": "Avistamento deletado com sucesso", "registro": registro})
+
+    # Para HTML, redireciona para a lista
+    return RedirectResponse(url="/avistamentos", status_code=303)
+
+
+@app.post("/avistamentos/{registro}/delete")
+async def delete_avistamento_form(registro: str):
+    """
+    Remove um avistamento via formulário HTML (POST).
+    """
+    doc_ref = db.collection("avistamentos").document(registro)
+    doc = doc_ref.get()
+
+    if not doc.exists:
+        raise HTTPException(status_code=404, detail="Avistamento não encontrado")
+
+    doc_ref.delete()
+
+    return RedirectResponse(url="/avistamentos", status_code=303)
+
 @app.get("/telemetry")
 async def telemetry():
     return {"message": "Placeholder for shark monitoring"}

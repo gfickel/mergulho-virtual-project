@@ -27,5 +27,11 @@
         <a href="/avistamentos/{{ registro }}/edit">Editar</a> |
         <a href="/avistamentos">Voltar para lista de avistamentos</a>
     </p>
+
+    <form method="post" action="/avistamentos/{{ registro }}/delete" onsubmit="return confirm('Tem certeza que deseja excluir este avistamento?');">
+        <button type="submit" style="background-color:#f44336;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">
+            Excluir avistamento
+        </button>
+    </form>
 </body>
 </html>
