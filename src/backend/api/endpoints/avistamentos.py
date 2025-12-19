@@ -120,15 +120,6 @@ async def read_avistamento(
 
     avistamento = doc.to_dict()
 
-    # Decide o formato: JSON se format=json ou Accept contém application/json
-    return_json = (
-        format == "json"
-        or (accept and "application/json" in accept and "text/html" not in accept)
-    )
-
-    if return_json:
-        return JSONResponse(avistamento)
-
     # Gera URL assinada para a imagem
     # Assumindo que o nome do arquivo é imagens/{registro}.jpg
     image_filename = f"imagens/{registro}.jpg"
@@ -137,6 +128,17 @@ async def read_avistamento(
     except Exception as e:
         print(f"Erro ao gerar URL assinada: {e}")
         image_url = None
+
+    # Decide o formato: JSON se format=json ou Accept contém application/json
+    return_json = (
+        format == "json"
+        or (accept and "application/json" in accept and "text/html" not in accept)
+    )
+
+    if return_json:
+        response_data = avistamento.copy()
+        response_data["image_url"] = image_url
+        return JSONResponse(response_data)
 
     return templates.TemplateResponse(
         request=request,
