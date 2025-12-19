@@ -6,6 +6,7 @@ from typing import Optional, Dict, Any
 from database import db
 from config import templates
 from services.avistamentos import query_avistamentos, build_avistamentos_url
+from services.storage import generate_signed_url
 
 
 
@@ -128,10 +129,24 @@ async def read_avistamento(
     if return_json:
         return JSONResponse(avistamento)
 
+    # Gera URL assinada para a imagem
+    # Assumindo que o nome do arquivo é imagens/{registro}.jpg
+    image_filename = f"imagens/{registro}.jpg"
+    try:
+        image_url = generate_signed_url(image_filename)
+    except Exception as e:
+        print(f"Erro ao gerar URL assinada: {e}")
+        image_url = None
+
     return templates.TemplateResponse(
         request=request,
         name="avistamentos/view.html",
-        context={"request": request, "registro": registro, "avistamento": avistamento},
+        context={
+            "request": request,
+            "registro": registro,
+            "avistamento": avistamento,
+            "image_url": image_url,
+        },
     )
 
 

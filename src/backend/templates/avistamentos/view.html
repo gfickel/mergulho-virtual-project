@@ -1,37 +1,55 @@
 <html>
+
 <head>
     <title>Avistamento {{ registro }}</title>
     <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
 </head>
+
 <body>
     <h1>Avistamento {{ registro }}</h1>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Campo</th>
-                <th>Valor</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for campo, valor in avistamento.items() %}
-            <tr>
-                <td>{{ campo }}</td>
-                <td>{{ valor }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div style="display: flex; gap: 20px; align-items: flex-start;">
+        <div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Campo</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for campo, valor in avistamento.items() %}
+                    <tr>
+                        <td>{{ campo }}</td>
+                        <td>{{ valor }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if image_url %}
+        <div>
+            <a href="{{ image_url }}" target="_blank">
+                <img src="{{ image_url }}" alt="Foto do avistamento {{ registro }}"
+                    style="max-width: 300px; height: auto; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            </a>
+        </div>
+        {% endif %}
+    </div>
 
     <p>
         <a href="/avistamentos/{{ registro }}/edit">Editar</a> |
         <a href="/avistamentos">Voltar para lista de avistamentos</a>
     </p>
 
-    <form method="post" action="/avistamentos/{{ registro }}/delete" onsubmit="return confirm('Tem certeza que deseja excluir este avistamento?');">
-        <button type="submit" style="background-color:#f44336;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">
+    <form method="post" action="/avistamentos/{{ registro }}/delete"
+        onsubmit="return confirm('Tem certeza que deseja excluir este avistamento?');">
+        <button type="submit"
+            style="background-color:#f44336;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">
             Excluir avistamento
         </button>
     </form>
 </body>
+
 </html>
