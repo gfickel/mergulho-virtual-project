@@ -33,11 +33,14 @@ httptools==0.7.1
 httpx==0.28.1
 hyperframe==6.1.0
 idna==3.11
+iniconfig==2.3.0
 Jinja2==3.1.6
 markdown-it-py==4.0.0
 MarkupSafe==3.0.3
 mdurl==0.1.2
 msgpack==1.1.2
+packaging==25.0
+pluggy==1.6.0
 proto-plus==1.26.1
 protobuf==6.33.2
 pyasn1==0.6.1
@@ -47,6 +50,8 @@ pydantic==2.12.5
 pydantic_core==2.41.5
 Pygments==2.19.2
 PyJWT==2.10.1
+pytest==8.3.4
+pytest-asyncio==0.25.0
 python-dotenv==1.2.1
 python-multipart==0.0.20
 PyYAML==6.0.3
