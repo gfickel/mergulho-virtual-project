@@ -1,0 +1,69 @@
+<html>
+
+<head>
+    <title>Lista de Telemetria</title>
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+</head>
+
+<body>
+    <h1>Lista de Telemetria</h1>
+
+    <form method="get" action="{{ url_for('list_telemetria') }}">
+        <label>
+            OID:
+            <input type="text" name="oid" value="{{ oid or '' }}">
+        </label>
+        <label>
+            Data Início:
+            <input type="date" name="date_start" value="{{ date_start or '' }}">
+        </label>
+        <label>
+            Data Fim:
+            <input type="date" name="date_end" value="{{ date_end or '' }}">
+        </label>
+        <label>
+            Itens por página:
+            <input type="number" name="page_size" value="{{ page_size }}" min="1" max="100">
+        </label>
+        <button type="submit">Filtrar</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>OID</th>
+                <th>Título</th>
+                <th>Data</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+                <th>Notas</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.oid }}</td>
+                <td>{{ item.title }}</td>
+                <td>{{ item.date_str }}</td>
+                <td>{{ item.latitude }}</td>
+                <td>{{ item.longitude }}</td>
+                <td>{{ item.notes }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        {% if prev_page_url %}
+        <a href="{{ prev_page_url }}">« Página anterior</a>
+        {% endif %}
+
+        <span>Página {{ page }}</span>
+
+        {% if next_page_url %}
+        <a href="{{ next_page_url }}">Próxima página »</a>
+        {% endif %}
+    </div>
+</body>
+
+</html>
