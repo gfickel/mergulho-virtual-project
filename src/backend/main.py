@@ -11,4 +11,4 @@ app.include_router(api_router)
 
 @app.get("/")
 async def root():
-    return {"message": "API do Mergulho Virtual"}
+    return {"message": "API do Mergulho Virtual", "version": 0.1}
