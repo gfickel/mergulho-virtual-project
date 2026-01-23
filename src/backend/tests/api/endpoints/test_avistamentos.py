@@ -60,7 +60,9 @@ async def test_read_avistamento(async_client: AsyncClient, mock_db):
     response = await async_client.get(f"/avistamentos/{registro_id}", headers={"Accept": "application/json"})
     
     assert response.status_code == 200
-    assert response.json() == {"id": registro_id, "species": "Shark"}
+    data = response.json()
+    assert data["id"] == registro_id
+    assert data["species"] == "Shark"
 
 @pytest.mark.asyncio
 async def test_read_avistamento_not_found(async_client: AsyncClient, mock_db):

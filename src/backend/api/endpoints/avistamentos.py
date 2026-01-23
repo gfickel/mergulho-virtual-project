@@ -5,7 +5,7 @@ from typing import Optional, Dict, Any
 
 from database import db
 from config import templates
-from services.avistamentos import query_avistamentos, build_avistamentos_url
+from services.avistamentos import query_avistamentos, build_avistamentos_url, count_avistamentos
 from services.storage import generate_signed_url
 
 
@@ -22,6 +22,7 @@ async def list_avistamentos(
     mes_registro: Optional[int] = None,
     ano_registro: Optional[int] = None,
     format: Optional[str] = None,
+    count: bool = False,
     accept: Optional[str] = Header(None),
 ):
     """
@@ -31,6 +32,14 @@ async def list_avistamentos(
     - ?format=json ou
     - Header Accept: application/json
     """
+    if count:
+        total = count_avistamentos(
+            dia_registro=dia_registro,
+            mes_registro=mes_registro,
+            ano_registro=ano_registro,
+        )
+        return JSONResponse({"count": total})
+
     items, page, page_size, has_more = query_avistamentos(
         page=page,
         page_size=page_size,
