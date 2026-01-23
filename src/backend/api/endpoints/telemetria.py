@@ -4,7 +4,7 @@ from fastapi import APIRouter, Request, Header
 from fastapi.responses import JSONResponse
 from typing import Optional
 
-from services.telemetria import query_telemetria, build_telemetria_url
+from services.telemetria import query_telemetria, build_telemetria_url, count_telemetria
 from config import templates
 
 router = APIRouter()
@@ -18,6 +18,7 @@ async def list_telemetria(
     date_start: Optional[str] = None,
     date_end: Optional[str] = None,
     format: Optional[str] = None,
+    count: bool = False,
     accept: Optional[str] = Header(None),
 ):
     """
@@ -53,6 +54,14 @@ async def list_telemetria(
     # Sanitize OID
     if oid is not None and not oid.strip():
         oid = None
+
+    if count:
+        total = count_telemetria(
+            oid=oid,
+            date_start=d_start,
+            date_end=d_end,
+        )
+        return JSONResponse({"count": total})
 
     items, page, page_size, has_more = query_telemetria(
         page=page,

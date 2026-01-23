@@ -20,17 +20,7 @@ def query_telemetria(
 
     offset = (page - 1) * page_size
 
-    query = db.collection("telemetria").order_by("date")
-
-    # Optional filters
-    if oid is not None:
-        query = query.where(filter=firestore.FieldFilter("oid", "==", oid))
-    
-    # Date range filters (assuming 'date' is timestamp int)
-    if date_start is not None:
-        query = query.where(filter=firestore.FieldFilter("date", ">=", int(date_start)))
-    if date_end is not None:
-        query = query.where(filter=firestore.FieldFilter("date", "<=", int(date_end)))
+    query = _build_query(oid, date_start, date_end)
 
     query = query.offset(offset).limit(page_size)
 
@@ -64,3 +54,40 @@ def build_telemetria_url(
         params.append(f"date_end={date_end}")
 
     return "/telemetria?" + "&".join(params)
+
+
+def count_telemetria(
+    oid: Optional[str] = None,
+    date_start: Optional[int] = None,
+    date_end: Optional[int] = None,
+) -> int:
+    """
+    Counts total telemetry records matching filters.
+    """
+    query = _build_query(oid, date_start, date_end)
+    aggregate_query = query.count()
+    results = aggregate_query.get()
+    return results[0][0].value
+
+
+def _build_query(
+    oid: Optional[str] = None,
+    date_start: Optional[int] = None,
+    date_end: Optional[int] = None,
+):
+    """
+    Helper to build base query with filters.
+    """
+    query = db.collection("telemetria").order_by("date")
+
+    # Optional filters
+    if oid is not None:
+        query = query.where(filter=firestore.FieldFilter("oid", "==", oid))
+    
+    # Date range filters
+    if date_start is not None:
+        query = query.where(filter=firestore.FieldFilter("date", ">=", int(date_start)))
+    if date_end is not None:
+        query = query.where(filter=firestore.FieldFilter("date", "<=", int(date_end)))
+        
+    return query
