@@ -1,0 +1,708 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>Placis.kmz</name>
+	<open>1</open>
+	<atom:link rel="app" href="https://www.google.com/earth/about/versions/#earth-pro" title="Google Earth Pro 7.3.6.10441"></atom:link>
+	<StyleMap id="failed36">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#failed23</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#failed4</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="failed">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#failed35</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#failed45</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="failed25">
+	</Style>
+	<StyleMap id="failed26">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#failed14</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#failed33</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="failed27">
+	</Style>
+	<Style id="failed28">
+	</Style>
+	<Style id="failed29">
+	</Style>
+	<StyleMap id="failed30">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#failed44</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#failed24</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="failed31">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#failed29</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#failed15</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="failed32">
+	</Style>
+	<Style id="failed33">
+	</Style>
+	<Style id="failed34">
+	</Style>
+	<Style id="failed35">
+	</Style>
+	<Style id="failed24">
+	</Style>
+	<StyleMap id="failed37">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#failed11</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#failed6</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="failed38">
+	</Style>
+	<Style id="failed39">
+	</Style>
+	<Style id="failed40">
+	</Style>
+	<StyleMap id="failed41">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#failed16</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#failed25</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="failed42">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#failed40</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#failed13</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="failed43">
+	</Style>
+	<Style id="failed44">
+	</Style>
+	<Style id="failed45">
+	</Style>
+	<StyleMap id="failed46">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#failed12</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#failed43</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="failed47">
+	</Style>
+	<Style id="failed11">
+	</Style>
+	<Style id="failed0">
+	</Style>
+	<StyleMap id="failed1">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#failed21</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#failed47</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="failed2">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#failed9</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#failed27</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="failed3">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#failed22</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#failed38</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="failed4">
+	</Style>
+	<Style id="failed5">
+	</Style>
+	<Style id="failed6">
+	</Style>
+	<StyleMap id="failed7">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#failed32</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#failed39</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="failed8">
+	</Style>
+	<Style id="failed9">
+	</Style>
+	<Style id="failed10">
+	</Style>
+	<Style id="failed23">
+	</Style>
+	<Style id="failed12">
+	</Style>
+	<Style id="failed13">
+	</Style>
+	<Style id="failed14">
+	</Style>
+	<Style id="failed15">
+	</Style>
+	<Style id="failed16">
+	</Style>
+	<StyleMap id="failed17">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#failed19</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#failed5</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="failed18">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#failed10</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#failed34</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="failed19">
+	</Style>
+	<StyleMap id="failed20">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#failed0</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#failed28</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="failed21">
+	</Style>
+	<Style id="failed22">
+	</Style>
+	<Style id="failed00">
+	</Style>
+	<StyleMap id="failed110">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#failed00</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#failed8</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Folder>
+		<name>My Places</name>
+		<open>1</open>
+		<Style>
+			<ListStyle>
+				<listItemType>check</listItemType>
+				<ItemIcon>
+					<state>open</state>
+					<href>mysavedplaces_open.png</href>
+				</ItemIcon>
+				<ItemIcon>
+					<state>closed</state>
+					<href>mysavedplaces_closed.png</href>
+				</ItemIcon>
+				<bgColor>00ffffff</bgColor>
+				<maxSnippetLines>2</maxSnippetLines>
+			</ListStyle>
+		</Style>
+		<Folder id="results">
+			<name>Praía do Sancho, State of Pernambuco, Brazil</name>
+			<open>1</open>
+			<Placemark id="1.2.1">
+				<name>Sancho Beach</name>
+				<address>State of Pernambuco, Brazil</address>
+				<snippet>State of Pernambuco, Brazil</snippet>
+				<description><![CDATA[<!DOCTYPE html><html><head></head><body><script type="text/javascript">window.location.href="https://www.google.com/earth/rpc/entity?lat=-3.8541246999999994&lng=-32.44411840000001&fid=0x6364dff104530a3:0x258f9c83f7471d2&hl=en&gl=us&client=earth-client&cv=7.3.6.10441&useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)";</script></body></html>]]></description>
+				<styleUrl>#failed110</styleUrl>
+				<ExtendedData>
+					<Data name="placepageUri">
+						<value>https://www.google.com/earth/rpc/entity?lat=-3.8541246999999994&amp;lng=-32.44411840000001&amp;fid=0x6364dff104530a3:0x258f9c83f7471d2&amp;hl=en&amp;gl=us&amp;client=earth-client&amp;cv=7.3.6.10441&amp;useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)</value>
+					</Data>
+				</ExtendedData>
+				<MultiGeometry>
+					<Point>
+						<coordinates>-32.4436958,-3.8546893,0</coordinates>
+					</Point>
+					<LinearRing>
+						<coordinates>
+							-32.44463014713924,-3.857294793035212,0 -32.44761169802462,-3.85319366960751,0 -32.44429177018644,-3.849885750853693,0 -32.44133301923579,-3.854219338220718,0 -32.44463014713924,-3.857294793035212,0 
+						</coordinates>
+					</LinearRing>
+				</MultiGeometry>
+			</Placemark>
+		</Folder>
+		<Folder id="results">
+			<name>Baía dos Porcos, Fernando de Noronha - State of Pernambuco, Brazil</name>
+			<open>1</open>
+			<Placemark id="1.2.1">
+				<name>Baía dos Porcos</name>
+				<address>Fernando de Noronha - State of Pernambuco, 53990-000, Brazil</address>
+				<snippet>Fernando de Noronha - State of Pernambuco, 53990-000, Brazil</snippet>
+				<description><![CDATA[<!DOCTYPE html><html><head></head><body><script type="text/javascript">window.location.href="https://www.google.com/earth/rpc/entity?lat=-3.8515061499999996&lng=-32.44151835&fid=0x6365200cb18965b:0x3f1cde32b77617a8&hl=en&gl=us&client=earth-client&cv=7.3.6.10441&useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)";</script></body></html>]]></description>
+				<styleUrl>#failed7</styleUrl>
+				<ExtendedData>
+					<Data name="placepageUri">
+						<value>https://www.google.com/earth/rpc/entity?lat=-3.8515061499999996&amp;lng=-32.44151835&amp;fid=0x6365200cb18965b:0x3f1cde32b77617a8&amp;hl=en&amp;gl=us&amp;client=earth-client&amp;cv=7.3.6.10441&amp;useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)</value>
+					</Data>
+				</ExtendedData>
+				<MultiGeometry>
+					<Point>
+						<coordinates>-32.4413272,-3.8516165,0</coordinates>
+					</Point>
+					<LinearRing>
+						<coordinates>
+							-32.44135096066051,-3.854185893011124,0 -32.44427388840844,-3.849903993693276,0 -32.44239211947689,-3.848594147353319,0 -32.43998269167157,-3.852127808569859,0 -32.44135096066051,-3.854185893011124,0 
+						</coordinates>
+					</LinearRing>
+				</MultiGeometry>
+			</Placemark>
+		</Folder>
+		<Folder id="results">
+			<name>Praia da Cacimba do Padre, State of Pernambuco, Brazil</name>
+			<open>1</open>
+			<Placemark id="1.2.1">
+				<name>Praia da Cacimba do Padre</name>
+				<address>State of Pernambuco, 53990-000, Brazil</address>
+				<snippet>State of Pernambuco, 53990-000, Brazil</snippet>
+				<description><![CDATA[<!DOCTYPE html><html><head></head><body><script type="text/javascript">window.location.href="https://www.google.com/earth/rpc/entity?lat=-3.8496897999999997&lng=-32.4388716&fid=0x6365206e726300f:0x5bc12f3931657aff&hl=en&gl=us&client=earth-client&cv=7.3.6.10441&useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)";</script></body></html>]]></description>
+				<styleUrl>#failed26</styleUrl>
+				<ExtendedData>
+					<Data name="placepageUri">
+						<value>https://www.google.com/earth/rpc/entity?lat=-3.8496897999999997&amp;lng=-32.4388716&amp;fid=0x6365206e726300f:0x5bc12f3931657aff&amp;hl=en&amp;gl=us&amp;client=earth-client&amp;cv=7.3.6.10441&amp;useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)</value>
+					</Data>
+				</ExtendedData>
+				<MultiGeometry>
+					<Point>
+						<coordinates>-32.4387858,-3.8498785,0</coordinates>
+					</Point>
+					<LinearRing>
+						<coordinates>
+							-32.4399662048658,-3.852095899435138,0 -32.44226911902782,-3.848665224695597,0 -32.4378287278447,-3.84627210140974,0 -32.43644536991778,-3.849995735662546,0 -32.4399662048658,-3.852095899435138,0 
+						</coordinates>
+					</LinearRing>
+				</MultiGeometry>
+			</Placemark>
+		</Folder>
+		<Folder id="results">
+			<name>Praia da Quixaba, State of Pernambuco, Brazil</name>
+			<open>1</open>
+			<Placemark id="1.2.1">
+				<name>Praia da Quixaba</name>
+				<address>State of Pernambuco, 53990-000, Brazil</address>
+				<snippet>State of Pernambuco, 53990-000, Brazil</snippet>
+				<description><![CDATA[<!DOCTYPE html><html><head></head><body><script type="text/javascript">window.location.href="https://www.google.com/earth/rpc/entity?lat=-3.8482423499999996&lng=-32.43537635&fid=0x63652066576e173:0x2908a34b1bdc3bf2&hl=en&gl=us&client=earth-client&cv=7.3.6.10441&useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)";</script></body></html>]]></description>
+				<styleUrl>#failed2</styleUrl>
+				<ExtendedData>
+					<Data name="placepageUri">
+						<value>https://www.google.com/earth/rpc/entity?lat=-3.8482423499999996&amp;lng=-32.43537635&amp;fid=0x63652066576e173:0x2908a34b1bdc3bf2&amp;hl=en&amp;gl=us&amp;client=earth-client&amp;cv=7.3.6.10441&amp;useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)</value>
+					</Data>
+				</ExtendedData>
+				<MultiGeometry>
+					<Point>
+						<coordinates>-32.435333,-3.8485104,0</coordinates>
+					</Point>
+					<LinearRing>
+						<coordinates>
+							-32.43643444505981,-3.849981639386847,0 -32.43780561402538,-3.846242507940263,0 -32.43634895866114,-3.845872107532579,0 -32.43494787596124,-3.849676969764325,0 -32.43643444505981,-3.849981639386847,0 
+						</coordinates>
+					</LinearRing>
+				</MultiGeometry>
+			</Placemark>
+		</Folder>
+		<Folder id="results">
+			<name>Praia do Bode, Fernando de Noronha - State of Pernambuco, Brazil</name>
+			<open>1</open>
+			<Placemark id="1.2.1">
+				<name>Praia do Bode</name>
+				<address>Ilha Fernando de Noronha, Brazil</address>
+				<snippet>Ilha Fernando de Noronha, Brazil</snippet>
+				<description><![CDATA[<!DOCTYPE html><html><head></head><body><script type="text/javascript">window.location.href="https://www.google.com/earth/rpc/entity?lat=-3.8478101&lng=-32.434545799999995&fid=0x63653fbea457be1:0x24ece69ac2d1d95e&hl=en&gl=us&client=earth-client&cv=7.3.6.10441&useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)";</script></body></html>]]></description>
+				<styleUrl>#failed30</styleUrl>
+				<ExtendedData>
+					<Data name="placepageUri">
+						<value>https://www.google.com/earth/rpc/entity?lat=-3.8478101&amp;lng=-32.434545799999995&amp;fid=0x63653fbea457be1:0x24ece69ac2d1d95e&amp;hl=en&amp;gl=us&amp;client=earth-client&amp;cv=7.3.6.10441&amp;useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)</value>
+					</Data>
+				</ExtendedData>
+				<MultiGeometry>
+					<Point>
+						<coordinates>-32.4345458,-3.8478101,0</coordinates>
+					</Point>
+					<LinearRing>
+						<coordinates>
+							-32.43492561165736,-3.849678597225815,0 -32.43632467498432,-3.8458721554844,0 -32.43463631578462,-3.845125526403872,0 -32.43299719120603,-3.849004768196809,0 -32.43492561165736,-3.849678597225815,0 
+						</coordinates>
+					</LinearRing>
+				</MultiGeometry>
+			</Placemark>
+		</Folder>
+		<Folder id="results">
+			<name>Praia do Americano, Fernando de Noronha - State of Pernambuco, Brazil</name>
+			<open>1</open>
+			<Placemark id="1.2.1">
+				<name>Praia do Americano</name>
+				<address>Ilha Fernando de Noronha, Fernando de Noronha - PE, 53990-000, Brazil</address>
+				<snippet>Ilha Fernando de Noronha, Fernando de Noronha - PE, 53990-000, Brazil</snippet>
+				<description><![CDATA[<!DOCTYPE html><html><head></head><body><script type="text/javascript">window.location.href="https://www.google.com/earth/rpc/entity?lat=-3.8468339499999997&lng=-32.4325683&fid=0x636520f01e277e5:0x4ded90b6afed7a3a&hl=en&gl=us&client=earth-client&cv=7.3.6.10441&useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)";</script></body></html>]]></description>
+				<styleUrl>#failed1</styleUrl>
+				<ExtendedData>
+					<Data name="placepageUri">
+						<value>https://www.google.com/earth/rpc/entity?lat=-3.8468339499999997&amp;lng=-32.4325683&amp;fid=0x636520f01e277e5:0x4ded90b6afed7a3a&amp;hl=en&amp;gl=us&amp;client=earth-client&amp;cv=7.3.6.10441&amp;useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)</value>
+					</Data>
+				</ExtendedData>
+				<MultiGeometry>
+					<Point>
+						<coordinates>-32.4325683,-3.846834,0</coordinates>
+					</Point>
+					<LinearRing>
+						<coordinates>
+							-32.4329744812531,-3.849012182204927,0 -32.43464885075571,-3.845085216254633,0 -32.43245827206481,-3.843888433392967,0 -32.43087227531127,-3.847905650165132,0 -32.4329744812531,-3.849012182204927,0 
+						</coordinates>
+					</LinearRing>
+				</MultiGeometry>
+			</Placemark>
+		</Folder>
+		<Folder id="results">
+			<name>Praia do Boldró, State of Pernambuco, Brazil</name>
+			<open>1</open>
+			<Placemark id="1.2.1">
+				<name>Boldró Beach</name>
+				<address>State of Pernambuco, 53990-000, Brazil</address>
+				<snippet>State of Pernambuco, 53990-000, Brazil</snippet>
+				<description><![CDATA[<!DOCTYPE html><html><head></head><body><script type="text/javascript">window.location.href="https://www.google.com/earth/rpc/entity?lat=-3.8448535000000006&lng=-32.42881575&fid=0x636520e12d3d18d:0x12a852bfdd83d8a1&hl=en&gl=us&client=earth-client&cv=7.3.6.10441&useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)";</script></body></html>]]></description>
+				<styleUrl>#failed42</styleUrl>
+				<ExtendedData>
+					<Data name="placepageUri">
+						<value>https://www.google.com/earth/rpc/entity?lat=-3.8448535000000006&amp;lng=-32.42881575&amp;fid=0x636520e12d3d18d:0x12a852bfdd83d8a1&amp;hl=en&amp;gl=us&amp;client=earth-client&amp;cv=7.3.6.10441&amp;useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)</value>
+					</Data>
+				</ExtendedData>
+				<MultiGeometry>
+					<Point>
+						<coordinates>-32.4283189,-3.845188400000001,0</coordinates>
+					</Point>
+					<LinearRing>
+						<coordinates>
+							-32.43083787245935,-3.847891392196036,0 -32.43245665342554,-3.843815747611395,0 -32.42567705838069,-3.840389464472477,0 -32.42429724306594,-3.845316224922003,0 -32.43083787245935,-3.847891392196036,0 
+						</coordinates>
+					</LinearRing>
+				</MultiGeometry>
+			</Placemark>
+		</Folder>
+		<Folder id="results">
+			<name>Praia da Conceição, State of Pernambuco, Brazil</name>
+			<open>1</open>
+			<Placemark id="1.2.1">
+				<name>Praia da Conceição</name>
+				<address>State of Pernambuco, 53990-000, Brazil</address>
+				<snippet>State of Pernambuco, 53990-000, Brazil</snippet>
+				<description><![CDATA[<!DOCTYPE html><html><head></head><body><script type="text/javascript">window.location.href="https://www.google.com/earth/rpc/entity?lat=-3.8410971&lng=-32.41866835&fid=0x636526ebbb23679:0x621f2f91b882bb77&hl=en&gl=us&client=earth-client&cv=7.3.6.10441&useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)";</script></body></html>]]></description>
+				<styleUrl>#failed31</styleUrl>
+				<ExtendedData>
+					<Data name="placepageUri">
+						<value>https://www.google.com/earth/rpc/entity?lat=-3.8410971&amp;lng=-32.41866835&amp;fid=0x636526ebbb23679:0x621f2f91b882bb77&amp;hl=en&amp;gl=us&amp;client=earth-client&amp;cv=7.3.6.10441&amp;useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)</value>
+					</Data>
+				</ExtendedData>
+				<MultiGeometry>
+					<Point>
+						<coordinates>-32.4180075,-3.8418634,0</coordinates>
+					</Point>
+					<LinearRing>
+						<coordinates>
+							-32.42427544131267,-3.845297029669523,0 -32.42563191200114,-3.840337914941788,0 -32.4155245035678,-3.836848762945283,0 -32.4144050024051,-3.842786935496601,0 -32.42427544131267,-3.845297029669523,0 
+						</coordinates>
+					</LinearRing>
+				</MultiGeometry>
+			</Placemark>
+		</Folder>
+		<Folder id="results">
+			<name>Praia do Meio, State of Pernambuco, Brazil</name>
+			<open>1</open>
+			<Placemark id="1.2.1">
+				<name>Praia do Meio</name>
+				<address>State of Pernambuco, 53990-000, Brazil</address>
+				<snippet>State of Pernambuco, 53990-000, Brazil</snippet>
+				<description><![CDATA[<!DOCTYPE html><html><head></head><body><script type="text/javascript">window.location.href="https://www.google.com/earth/rpc/entity?lat=-3.8398204&lng=-32.41337755&fid=0x6365268a1a2267b:0x84b21c9ed9ee72f9&hl=en&gl=us&client=earth-client&cv=7.3.6.10441&useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)";</script></body></html>]]></description>
+				<styleUrl>#failed3</styleUrl>
+				<ExtendedData>
+					<Data name="placepageUri">
+						<value>https://www.google.com/earth/rpc/entity?lat=-3.8398204&amp;lng=-32.41337755&amp;fid=0x6365268a1a2267b:0x84b21c9ed9ee72f9&amp;hl=en&amp;gl=us&amp;client=earth-client&amp;cv=7.3.6.10441&amp;useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)</value>
+					</Data>
+				</ExtendedData>
+				<MultiGeometry>
+					<Point>
+						<coordinates>-32.4135243,-3.840079,0</coordinates>
+					</Point>
+					<LinearRing>
+						<coordinates>
+							-32.41434841127077,-3.842754981392297,0 -32.41549708463376,-3.836823576029657,0 -32.41311149158586,-3.83594612400301,0 -32.41125868815926,-3.841604985621539,0 -32.41434841127077,-3.842754981392297,0 
+						</coordinates>
+					</LinearRing>
+				</MultiGeometry>
+			</Placemark>
+		</Folder>
+		<Folder id="results">
+			<name>Praia do Cachorro, State of Pernambuco, Brazil</name>
+			<open>1</open>
+			<Placemark id="1.2.1">
+				<name>Praia do Cachorro</name>
+				<address>State of Pernambuco, 53990-000, Brazil</address>
+				<snippet>State of Pernambuco, 53990-000, Brazil</snippet>
+				<description><![CDATA[<!DOCTYPE html><html><head></head><body><script type="text/javascript">window.location.href="https://www.google.com/earth/rpc/entity?lat=-3.83903075&lng=-32.411267&fid=0x6365266491303a1:0x87ae785891460d76&hl=en&gl=us&client=earth-client&cv=7.3.6.10441&useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)";</script></body></html>]]></description>
+				<styleUrl>#failed</styleUrl>
+				<ExtendedData>
+					<Data name="placepageUri">
+						<value>https://www.google.com/earth/rpc/entity?lat=-3.83903075&amp;lng=-32.411267&amp;fid=0x6365266491303a1:0x87ae785891460d76&amp;hl=en&amp;gl=us&amp;client=earth-client&amp;cv=7.3.6.10441&amp;useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)</value>
+					</Data>
+				</ExtendedData>
+				<MultiGeometry>
+					<Point>
+						<coordinates>-32.4109628,-3.8391643,0</coordinates>
+					</Point>
+					<LinearRing>
+						<coordinates>
+							-32.41125758660741,-3.841643010773464,0 -32.41308860240403,-3.835946135988809,0 -32.41013707207816,-3.834967082962625,0 -32.40830072814605,-3.839921776442889,0 -32.41125758660741,-3.841643010773464,0 
+						</coordinates>
+					</LinearRing>
+				</MultiGeometry>
+			</Placemark>
+		</Folder>
+		<Folder id="results">
+			<name>Praia do Porto de Santo Antônio Noronha, Fernando de Noronha - State of Pernambuco, Brazil</name>
+			<open>1</open>
+			<Placemark id="1.2.1">
+				<name>Praia do Porto de Santo Antônio Noronha</name>
+				<address>Ilha Fernando de Noronha, Fernando de Noronha - PE, 53990-000, Brazil</address>
+				<phoneNumber>+55 81 3619-0969</phoneNumber>
+				<snippet>Ilha Fernando de Noronha, Fernando de Noronha - PE, 53990-000, Brazil</snippet>
+				<description><![CDATA[<!DOCTYPE html><html><head></head><body><script type="text/javascript">window.location.href="https://www.google.com/earth/rpc/entity?lat=-3.8344672&lng=-32.4013927&fid=0x63652f5877b6a3f:0x5a222b02ba410fca&hl=en&gl=us&client=earth-client&cv=7.3.6.10441&useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)";</script></body></html>]]></description>
+				<styleUrl>#failed36</styleUrl>
+				<ExtendedData>
+					<Data name="placepageUri">
+						<value>https://www.google.com/earth/rpc/entity?lat=-3.8344672&amp;lng=-32.4013927&amp;fid=0x63652f5877b6a3f:0x5a222b02ba410fca&amp;hl=en&amp;gl=us&amp;client=earth-client&amp;cv=7.3.6.10441&amp;useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)</value>
+					</Data>
+				</ExtendedData>
+				<MultiGeometry>
+					<Point>
+						<coordinates>-32.4013927,-3.8344673,0</coordinates>
+					</Point>
+					<LinearRing>
+						<coordinates>
+							-32.40357920135408,-3.838040841900181,0 -32.40616837122551,-3.833525142454039,0 -32.40258762124821,-3.830221666253645,0 -32.3994413195428,-3.834418415082442,0 -32.40357920135408,-3.838040841900181,0 
+						</coordinates>
+					</LinearRing>
+				</MultiGeometry>
+			</Placemark>
+		</Folder>
+		<Folder id="results">
+			<name>Enseada dos Tubarões - BR-363, Fernando de Noronha - State of Pernambuco, Brazil</name>
+			<open>1</open>
+			<Placemark id="1.2.1">
+				<name>Sharks Cove</name>
+				<address>BR-363, Fernando de Noronha - PE, 53990-000, Brazil</address>
+				<snippet>BR-363, Fernando de Noronha - PE, 53990-000, Brazil</snippet>
+				<description><![CDATA[<!DOCTYPE html><html><head></head><body><script type="text/javascript">window.location.href="https://www.google.com/earth/rpc/entity?lat=-3.833090699999999&lng=-32.398021799999995&fid=0x63652f42f2dabc1:0xf026cd4050e1cbd4&hl=en&gl=us&client=earth-client&cv=7.3.6.10441&useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)";</script></body></html>]]></description>
+				<styleUrl>#failed46</styleUrl>
+				<ExtendedData>
+					<Data name="placepageUri">
+						<value>https://www.google.com/earth/rpc/entity?lat=-3.833090699999999&amp;lng=-32.398021799999995&amp;fid=0x63652f42f2dabc1:0xf026cd4050e1cbd4&amp;hl=en&amp;gl=us&amp;client=earth-client&amp;cv=7.3.6.10441&amp;useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)</value>
+					</Data>
+				</ExtendedData>
+				<MultiGeometry>
+					<Point>
+						<coordinates>-32.3980218,-3.8330907,0</coordinates>
+					</Point>
+					<LinearRing>
+						<coordinates>
+							-32.39891316164301,-3.833440513788041,0 -32.3981759295028,-3.832286119798132,0 -32.39624053839572,-3.833025922365871,0 -32.39684396415318,-3.834172127561634,0 -32.39891316164301,-3.833440513788041,0 
+						</coordinates>
+					</LinearRing>
+				</MultiGeometry>
+			</Placemark>
+		</Folder>
+		<Folder id="results">
+			<name>Buraco da Raquel, State of Pernambuco, Brazil</name>
+			<open>1</open>
+			<Placemark id="1.2.1">
+				<name>Buraco da Raquel</name>
+				<address>State of Pernambuco, 53990-000, Brazil</address>
+				<snippet>State of Pernambuco, 53990-000, Brazil</snippet>
+				<description><![CDATA[<!DOCTYPE html><html><head></head><body><script type="text/javascript">window.location.href="https://www.google.com/earth/rpc/entity?lat=-3.8340261&lng=-32.3976645&fid=0x63652f4f8d860b7:0x7dd2e0e8ddeac33e&hl=en&gl=us&client=earth-client&cv=7.3.6.10441&useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)";</script></body></html>]]></description>
+				<styleUrl>#failed17</styleUrl>
+				<ExtendedData>
+					<Data name="placepageUri">
+						<value>https://www.google.com/earth/rpc/entity?lat=-3.8340261&amp;lng=-32.3976645&amp;fid=0x63652f4f8d860b7:0x7dd2e0e8ddeac33e&amp;hl=en&amp;gl=us&amp;client=earth-client&amp;cv=7.3.6.10441&amp;useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)</value>
+					</Data>
+				</ExtendedData>
+				<MultiGeometry>
+					<Point>
+						<coordinates>-32.397702,-3.8343215,0</coordinates>
+					</Point>
+					<LinearRing>
+						<coordinates>
+							-32.3979087333345,-3.835323308609162,0 -32.39838194009265,-3.833690012200231,0 -32.39620833795375,-3.834322579568841,0 -32.39591385478784,-3.835056718410046,0 -32.3979087333345,-3.835323308609162,0 
+						</coordinates>
+					</LinearRing>
+				</MultiGeometry>
+			</Placemark>
+		</Folder>
+		<Folder id="results">
+			<name>Enseada da Caieira, State of Pernambuco, Brazil</name>
+			<open>1</open>
+			<Placemark id="1.2.1">
+				<name>Enseada da Caieira</name>
+				<address>State of Pernambuco, 53990-000, Brazil</address>
+				<snippet>State of Pernambuco, 53990-000, Brazil</snippet>
+				<description><![CDATA[<!DOCTYPE html><html><head></head><body><script type="text/javascript">window.location.href="https://www.google.com/earth/rpc/entity?lat=-3.8374695999999995&lng=-32.3987587&fid=0x636528aea75e17d:0x22ce85b97f23a7f&hl=en&gl=us&client=earth-client&cv=7.3.6.10441&useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)";</script></body></html>]]></description>
+				<styleUrl>#failed41</styleUrl>
+				<ExtendedData>
+					<Data name="placepageUri">
+						<value>https://www.google.com/earth/rpc/entity?lat=-3.8374695999999995&amp;lng=-32.3987587&amp;fid=0x636528aea75e17d:0x22ce85b97f23a7f&amp;hl=en&amp;gl=us&amp;client=earth-client&amp;cv=7.3.6.10441&amp;useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)</value>
+					</Data>
+				</ExtendedData>
+				<MultiGeometry>
+					<Point>
+						<coordinates>-32.399919,-3.8374632,0</coordinates>
+					</Point>
+					<LinearRing>
+						<coordinates>
+							-32.40021075700498,-3.840687830293375,0 -32.40038275809132,-3.835809295439801,0 -32.39566555220458,-3.835006916745503,0 -32.39563264658504,-3.840518482850916,0 -32.40021075700498,-3.840687830293375,0 
+						</coordinates>
+					</LinearRing>
+				</MultiGeometry>
+			</Placemark>
+		</Folder>
+		<Folder id="results">
+			<name>Praia da Atalaia, State of Pernambuco, Brazil</name>
+			<open>1</open>
+			<Placemark id="1.2.1">
+				<name>Atalaia Beach</name>
+				<address>State of Pernambuco, 53990-000, Brazil</address>
+				<snippet>State of Pernambuco, 53990-000, Brazil</snippet>
+				<description><![CDATA[<!DOCTYPE html><html><head></head><body><script type="text/javascript">window.location.href="https://www.google.com/earth/rpc/entity?lat=-3.8571452500000003&lng=-32.407975199999996&fid=0x6364d86fac743b7:0xf098f483704a39ce&hl=en&gl=us&client=earth-client&cv=7.3.6.10441&useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)";</script></body></html>]]></description>
+				<styleUrl>#failed20</styleUrl>
+				<ExtendedData>
+					<Data name="placepageUri">
+						<value>https://www.google.com/earth/rpc/entity?lat=-3.8571452500000003&amp;lng=-32.407975199999996&amp;fid=0x6364d86fac743b7:0xf098f483704a39ce&amp;hl=en&amp;gl=us&amp;client=earth-client&amp;cv=7.3.6.10441&amp;useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)</value>
+					</Data>
+				</ExtendedData>
+				<MultiGeometry>
+					<Point>
+						<coordinates>-32.4086223,-3.856866,0</coordinates>
+					</Point>
+					<LinearRing>
+						<coordinates>
+							-32.4084476211377,-3.860236162186216,0 -32.41109271426191,-3.857224743614024,0 -32.40727442289637,-3.85449703286463,0 -32.40457884355446,-3.857899918562922,0 -32.4084476211377,-3.860236162186216,0 
+						</coordinates>
+					</LinearRing>
+				</MultiGeometry>
+			</Placemark>
+		</Folder>
+		<Folder id="results">
+			<name>Praia do Sueste, State of Pernambuco, Brazil</name>
+			<open>1</open>
+			<Placemark id="1.2.1">
+				<name>Sueste Beach</name>
+				<address>State of Pernambuco, 53990-000, Brazil</address>
+				<snippet>State of Pernambuco, 53990-000, Brazil</snippet>
+				<description><![CDATA[<!DOCTYPE html><html><head></head><body><script type="text/javascript">window.location.href="https://www.google.com/earth/rpc/entity?lat=-3.8668077000000003&lng=-32.42376755&fid=0x6364dec9d94e513:0x7e59c19f708fac21&hl=en&gl=us&client=earth-client&cv=7.3.6.10441&useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)";</script></body></html>]]></description>
+				<styleUrl>#failed37</styleUrl>
+				<ExtendedData>
+					<Data name="placepageUri">
+						<value>https://www.google.com/earth/rpc/entity?lat=-3.8668077000000003&amp;lng=-32.42376755&amp;fid=0x6364dec9d94e513:0x7e59c19f708fac21&amp;hl=en&amp;gl=us&amp;client=earth-client&amp;cv=7.3.6.10441&amp;useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)</value>
+					</Data>
+				</ExtendedData>
+				<MultiGeometry>
+					<Point>
+						<coordinates>-32.4235424,-3.8656787,0</coordinates>
+					</Point>
+					<LinearRing>
+						<coordinates>
+							-32.42632521824358,-3.870059083844247,0 -32.42836559401334,-3.865077540057476,0 -32.4223964008477,-3.862566312941119,0 -32.42035799916862,-3.867855837585324,0 -32.42632521824358,-3.870059083844247,0 
+						</coordinates>
+					</LinearRing>
+				</MultiGeometry>
+			</Placemark>
+		</Folder>
+		<Folder id="results">
+			<name>Praia do Leão, State of Pernambuco, Brazil</name>
+			<open>1</open>
+			<Placemark id="1.2.1">
+				<name>Praia do Leão</name>
+				<address>State of Pernambuco, 53990-000, Brazil</address>
+				<snippet>State of Pernambuco, 53990-000, Brazil</snippet>
+				<description><![CDATA[<!DOCTYPE html><html><head></head><body><script type="text/javascript">window.location.href="https://www.google.com/earth/rpc/entity?lat=-3.8702262&lng=-32.437212099999996&fid=0x6364de7f29c38a9:0xbc2e1e22874f5e01&hl=en&gl=us&client=earth-client&cv=7.3.6.10441&useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)";</script></body></html>]]></description>
+				<styleUrl>#failed18</styleUrl>
+				<ExtendedData>
+					<Data name="placepageUri">
+						<value>https://www.google.com/earth/rpc/entity?lat=-3.8702262&amp;lng=-32.437212099999996&amp;fid=0x6364de7f29c38a9:0xbc2e1e22874f5e01&amp;hl=en&amp;gl=us&amp;client=earth-client&amp;cv=7.3.6.10441&amp;useragent=GoogleEarth/7.3.6.10441(X11;Linux (6.14.0.0);en;kml:2.2;client:Pro;type:default)</value>
+					</Data>
+				</ExtendedData>
+				<MultiGeometry>
+					<Point>
+						<coordinates>-32.4371573,-3.870082499999999,0</coordinates>
+					</Point>
+					<LinearRing>
+						<coordinates>
+							-32.43983862767036,-3.871989687712223,0 -32.44003473329069,-3.868168669652972,0 -32.43443235966735,-3.868060002351194,0 -32.43429082176773,-3.872016624011408,0 -32.43983862767036,-3.871989687712223,0 
+						</coordinates>
+					</LinearRing>
+				</MultiGeometry>
+			</Placemark>
+		</Folder>
+	</Folder>
+</Document>
+</kml>
