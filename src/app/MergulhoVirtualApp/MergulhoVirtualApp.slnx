@@ -8,6 +8,6 @@
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.Runtime.Tests.csproj" />
   <Project Path="Unity.RenderPipeline.Universal.ShaderLibrary.csproj" />
-  <Project Path="Unity.RenderPipelines.Universal.Shaders.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="Unity.RenderPipelines.Universal.Shaders.csproj" />
 </Solution>
