@@ -57,7 +57,7 @@ public class GPSHandler : MonoBehaviour
        else
        {
            Debug.Log("Location " + Input.location.lastData.latitude + " " + Input.location.lastData.longitude);
-           debugTxt.text += "\nLocation: \nLat:" + Input.location.lastData.latitude + "\nLon:" + Input.location.lastData.longitude;
+           debugTxt.text += "\nLat:" + Input.location.lastData.latitude + "\nLon:" + Input.location.lastData.longitude;
            gpsOk = true;
 
        }
@@ -70,7 +70,8 @@ public class GPSHandler : MonoBehaviour
     {
         if (gpsOk)
         {
-            debugTxt.text = "\nLocation \nLat: " + Input.location.lastData.latitude + "\nLon: " + Input.location.lastData.longitude;
+            string placeName = ReverseGeocoding.GetPlaceName(new Vector2(Input.location.lastData.longitude, Input.location.lastData.latitude));
+            debugTxt.text = "\nLat: " + Input.location.lastData.latitude + "\nLon: " + Input.location.lastData.longitude + "\nLocal: " + placeName;
 
             currLoc.lat = Input.location.lastData.latitude;
             currLoc.lon = Input.location.lastData.longitude;
