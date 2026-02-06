@@ -12,7 +12,7 @@ public class GPSHandler : MonoBehaviour
     public TextMeshProUGUI debugTxt;
     public bool gpsOk = false;
 
-    GPSLoc currLoc = new GPSLoc();
+    GPSLocation currLoc = new GPSLocation();
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -56,12 +56,22 @@ public class GPSHandler : MonoBehaviour
        }
        else
        {
-           Debug.Log("Location " + Input.location.lastData.latitude + " " + Input.location.lastData.longitude);
-           debugTxt.text += "\nLat:" + Input.location.lastData.latitude + "\nLon:" + Input.location.lastData.longitude;
+           currLoc = GetLocation();
+           Debug.Log("Location " + currLoc.latitude + " " + currLoc.longitude);
+           debugTxt.text += "\nLat:" + currLoc.latitude + "\nLon:" + currLoc.longitude;
            gpsOk = true;
 
        }
 
+    }
+
+    GPSLocation GetLocation()
+    {
+    #if UNITY_EDITOR
+        return new GPSLocation(-32.44f, -3.85f);
+    #else
+        return new GPSLocation(Input.location.lastData.longitude, Input.location.lastData.latitude);
+    #endif
     }
 
 
@@ -70,37 +80,37 @@ public class GPSHandler : MonoBehaviour
     {
         if (gpsOk)
         {
-            string placeName = ReverseGeocoding.GetPlaceName(new Vector2(Input.location.lastData.longitude, Input.location.lastData.latitude));
-            debugTxt.text = "\nLat: " + Input.location.lastData.latitude + "\nLon: " + Input.location.lastData.longitude + "\nLocal: " + placeName;
+            GPSLocation location = GetLocation();
+            string placeName = ReverseGeocoding.GetPlaceName(new Vector2(location.longitude, location.latitude));
+            debugTxt.text = "\nLat: " + location.latitude + "\nLon: " + location.longitude + "\nLocal: " + placeName;
 
-            currLoc.lat = Input.location.lastData.latitude;
-            currLoc.lon = Input.location.lastData.longitude;
+            currLoc = location;
 
         }
         
     }
 }
 
-public class GPSLoc
+public class GPSLocation
 {
-    public float lon;
-    public float lat;
+    public float longitude;
+    public float latitude;
 
-    public GPSLoc()
+    public GPSLocation()
     {
-        lon = 0;
-        lat = 0;
+        longitude = 0;
+        latitude = 0;
     }
 
-    public GPSLoc(float lon, float lat)
+    public GPSLocation(float longitude, float latitude)
     {
-        this.lon = lon;
-        this.lat = lat;
+        this.longitude = longitude;
+        this.latitude = latitude;
     }
 
     public string getLocData()
     {
-        return "Lat: " + lat + "\nLon: " + lon;
+        return "Lat: " + latitude + "\nLon: " + longitude;
     }
 
 }
