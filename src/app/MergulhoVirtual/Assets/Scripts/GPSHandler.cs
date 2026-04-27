@@ -12,7 +12,12 @@ public class GPSHandler : MonoBehaviour
     public TextMeshProUGUI debugTxt;
     public bool gpsOk = false;
 
+    public string CurrentPlaceName { get; private set; }
+    public event Action<string> PlaceChanged;
+
     GPSLocation currLoc = new GPSLocation();
+    string overrideBeach;
+    string lastEmittedPlace;
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -78,6 +83,12 @@ public class GPSHandler : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (overrideBeach != null)
+        {
+            if (debugTxt != null) debugTxt.text = "\nLocal: " + overrideBeach + " (manual)";
+            return;
+        }
+
         if (gpsOk)
         {
             GPSLocation location = GetLocation();
@@ -85,9 +96,29 @@ public class GPSHandler : MonoBehaviour
             debugTxt.text = "\nLat: " + location.latitude + "\nLon: " + location.longitude + "\nLocal: " + placeName;
 
             currLoc = location;
-
+            UpdatePlace(placeName);
         }
-        
+
+    }
+
+    public void SetBeachOverride(string beachName)
+    {
+        overrideBeach = beachName;
+        UpdatePlace(beachName);
+    }
+
+    public void ClearBeachOverride()
+    {
+        overrideBeach = null;
+        // Next Update will re-emit from GPS if the resolved beach differs.
+    }
+
+    void UpdatePlace(string placeName)
+    {
+        if (placeName == lastEmittedPlace) return;
+        lastEmittedPlace = placeName;
+        CurrentPlaceName = placeName;
+        PlaceChanged?.Invoke(placeName);
     }
 }
 

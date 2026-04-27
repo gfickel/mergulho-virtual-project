@@ -33,15 +33,22 @@ public class CameraFeedToInference : MonoBehaviour
     [SerializeField]
     private TMP_Text classificationResultText;
 
+    public bool inferenceEnabled = true;
+
     private Texture2D cameraTexture;
     private Texture2D resizedTexture;
-    private float lastFrameTime = 0f;
     private const float FRAME_INTERVAL = 5f;
+    private float lastFrameTime = -FRAME_INTERVAL;
 
     private Model runtimeModel;
     private Worker worker;
     private Dictionary<string, Tensor> inputs = new Dictionary<string, Tensor>();
     private List<string> classLabels = new List<string>();
+
+    private Tensor pendingInput;
+    private Tensor<float> pendingOutput;
+    private bool inferenceInFlight = false;
+    private System.Diagnostics.Stopwatch inferenceStopwatch;
 
     void Start()
     {
@@ -53,11 +60,26 @@ public class CameraFeedToInference : MonoBehaviour
             worker = new Worker(runtimeModel, BackendType.GPUCompute);
             resizedTexture = new Texture2D(inputWidth, inputHeight, TextureFormat.RGBA32, false);
             Debug.Log($"[Inference] Model loaded - Input shape: {inputWidth}x{inputHeight}, Classes: {classLabels.Count}");
+            WarmUp();
         }
         else
         {
             Debug.LogWarning("[Inference] No model asset assigned!");
         }
+    }
+
+    // Run one synchronous inference on a blank tensor so shader compile and GPU
+    // allocations happen now (during splash) instead of stuttering the first
+    // real camera frame.
+    private void WarmUp()
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        using var warmInput = TextureConverter.ToTensor(resizedTexture, inputWidth, inputHeight, 3);
+        worker.Schedule(warmInput);
+        var output = worker.PeekOutput() as Tensor<float>;
+        output.DownloadToArray();
+        sw.Stop();
+        Debug.Log($"[Inference] Warmup completed in {sw.Elapsed.TotalMilliseconds:F1} ms");
     }
 
     private void LoadClassLabels()
@@ -100,6 +122,7 @@ public class CameraFeedToInference : MonoBehaviour
 
     void OnDestroy()
     {
+        pendingInput?.Dispose();
         worker?.Dispose();
         foreach (var input in inputs.Values)
         {
@@ -108,8 +131,43 @@ public class CameraFeedToInference : MonoBehaviour
         inputs.Clear();
     }
 
+    void Update()
+    {
+        if (!inferenceInFlight)
+        {
+            return;
+        }
+
+        if (!pendingOutput.IsReadbackRequestDone())
+        {
+            return;
+        }
+
+        // Readback is complete — pulling the data here does not block.
+        var outputData = pendingOutput.DownloadToArray();
+        inferenceStopwatch.Stop();
+        double runtimeMs = inferenceStopwatch.Elapsed.TotalMilliseconds;
+
+        ProcessClassificationResults(pendingOutput, outputData, runtimeMs);
+
+        pendingInput.Dispose();
+        pendingInput = null;
+        pendingOutput = null;
+        inferenceInFlight = false;
+    }
+
     private void OnCameraFrameReceived(ARCameraFrameEventArgs args)
     {
+        if (!inferenceEnabled)
+        {
+            return;
+        }
+
+        if (inferenceInFlight)
+        {
+            return;
+        }
+
         if (Time.time - lastFrameTime < FRAME_INTERVAL)
         {
             return;
@@ -163,40 +221,32 @@ public class CameraFeedToInference : MonoBehaviour
 
     private void RunInference(Texture2D sourceTexture)
     {
-        if (worker == null || sourceTexture == null)
+        if (worker == null || sourceTexture == null || inferenceInFlight)
         {
             return;
         }
 
-        // Resize texture to model input dimensions
         Graphics.ConvertTexture(sourceTexture, resizedTexture);
-
-        // Create tensor from texture with 3 channels (RGB)
         var inputTensor = TextureConverter.ToTensor(resizedTexture, inputWidth, inputHeight, 3);
 
-        // Run inference
+        inferenceStopwatch = System.Diagnostics.Stopwatch.StartNew();
         worker.Schedule(inputTensor);
 
-        // Get output tensor
         var outputTensor = worker.PeekOutput() as Tensor<float>;
+        outputTensor.ReadbackRequest();
 
-        // Process classification results
-        ProcessClassificationResults(outputTensor);
-
-        // Clean up
-        inputTensor.Dispose();
+        pendingInput = inputTensor;
+        pendingOutput = outputTensor;
+        inferenceInFlight = true;
     }
 
-    private void ProcessClassificationResults(Tensor<float> outputTensor)
+    private void ProcessClassificationResults(Tensor<float> outputTensor, float[] outputData, double runtimeMs)
     {
         // Assuming the model outputs class probabilities
         // Find the class with highest probability
         int classCount = outputTensor.shape[1];
         float maxProbability = float.MinValue;
         int predictedClass = -1;
-
-        // Download tensor data to read values
-        var outputData = outputTensor.DownloadToArray();
 
         for (int i = 0; i < classCount; i++)
         {
@@ -213,12 +263,12 @@ public class CameraFeedToInference : MonoBehaviour
             ? classLabels[predictedClass]
             : $"Class {predictedClass}";
 
-        string result = $"[Inference] Predicted: {classLabel} (index: {predictedClass}), Confidence: {maxProbability:P2}";
+        string result = $"[Inference] Predicted: {classLabel} (index: {predictedClass}), Confidence: {maxProbability:P2}, Runtime: {runtimeMs:F1} ms";
         Debug.Log(result);
 
         if (classificationResultText != null)
         {
-            classificationResultText.text = $"{classLabel}\nConfidence: {maxProbability:P2}";
+            classificationResultText.text = $"{classLabel}\nConfidence: {maxProbability:P2}\nRuntime: {runtimeMs:F1} ms";
         }
     }
 }

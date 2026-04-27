@@ -86,6 +86,24 @@ public class ReverseGeocoding : MonoBehaviour
         }
     }
 
+    public static List<string> GetAllPlaceNames()
+    {
+        if (loadedPlaces == null)
+        {
+            LoadPlaces();
+        }
+
+        var names = new List<string>();
+        if (loadedPlaces != null)
+        {
+            foreach (var place in loadedPlaces)
+            {
+                if (!string.IsNullOrEmpty(place.name)) names.Add(place.name);
+            }
+        }
+        return names;
+    }
+
     public static string GetPlaceName(Vector2 coordinate)
     {
         if (loadedPlaces == null)
