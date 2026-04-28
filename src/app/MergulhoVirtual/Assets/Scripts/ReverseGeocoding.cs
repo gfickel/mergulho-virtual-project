@@ -48,6 +48,8 @@ public class ReverseGeocoding : MonoBehaviour
     public class PlaceData
     {
         public string name;
+        public string imageName;
+        public string description;
         public List<PointData> points;
     }
 
@@ -102,6 +104,30 @@ public class ReverseGeocoding : MonoBehaviour
             }
         }
         return names;
+    }
+
+    public static List<PlaceData> GetAllPlaces()
+    {
+        if (loadedPlaces == null)
+        {
+            LoadPlaces();
+        }
+        return loadedPlaces ?? new List<PlaceData>();
+    }
+
+    public static PlaceData GetPlace(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return null;
+        if (loadedPlaces == null)
+        {
+            LoadPlaces();
+        }
+        if (loadedPlaces == null) return null;
+        foreach (var place in loadedPlaces)
+        {
+            if (place.name == name) return place;
+        }
+        return null;
     }
 
     public static string GetPlaceName(Vector2 coordinate)

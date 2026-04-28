@@ -1,6 +1,8 @@
 [
   {
     "name": "Praia do Sancho",
+    "imageName": "praia_do_sancho",
+    "description": "Considerada uma das praias mais bonitas do mundo, a Praia do Sancho fica em uma enseada cercada por falésias de até 70 metros. O acesso é feito por uma escada vertical instalada nas rochas. Águas cristalinas e ideais para mergulho.",
     "points": [
       {
         "lat": -3.856326357918694,
