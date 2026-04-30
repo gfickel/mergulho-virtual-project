@@ -115,6 +115,25 @@ public class ReverseGeocoding : MonoBehaviour
         return loadedPlaces ?? new List<PlaceData>();
     }
 
+    /// <summary>
+    /// Centroid (average of polygon vertices) for the given place, mapped lon→x, lat→y
+    /// to match GetPlaceName's convention. Returns null if the place is unknown.
+    /// </summary>
+    public static Vector2? GetCentroid(string placeName)
+    {
+        var place = GetPlace(placeName);
+        if (place == null || place.points == null || place.points.Count == 0) return null;
+
+        double sumLon = 0, sumLat = 0;
+        foreach (var p in place.points)
+        {
+            sumLon += p.lon;
+            sumLat += p.lat;
+        }
+        int n = place.points.Count;
+        return new Vector2((float)(sumLon / n), (float)(sumLat / n));
+    }
+
     public static PlaceData GetPlace(string name)
     {
         if (string.IsNullOrEmpty(name)) return null;

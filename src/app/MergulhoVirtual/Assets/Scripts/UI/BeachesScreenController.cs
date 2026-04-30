@@ -19,6 +19,7 @@ public class BeachesScreenController : MonoBehaviour
 
     private readonly List<ListItemView> spawnedItems = new List<ListItemView>();
     private bool listPopulated;
+    private string pendingDetailName;
 
     void Awake()
     {
@@ -33,7 +34,33 @@ public class BeachesScreenController : MonoBehaviour
     void OnEnable()
     {
         if (!listPopulated) PopulateList();
-        ShowList();
+        if (!string.IsNullOrEmpty(pendingDetailName))
+        {
+            ShowDetail(pendingDetailName);
+            pendingDetailName = null;
+        }
+        else
+        {
+            ShowList();
+        }
+    }
+
+    /// <summary>
+    /// Public deep-link entry point — call this BEFORE activating the screen.
+    /// If the screen is already active, it switches to the detail immediately;
+    /// otherwise OnEnable picks up the pending name on the next activation.
+    /// </summary>
+    public void ShowDetailFor(string beachName)
+    {
+        if (string.IsNullOrEmpty(beachName)) return;
+        if (gameObject.activeInHierarchy)
+        {
+            ShowDetail(beachName);
+        }
+        else
+        {
+            pendingDetailName = beachName;
+        }
     }
 
     void PopulateList()
