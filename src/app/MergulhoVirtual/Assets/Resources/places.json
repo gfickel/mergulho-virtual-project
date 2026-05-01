@@ -49,7 +49,10 @@
         "lat": -3.854890624062157,
         "lon": -32.4456926987495
       }
-    ]
+    ],
+    "imageName": "baia_dos_porcos",
+    "photoCredit": "Foto: Adelano Lázaro / CC BY-SA 4.0 (Wikimedia Commons)",
+    "description": "Pequena enseada cercada por falésias e rochas vulcânicas, com vista privilegiada para os Morros Dois Irmãos. Na maré baixa surgem piscinas naturais de águas transparentes, ideais para snorkeling. Faz parte do Parque Nacional Marinho e tem visitação controlada."
   },
   {
     "name": "Praia da Cacimba do Padre",
@@ -74,7 +77,10 @@
         "lat": -3.851515566143462,
         "lon": -32.4409685548579
       }
-    ]
+    ],
+    "imageName": "praia_da_cacimba_do_padre",
+    "photoCredit": "Foto: Eduardo Bom / CC BY-SA 3.0 (Wikimedia Commons)",
+    "description": "Praia de 700 metros emoldurada pelos Morros Dois Irmãos, com larga faixa de areia e ondas que a tornam um dos principais pontos de surf de Noronha. O nome lembra a fonte de água potável (cacimba) descoberta por um capelão do antigo presídio em 1888."
   },
   {
     "name": "Praia da Quixaba",
@@ -99,7 +105,8 @@
         "lat": -3.850147466143462,
         "lon": -32.4375157548579
       }
-    ]
+    ],
+    "description": "Pequena praia deserta entre a Cacimba do Padre e a Praia do Bode, com vista para os Morros Dois Irmãos. Cercada por formações rochosas e pouco frequentada, oferece um dos cenários mais reservados do Mar de Dentro."
   },
   {
     "name": "Praia do Bode",
@@ -124,7 +131,10 @@
         "lat": -3.851084232286925,
         "lon": -32.4389113097159
       }
-    ]
+    ],
+    "imageName": "praia_do_bode",
+    "photoCredit": "Foto: Giovana.Bonini / CC BY-SA 4.0 (Wikimedia Commons)",
+    "description": "Praia tranquila do Mar de Dentro, com piscinas naturais que se formam entre as pedras na maré baixa. No canto direito ergue-se a Pedra do Bode, que serve como mirante natural. Mar calmo e azul-esverdeado, ideal para descanso e contemplação."
   },
   {
     "name": "Praia do Americano",
@@ -149,7 +159,8 @@
         "lat": -3.859930562046774,
         "lon": -32.450030382729
       }
-    ]
+    ],
+    "description": "Pequena praia de 220 metros, uma das menos frequentadas da ilha, com águas muito transparentes e ondas fracas. Compartilha a faixa de areia com a Quixabinha à esquerda e, na maré baixa, é possível chegar a pé a partir da Praia do Bode."
   },
   {
     "name": "Boldró Beach",
@@ -174,7 +185,10 @@
         "lat": -3.848462548736462,
         "lon": -32.4326844316486
       }
-    ]
+    ],
+    "imageName": "boldro_beach",
+    "photoCredit": "Foto: Jankel voto / CC BY-SA 3.0 (Wikimedia Commons)",
+    "description": "Praia de 700 metros próxima à Vila do Boldró, com ondas de média intensidade frequentadas por surfistas. Na maré baixa, recifes de coral ficam expostos no canto esquerdo. O mirante acima da praia é um dos pontos mais procurados para ver o pôr do sol da ilha."
   },
   {
     "name": "Praia da Conceição",
@@ -199,7 +213,10 @@
         "lat": -3.845137565185999,
         "lon": -32.4223730535813
       }
-    ]
+    ],
+    "imageName": "praia_da_conceicao",
+    "photoCredit": "Foto: Bjørn Christian Tørrissen / CC BY-SA 3.0 (Wikimedia Commons)",
+    "description": "Praia em forma de meia-lua com 1200 metros de extensão, entre o Morro do Meio e o imponente Morro do Pico. É uma das mais movimentadas de Noronha, com areia macia e ondas fortes que atraem campeonatos de surf."
   },
   {
     "name": "Praia do Meio",
@@ -224,7 +241,10 @@
         "lat": -3.843353165185999,
         "lon": -32.4178898535813
       }
-    ]
+    ],
+    "imageName": "praia_do_meio",
+    "photoCredit": "Foto: Rafael Nicolaidis / CC BY-SA 4.0 (Wikimedia Commons)",
+    "description": "Praia de 300 metros entre a Praia do Cachorro e a Praia da Conceição. Apesar da proximidade com a Vila dos Remédios, mantém um ar deserto, cercada de vegetação. Tem areia fofa e ondas mais fortes que as das praias vizinhas."
   },
   {
     "name": "Praia do Cachorro",
@@ -249,7 +269,10 @@
         "lat": -3.842438473410767,
         "lon": -32.4153283645477
       }
-    ]
+    ],
+    "imageName": "praia_do_cachorro",
+    "photoCredit": "Foto: Carlos Luis M C da Cruz / Public domain (Wikimedia Commons)",
+    "description": "Praia central junto à Vila dos Remédios, é uma das mais visitadas da ilha em qualquer época do ano, com infraestrutura de bares, restaurantes e aluguel de espreguiçadeiras. Na maré baixa surge o Buraco do Galego, piscina natural circular formada pelas rochas no canto direito."
   },
   {
     "name": "Praia do Porto de Santo Antônio Noronha",
@@ -274,7 +297,10 @@
         "lat": -3.84756405121645,
         "lon": -32.4188550349553
       }
-    ]
+    ],
+    "imageName": "praia_do_porto_de_santo_antonio_noronha",
+    "photoCredit": "Foto: Adelano Lázaro / CC BY-SA 4.0 (Wikimedia Commons)",
+    "description": "Único porto de Fernando de Noronha e ponto de partida dos mergulhos autônomos e dos passeios de barco pelas ilhas secundárias e pela Baía dos Golfinhos. Abrigada por enrocamento, tem mar calmo e águas claras."
   },
   {
     "name": "Sharks Cove",
@@ -299,7 +325,8 @@
         "lat": -3.836364889860304,
         "lon": -32.4023873864804
       }
-    ]
+    ],
+    "description": "Pequena enseada do Mar de Fora, próxima ao Buraco da Raquel, conhecida entre mergulhadores pelas águas profundas e pelas formações rochosas que abrigam fauna marinha variada."
   },
   {
     "name": "Buraco da Raquel",
@@ -324,7 +351,10 @@
         "lat": -3.837595689860304,
         "lon": -32.4020675864804
       }
-    ]
+    ],
+    "imageName": "buraco_da_raquel",
+    "photoCredit": "Foto: Jfurlan2 / CC BY-SA 3.0 (Wikimedia Commons)",
+    "description": "Formação rochosa à beira-mar, com um buraco no meio onde as ondas entram e saem, situada em uma praia de cascalho. A descida é proibida — apenas a observação do alto é permitida. Em torno, piscinas rasas se formam nas pedras, repletas de peixes coloridos."
   },
   {
     "name": "Enseada da Caieira",
@@ -349,7 +379,10 @@
         "lat": -3.839100290817767,
         "lon": -32.402101787757
       }
-    ]
+    ],
+    "imageName": "enseada_da_caieira",
+    "photoCredit": "Foto: MTur Destinos / Public domain (Wikimedia Commons)",
+    "description": "Localizada no extremo sul da ilha, é acessada por trilha de alta dificuldade com guia credenciado obrigatório (cerca de 3,5 horas só de ida). Ao fim do percurso, duas piscinas naturais entre as rochas premiam o esforço. O uso de protetor solar é proibido antes do banho."
   },
   {
     "name": "Atalaia Beach",
@@ -374,7 +407,10 @@
         "lat": -3.860140099387851,
         "lon": -32.4129877658505
       }
-    ]
+    ],
+    "imageName": "atalaia_beach",
+    "photoCredit": "Foto: Hughes Leglise, Paris, France (Hugo*) / CC BY 2.0 (Wikimedia Commons)",
+    "description": "Um dos atrativos mais procurados do Parque Nacional, é uma piscina natural rasa abrigada por recifes e repleta de vida marinha. O acesso é feito por trilha guiada com horário marcado; o banho dura 30 minutos e o uso de dermocosméticos como protetor solar é proibido."
   },
   {
     "name": "Sueste Beach",
@@ -399,7 +435,10 @@
         "lat": -3.867315733244388,
         "lon": -32.4257251109925
       }
-    ]
+    ],
+    "imageName": "sueste_beach",
+    "photoCredit": "Foto: Leonardo de Morais Soares / CC BY-SA 3.0 (Wikimedia Commons)",
+    "description": "Baía cercada por recifes e área de manguezal, é uma das principais zonas de alimentação de tartarugas-verdes do arquipélago. O snorkeling é permitido em raias delimitadas, com aluguel de equipamento no Centro de Visitantes. É proibido pisar nos recifes ou tocar a fauna."
   },
   {
     "name": "Praia do Leão",
@@ -424,6 +463,9 @@
         "lat": -3.87171952501962,
         "lon": -32.4393400000262
       }
-    ]
+    ],
+    "imageName": "praia_do_leao",
+    "photoCredit": "Foto: Gingerleia2015 / CC BY-SA 3.0 (Wikimedia Commons)",
+    "description": "Praia de 1500 metros eleita uma das mais bonitas do Brasil, é o principal sítio de desova da tartaruga-verde no arquipélago, entre dezembro e maio. Tem fortes correntes e formações de recife — não é permitido caminhar sobre os recifes nem nadar fora das áreas indicadas."
   }
 ]

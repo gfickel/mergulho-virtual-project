@@ -8,6 +8,8 @@ public class AspectCover : MonoBehaviour
 {
     void OnEnable() { Sync(); }
 
+    public void Refresh() { Sync(); }
+
     void Sync()
     {
         var image = GetComponent<Image>();

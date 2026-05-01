@@ -50,6 +50,7 @@ public class ReverseGeocoding : MonoBehaviour
         public string name;
         public string imageName;
         public string description;
+        public string photoCredit;
         public List<PointData> points;
     }
 

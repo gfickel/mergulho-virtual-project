@@ -12,6 +12,7 @@ public class BeachesScreenController : MonoBehaviour
 
     [Header("Detail view")]
     [SerializeField] private GameObject detailPanel;
+    [SerializeField] private ScrollRect detailScroll;
     [SerializeField] private Image detailImage;
     [SerializeField] private TMP_Text detailName;
     [SerializeField] private TMP_Text detailDescription;
@@ -100,12 +101,14 @@ public class BeachesScreenController : MonoBehaviour
             Sprite sprite = LoadBeachSprite(place.imageName);
             detailImage.sprite = sprite;
             detailImage.enabled = sprite != null;
+            detailImage.preserveAspect = true;
         }
         if (detailName != null) detailName.text = place.name;
         if (detailDescription != null) detailDescription.text = place.description;
 
         if (listPanel != null) listPanel.SetActive(false);
         if (detailPanel != null) detailPanel.SetActive(true);
+        if (detailScroll != null) detailScroll.verticalNormalizedPosition = 1f;
     }
 
     static Sprite LoadBeachSprite(string imageName)

@@ -28,6 +28,8 @@ public class ListItemView : MonoBehaviour
         {
             thumbnailImage.sprite = thumbnail;
             thumbnailImage.enabled = thumbnail != null;
+            var cover = thumbnailImage.GetComponent<AspectCover>();
+            if (cover != null) cover.Refresh();
         }
         if (titleText != null) titleText.text = title;
         if (subtitleText != null)
