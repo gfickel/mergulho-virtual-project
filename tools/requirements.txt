@@ -1,0 +1,10 @@
+# Install with:
+#   python3 -m venv .venv
+#   .venv/bin/pip install -r requirements.txt
+#
+# Plus a one-time GOT5.5 + GOT5.6 NetCDF download (~250 MB) into
+# ~/.cache/pytmd/ via pyTMD's NASA fetcher — see the SETUP block at the
+# top of generate_tides.py.
+pyTMD
+h5py
+netcdf4
