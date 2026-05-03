@@ -8,6 +8,7 @@ public class ScreenManager : MonoBehaviour
     [SerializeField] private GameObject beachesScreen;
     [SerializeField] private GameObject animalsScreen;
     [SerializeField] private GameObject aboutScreen;
+    [SerializeField] private GameObject registerScreen;
     [SerializeField] private GameObject bottomNav;
 
     [SerializeField] private CameraFeedToInference cameraInference;
@@ -37,19 +38,21 @@ public class ScreenManager : MonoBehaviour
         else ShowMain();
     }
 
-    public void ShowSplash()  => Show(splashScreen);
-    public void ShowMain()    => Show(mainScreen);
-    public void ShowBeaches() => Show(beachesScreen);
-    public void ShowAnimals() => Show(animalsScreen);
-    public void ShowAbout()   => Show(aboutScreen);
+    public void ShowSplash()   => Show(splashScreen);
+    public void ShowMain()     => Show(mainScreen);
+    public void ShowBeaches()  => Show(beachesScreen);
+    public void ShowAnimals()  => Show(animalsScreen);
+    public void ShowAbout()    => Show(aboutScreen);
+    public void ShowRegister() => Show(registerScreen);
 
     void Show(GameObject target)
     {
-        if (splashScreen  != null) splashScreen.SetActive(target == splashScreen);
-        if (mainScreen    != null) mainScreen.SetActive(target == mainScreen);
-        if (beachesScreen != null) beachesScreen.SetActive(target == beachesScreen);
-        if (animalsScreen != null) animalsScreen.SetActive(target == animalsScreen);
-        if (aboutScreen   != null) aboutScreen.SetActive(target == aboutScreen);
+        if (splashScreen   != null) splashScreen.SetActive(target == splashScreen);
+        if (mainScreen     != null) mainScreen.SetActive(target == mainScreen);
+        if (beachesScreen  != null) beachesScreen.SetActive(target == beachesScreen);
+        if (animalsScreen  != null) animalsScreen.SetActive(target == animalsScreen);
+        if (aboutScreen    != null) aboutScreen.SetActive(target == aboutScreen);
+        if (registerScreen != null) registerScreen.SetActive(target == registerScreen);
 
         if (bottomNav != null) bottomNav.SetActive(target != splashScreen);
 

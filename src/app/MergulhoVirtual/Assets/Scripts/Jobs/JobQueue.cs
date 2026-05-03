@@ -15,6 +15,22 @@ public class JobQueue : MonoBehaviour
 {
     public static JobQueue Instance { get; internal set; }
 
+    /// <summary>
+    /// Returns the singleton, lazily creating a JobServices GameObject if one
+    /// isn't already in the scene. Safe to call from any script that needs to
+    /// Enqueue without depending on someone having wired the queue in the Editor.
+    /// Enqueue() itself calls EnsureInitialized internally, so it works the
+    /// same frame; the RunLoop coroutine starts on the next frame via Start
+    /// and will pick up the just-enqueued job from disk on its first tick.
+    /// </summary>
+    public static JobQueue GetOrCreate()
+    {
+        if (Instance != null) return Instance;
+        var go = new GameObject("JobServices");
+        Instance = go.AddComponent<JobQueue>(); // Awake → Instance = this
+        return Instance;
+    }
+
     [Tooltip("Max number of pending jobs the queue will hold. Enqueue returns false when full.")]
     public int maxQueueSize = 100;
 
@@ -71,6 +87,7 @@ public class JobQueue : MonoBehaviour
 
         if (!typeFactories.ContainsKey("HttpPost")) RegisterType<HttpPostJob>();
         if (!typeFactories.ContainsKey("FileDownload")) RegisterType<FileDownloadJob>();
+        if (!typeFactories.ContainsKey("ReportSighting")) RegisterType<ReportSightingJob>();
 
         string root = TestRootOverride ?? Application.persistentDataPath;
         pendingDir = Path.Combine(root, "jobs");
