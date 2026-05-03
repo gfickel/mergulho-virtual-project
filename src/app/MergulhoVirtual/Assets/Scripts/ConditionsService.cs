@@ -9,6 +9,9 @@ using UnityEngine.Networking;
 public class ConditionsService : MonoBehaviour
 {
     [SerializeField] GPSHandler gps;
+    [Tooltip("Beach to fetch conditions for when GPS hasn't resolved to a known polygon. " +
+             "Leave blank to use the first entry from places.json.")]
+    [SerializeField] string fallbackBeachName = "Praia do Sancho";
     [Tooltip("Seconds between background refreshes while the same beach is active.")]
     [SerializeField] float refreshIntervalSeconds = 1800f;
 
@@ -26,10 +29,7 @@ public class ConditionsService : MonoBehaviour
             return;
         }
         gps.PlaceChanged += OnPlaceChanged;
-        if (!string.IsNullOrEmpty(gps.CurrentPlaceName))
-        {
-            OnPlaceChanged(gps.CurrentPlaceName);
-        }
+        OnPlaceChanged(gps.CurrentPlaceName);
     }
 
     void OnDisable()
@@ -40,24 +40,34 @@ public class ConditionsService : MonoBehaviour
 
     void OnPlaceChanged(string beachName)
     {
-        activeBeach = beachName;
+        string targetBeach = string.IsNullOrEmpty(beachName) ? ResolveFallbackBeach() : beachName;
+        if (targetBeach == activeBeach && refreshLoop != null) return;
+
+        activeBeach = targetBeach;
         StopRefresh();
 
-        if (string.IsNullOrEmpty(beachName))
+        if (string.IsNullOrEmpty(targetBeach))
         {
             CurrentConditions = null;
             ConditionsChanged?.Invoke(null);
             return;
         }
 
-        var cached = LoadCache(beachName);
+        var cached = LoadCache(targetBeach);
         if (cached != null)
         {
             CurrentConditions = cached;
             ConditionsChanged?.Invoke(cached);
         }
 
-        refreshLoop = StartCoroutine(RefreshLoop(beachName));
+        refreshLoop = StartCoroutine(RefreshLoop(targetBeach));
+    }
+
+    string ResolveFallbackBeach()
+    {
+        if (!string.IsNullOrEmpty(fallbackBeachName)) return fallbackBeachName;
+        var names = ReverseGeocoding.GetAllPlaceNames();
+        return names != null && names.Count > 0 ? names[0] : null;
     }
 
     void StopRefresh()
