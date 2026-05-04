@@ -12,6 +12,7 @@ public class AnimalsScreenController : MonoBehaviour
 
     [Header("Detail view")]
     [SerializeField] private GameObject detailPanel;
+    [SerializeField] private ScrollRect detailScroll;
     [SerializeField] private TMP_Text detailName;
     [SerializeField] private TMP_Text detailDescription;
     [SerializeField] private Button backButton;
@@ -86,6 +87,7 @@ public class AnimalsScreenController : MonoBehaviour
 
         if (listPanel != null) listPanel.SetActive(false);
         if (detailPanel != null) detailPanel.SetActive(true);
+        if (detailScroll != null) detailScroll.verticalNormalizedPosition = 1f;
 
         if (viewerRig != null) viewerRig.SetActive(true);
         SpawnViewerInstance(animal);
