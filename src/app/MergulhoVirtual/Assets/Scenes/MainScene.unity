@@ -1161,10 +1161,13 @@ MonoBehaviour:
   beaches:
   - beachName: Praia do Sancho
     sharkPrefabs:
-    - {fileID: 4729353222373714030, guid: b820b41ca594508b8a7c60e4c8f757f2, type: 3}
+    - {fileID: 4105619840064323925, guid: a1ee6694f6bcf49ba98207182a8afd06, type: 3}
   - beachName: "Ba\xEDa dos Porcos"
     sharkPrefabs:
     - {fileID: 62064248607302307, guid: 3c2fc7cfcccb2306bbde27786b47c022, type: 3}
+  - beachName: Praia da Cacimba do Padre
+    sharkPrefabs:
+    - {fileID: 1308548622666969021, guid: 0e7178ecefd3588ec848a2babbf2c331, type: 3}
 --- !u!4 &149308365
 Transform:
   m_ObjectHideFlags: 0
@@ -5658,8 +5661,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1886556658}
   m_HandleRect: {fileID: 1886556657}
   m_Direction: 0
-  m_Value: 0
-  m_Size: 1
+  m_Value: 1
+  m_Size: 0.9999999
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -7395,7 +7398,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
   m_AnchoredPosition: {x: 0, y: 30}
-  m_SizeDelta: {x: 439.4854, y: 80}
+  m_SizeDelta: {x: 574.4959, y: 80}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &941517914
 MonoBehaviour:
