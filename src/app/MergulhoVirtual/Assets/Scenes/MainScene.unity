@@ -7635,6 +7635,8 @@ MonoBehaviour:
   statusText: {fileID: 382989045}
   scrollRect: {fileID: 1206923323}
   screenManager: {fileID: 1941010042}
+  postSubmitDelaySeconds: 2
+  roundedRectMaterial: {fileID: 2100000, guid: 64447053182d4505ac9390a8658d7606, type: 2}
 --- !u!114 &1178858436
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10818,6 +10820,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConditionsService
   gps: {fileID: 146972434}
+  fallbackBeachName: Praia do Sancho
   refreshIntervalSeconds: 1800
 --- !u!4 &1630220510
 Transform:

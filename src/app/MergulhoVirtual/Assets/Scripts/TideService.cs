@@ -51,8 +51,8 @@ public class TideService : MonoBehaviour
         {
             Debug.LogWarning(
                 $"TideService: Resources/{resourceName}.json not found. " +
-                "Run tools/generate_tides.py to produce it. " +
-                "Tide data will be unavailable until then.");
+                "Run tools/parse_dhn_tide_table.py then tools/build_app_tides.py " +
+                "to produce it. Tide data will be unavailable until then.");
             return false;
         }
 
@@ -89,7 +89,15 @@ public class TideService : MonoBehaviour
     {
         int idx = HourIndex(DateTime.UtcNow);
         if (idx < 0) return;
-        if (!force && idx == lastEmittedHourIdx) return;
+
+        // Re-emit when the cached next-high/low has passed, otherwise users see
+        // a "próxima baixa 12:40" label five minutes after that's already happened.
+        DateTime now = DateTime.UtcNow;
+        bool eventsStale = CurrentTide.valid && (
+            (CurrentTide.nextHighAt != DateTime.MinValue && CurrentTide.nextHighAt <= now) ||
+            (CurrentTide.nextLowAt  != DateTime.MinValue && CurrentTide.nextLowAt  <= now));
+
+        if (!force && idx == lastEmittedHourIdx && !eventsStale) return;
 
         lastEmittedHourIdx = idx;
         CurrentTide = Compute(idx);
@@ -124,29 +132,38 @@ public class TideService : MonoBehaviour
 
         snap.rising = idx + 1 < heights.Length && heights[idx + 1] > heights[idx];
 
-        // Scan ahead for the next local high and next local low.
+        // Find next high/low from the original DHN extrema list (preserves the
+        // published HH:MM peak times exactly — the hourly heights_m above can
+        // only resolve them to HH:00).
+        DateTime nowUtc = DateTime.UtcNow;
         snap.nextHighAt = DateTime.MinValue;
         snap.nextLowAt = DateTime.MinValue;
-        bool foundHigh = false, foundLow = false;
-        int scanLimit = Math.Min(heights.Length - 1, idx + 36); // tides are < 13h apart; 36h is plenty
-        for (int j = idx + 1; j < scanLimit; j++)
+        if (data.events != null && data.events.Length > 0)
         {
-            float prev = heights[j - 1];
-            float curr = heights[j];
-            float next = heights[j + 1];
-            if (!foundHigh && curr >= prev && curr >= next)
+            bool foundHigh = false, foundLow = false;
+            foreach (var ev in data.events)
             {
-                snap.nextHighAt = startUtc.AddHours(j);
-                snap.nextHighM = curr;
-                foundHigh = true;
+                if (foundHigh && foundLow) break;
+                DateTime evUtc;
+                if (!DateTime.TryParseExact(ev.utc, "yyyy-MM-ddTHH:mm:ssZ",
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                        out evUtc))
+                    continue;
+                if (evUtc <= nowUtc) continue;
+                if (!foundHigh && ev.k == "H")
+                {
+                    snap.nextHighAt = DateTime.SpecifyKind(evUtc, DateTimeKind.Utc);
+                    snap.nextHighM = ev.h;
+                    foundHigh = true;
+                }
+                else if (!foundLow && ev.k == "L")
+                {
+                    snap.nextLowAt = DateTime.SpecifyKind(evUtc, DateTimeKind.Utc);
+                    snap.nextLowM = ev.h;
+                    foundLow = true;
+                }
             }
-            if (!foundLow && curr <= prev && curr <= next)
-            {
-                snap.nextLowAt = startUtc.AddHours(j);
-                snap.nextLowM = curr;
-                foundLow = true;
-            }
-            if (foundHigh && foundLow) break;
         }
         return snap;
     }
@@ -171,5 +188,14 @@ public class TideService : MonoBehaviour
         public int samples_per_day;
         public string start_date;
         public float[] heights_m;
+        public TideEvent[] events;
+    }
+
+    [Serializable]
+    class TideEvent
+    {
+        public string utc;  // ISO 8601, e.g. "2026-05-04T14:40:00Z"
+        public float h;     // height in metres (LAT)
+        public string k;    // "H" or "L"
     }
 }

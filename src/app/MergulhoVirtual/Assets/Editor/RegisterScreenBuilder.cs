@@ -259,6 +259,7 @@ public static class RegisterScreenBuilder
         so.FindProperty("submitButton").objectReferenceValue = submitButton;
         so.FindProperty("statusText").objectReferenceValue = status;
         so.FindProperty("scrollRect").objectReferenceValue = scrollRect;
+        so.FindProperty("roundedRectMaterial").objectReferenceValue = roundedMat;
         var gpsGo = GameObject.Find("LocationServices");
         if (gpsGo != null)
         {

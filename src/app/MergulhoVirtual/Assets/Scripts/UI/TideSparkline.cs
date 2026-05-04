@@ -7,6 +7,10 @@ using UnityEngine.UI;
 [RequireComponent(typeof(CanvasRenderer))]
 public class TideSparkline : MaskableGraphic
 {
+    // Heights are LAT (chart datum). The published Nível Médio for Bahía de
+    // Santo Antônio is 1.28 m above LAT — drawn as a dashed mid-plot reference.
+    const float NivelMedioM = 1.28f;
+
     [SerializeField] TideService tides;
 
     [Header("Curve")]
@@ -102,10 +106,10 @@ public class TideSparkline : MaskableGraphic
             DrawRect(vh, tx - 0.5f, bottom, tx + 0.5f, top, tickColor);
         }
 
-        float mslN = (0f - min) / range;
-        if (mslN > 0f && mslN < 1f)
+        float nmN = (NivelMedioM - min) / range;
+        if (nmN > 0f && nmN < 1f)
         {
-            float y = Mathf.Lerp(bottom, top, mslN);
+            float y = Mathf.Lerp(bottom, top, nmN);
             DrawDashedHorizontal(vh, left, right, y, 4f, 4f, 1f, baselineColor);
         }
 
