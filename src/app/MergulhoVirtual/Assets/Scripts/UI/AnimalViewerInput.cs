@@ -14,7 +14,7 @@ public class AnimalViewerInput : MonoBehaviour, IPointerDownHandler, IPointerUpH
 
     [Header("Zoom")]
     [SerializeField] private float minDistance = 0.5f;
-    [SerializeField] private float maxDistance = 6f;
+    [SerializeField] private float maxDistance = 10f;
     [SerializeField] private float pinchMetersPerPixel = 0.005f;
     [SerializeField] private float scrollMetersPerNotch = 0.3f;
 

@@ -3,6 +3,7 @@ using UnityEditor;
 using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
@@ -69,14 +70,20 @@ public static class AnimalsScreenBuilder
         }
 
         var existingScreen = screenUI.transform.Find("AnimalsScreen");
-        var existingRig    = GameObject.Find("AnimalViewerRig");
-        if (existingScreen != null || existingRig != null)
+        // GameObject.Find skips inactive objects, and the controller deactivates
+        // AnimalViewerRig whenever the screen isn't visible — so a re-run while
+        // on any other screen would silently leave the old rig in place and add
+        // a second one. Iterate scene roots instead, which sees inactive too.
+        var existingRigs = new System.Collections.Generic.List<GameObject>();
+        foreach (var root in SceneManager.GetActiveScene().GetRootGameObjects())
+            if (root.name == "AnimalViewerRig") existingRigs.Add(root);
+        if (existingScreen != null || existingRigs.Count > 0)
         {
             if (!EditorUtility.DisplayDialog("Animals Screen",
                 "AnimalsScreen / AnimalViewerRig already exist. Replace them?",
                 "Replace", "Cancel")) return;
             if (existingScreen != null) Object.DestroyImmediate(existingScreen.gameObject);
-            if (existingRig != null) Object.DestroyImmediate(existingRig);
+            foreach (var oldRig in existingRigs) Object.DestroyImmediate(oldRig);
         }
 
         // Asset references — load up front so we can warn about missing pieces.

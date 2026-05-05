@@ -63,7 +63,7 @@ public class AnimalsScreenController : MonoBehaviour
             if (animal == null) continue;
             ListItemView item = Instantiate(listItemPrefab, listContent);
             AnimalDef captured = animal;
-            item.Bind(animal.thumbnail, animal.displayName, null, () => ShowDetail(captured));
+            item.Bind(LoadAnimalSprite(animal.imageName), animal.displayName, null, () => ShowDetail(captured));
             spawnedItems.Add(item);
         }
 
@@ -100,12 +100,43 @@ public class AnimalsScreenController : MonoBehaviour
 
         currentViewerInstance = Instantiate(animal.prefab, turntable);
         currentViewerInstance.transform.localPosition = animal.viewerOffset;
-        currentViewerInstance.transform.localRotation = Quaternion.identity;
         currentViewerInstance.transform.localScale = animal.viewerScale;
 
         int layer = LayerMask.NameToLayer(viewerLayerName);
         if (layer >= 0) SetLayerRecursively(currentViewerInstance, layer);
         else Debug.LogWarning($"[AnimalsScreenController] Layer '{viewerLayerName}' not found. Add it under Project Settings > Tags and Layers.");
+
+        CenterOnTurntable(currentViewerInstance);
+    }
+
+    void CenterOnTurntable(GameObject instance)
+    {
+        Renderer[] renderers = instance.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0) return;
+        Bounds bounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++) bounds.Encapsulate(renderers[i].bounds);
+
+        Vector3 delta = turntable.position - bounds.center;
+        instance.transform.position += delta;
+
+        FitCameraToBounds(bounds.size);
+    }
+
+    void FitCameraToBounds(Vector3 size)
+    {
+        if (viewerRig == null || turntable == null) return;
+        Camera cam = viewerRig.GetComponentInChildren<Camera>();
+        if (cam == null) return;
+
+        float maxDim = Mathf.Max(size.x, size.y, size.z);
+        if (maxDim <= 0f) return;
+        float distance = (maxDim * 0.5f) / Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad);
+        distance *= 1.15f;
+
+        Vector3 toCam = cam.transform.position - turntable.position;
+        if (toCam.sqrMagnitude < 0.0001f) toCam = -turntable.forward;
+        cam.transform.position = turntable.position + toCam.normalized * distance;
+        cam.transform.LookAt(turntable.position);
     }
 
     void DestroyViewerInstance()
@@ -115,6 +146,12 @@ public class AnimalsScreenController : MonoBehaviour
             Destroy(currentViewerInstance);
             currentViewerInstance = null;
         }
+    }
+
+    static Sprite LoadAnimalSprite(string imageName)
+    {
+        if (string.IsNullOrEmpty(imageName)) return null;
+        return Resources.Load<Sprite>("Animals/" + imageName);
     }
 
     static void SetLayerRecursively(GameObject obj, int layer)

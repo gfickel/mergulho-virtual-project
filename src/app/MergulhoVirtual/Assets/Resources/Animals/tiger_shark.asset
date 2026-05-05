@@ -13,10 +13,11 @@ MonoBehaviour:
   m_Name: tiger_shark
   m_EditorClassIdentifier: Assembly-CSharp::AnimalDef
   displayName: "Tubar\xE3o Tigre"
-  thumbnail: {fileID: 21300000, guid: 281f0a39245bd952aaca8ef5487be4e6, type: 3}
+  imageName: tiger_shark
   description: "Possui um tamanho m\xE9dio de 4 a 5 metros de comprimento, com dimorfismo
     sexual aparente na diferen\xE7a de tamanho, com as f\xEAmeas sendo maiores que
     os machos."
-  prefab: {fileID: 62064248607302307, guid: 3c2fc7cfcccb2306bbde27786b47c022, type: 3}
+  prefab: {fileID: 6148947699818559153, guid: 20fd84b49cbc5dd46aa3fccf3bb18d33, type: 3}
   viewerScale: {x: 1, y: 1, z: 1}
   viewerOffset: {x: 0, y: 0, z: 0}
+  photoCredit:
