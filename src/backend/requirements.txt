@@ -40,6 +40,8 @@ MarkupSafe==3.0.3
 mdurl==0.1.2
 msgpack==1.1.2
 packaging==25.0
+pillow==11.0.0
+pillow-heif==0.18.0
 pluggy==1.6.0
 proto-plus==1.26.1
 protobuf==6.33.2

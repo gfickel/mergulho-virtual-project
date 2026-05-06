@@ -1,16 +1,100 @@
+import datetime
 import json
-from fastapi import APIRouter, Request, HTTPException, Header, Form
+import os
+from fastapi import APIRouter, Request, HTTPException, Header, Form, File, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from typing import Optional, Dict, Any
 
 from database import db
 from config import templates
 from services.avistamentos import query_avistamentos, build_avistamentos_url, count_avistamentos
-from services.storage import generate_signed_url
+from services.storage import generate_signed_url, upload_bytes
+from services.image_processing import resize_image_preserving_exif, ImageDecodeError
 
 
 
 router = APIRouter()
+
+
+# Bucket layout for app-submitted sightings:
+#   originals/<registro>.<ext>  — raw bytes from the device, EXIF intact
+#   imagens/<registro>.jpg      — display variant, max 1600 px, JPEG q85, EXIF preserved
+# The display path matches the existing read_avistamento lookup.
+_ALLOWED_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"}
+
+
+@router.post("/avistamentos", status_code=201)
+async def create_avistamento(
+    photo: UploadFile = File(...),
+    beach: Optional[str] = Form(None),
+    timestamp: str = Form(...),
+    species_guess: Optional[str] = Form(None),
+    notes: Optional[str] = Form(None),
+    idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key"),
+):
+    """
+    App-side sighting submission. Multipart form-data:
+      - photo: image file (JPEG/PNG/WebP/HEIC)
+      - beach, timestamp (RFC3339), species_guess, notes (form fields)
+      - Idempotency-Key header: required, used as the Firestore doc id and bucket key
+
+    Idempotent: a retry with the same Idempotency-Key returns 200 and the existing doc
+    instead of creating a duplicate. The app's JobQueue uses one stable key per submission.
+    """
+    if not idempotency_key:
+        raise HTTPException(status_code=400, detail="Idempotency-Key header is required")
+
+    registro = idempotency_key
+    doc_ref = db.collection("avistamentos").document(registro)
+    existing = doc_ref.get()
+    if existing.exists:
+        return JSONResponse(
+            {"registro": registro, "status": "already_exists", "avistamento": existing.to_dict()},
+            status_code=200,
+        )
+
+    try:
+        dt = datetime.datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+    except ValueError:
+        raise HTTPException(status_code=400, detail="timestamp must be ISO 8601 / RFC 3339")
+
+    raw = await photo.read()
+    if not raw:
+        raise HTTPException(status_code=400, detail="photo is empty")
+
+    try:
+        display_bytes = resize_image_preserving_exif(raw, max_dim=1600, quality=85)
+    except ImageDecodeError as e:
+        raise HTTPException(status_code=415, detail=f"unsupported image format: {e}")
+
+    ext = os.path.splitext(photo.filename or "")[1].lower()
+    if ext not in _ALLOWED_EXTS:
+        ext = ".jpg"
+
+    upload_bytes(
+        f"originals/{registro}{ext}",
+        raw,
+        photo.content_type or "application/octet-stream",
+    )
+    upload_bytes(f"imagens/{registro}.jpg", display_bytes, "image/jpeg")
+
+    avistamento = {
+        "registro": registro,
+        "local": beach or "",
+        "data_hora_iso": dt.isoformat(),
+        "dia_registro": str(dt.day),
+        "mes_registro": str(dt.month),
+        "ano_registro": str(dt.year),
+        "nome_popular": species_guess or "",
+        "observacao": notes or "",
+        "modo_registro": "app",
+    }
+    doc_ref.set(avistamento)
+
+    return JSONResponse(
+        {"registro": registro, "status": "created", "avistamento": avistamento},
+        status_code=201,
+    )
 
 
 @router.get("/avistamentos")
