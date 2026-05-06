@@ -241,7 +241,11 @@ public static class RegisterScreenBuilder
         var status = NewText("StatusText", content.transform, "", 16, FontStyles.Normal, TextSecondary);
         status.alignment = TextAlignmentOptions.Center;
         status.textWrappingMode = TextWrappingModes.Normal;
-        AddLayoutElement(status.gameObject, preferredHeight: 60, flexibleHeight: 1);
+        // preferredHeight -1 → don't override TMP's natural height; lets multi-line
+        // validation messages ("Verifique os campos destacados:\n• …\n• …") expand
+        // without clipping. flexibleHeight stays at 1 to keep the rest of the
+        // ScrollRect content aligned to the top.
+        AddLayoutElement(status.gameObject, preferredHeight: -1, flexibleHeight: 1);
 
         // ========================================================================
         // Attach controller and wire fields.

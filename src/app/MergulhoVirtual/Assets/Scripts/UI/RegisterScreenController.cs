@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using TMPro;
 using UnityEngine;
@@ -49,9 +50,13 @@ public class RegisterScreenController : MonoBehaviour
     [Tooltip("RoundedRectCard.mat — gives the post-submit overlay card the same rounded corners as other cards. Optional.")]
     [SerializeField] private Material roundedRectMaterial;
 
+    [Header("Validation visuals")]
+    [Tooltip("Background tint applied to a field's targetGraphic when validation fails. The original color is captured on first error and restored when the user fixes the field.")]
+    [SerializeField] private Color invalidFieldColor = new Color(0.42f, 0.18f, 0.22f, 1f);
+
     private string pickedImagePath;     // raw path returned by the picker (cache)
-    private bool isUploading;
     private Coroutine submitCoroutine;
+    private readonly Dictionary<Image, Color> originalFieldColors = new Dictionary<Image, Color>();
     private GameObject sendingOverlay;
     private RectTransform sendingCard;
     private TMP_Text sendingLabel;
@@ -60,12 +65,26 @@ public class RegisterScreenController : MonoBehaviour
     {
         if (pickPhotoButton != null) pickPhotoButton.onClick.AddListener(OnPickPhoto);
         if (submitButton != null) submitButton.onClick.AddListener(OnSubmit);
+        if (beachDropdown != null) beachDropdown.onValueChanged.AddListener(OnBeachEdited);
+        if (dateInput != null)     dateInput.onValueChanged.AddListener(OnDateEdited);
+        if (timeInput != null)     timeInput.onValueChanged.AddListener(OnTimeEdited);
+
+        // Let TMP drive the status text's height so multi-line validation messages
+        // aren't clipped by the LayoutElement.preferredHeight set by the builder (60).
+        if (statusText != null)
+        {
+            var le = statusText.GetComponent<LayoutElement>();
+            if (le != null) le.preferredHeight = -1f;
+        }
     }
 
     void OnDestroy()
     {
         if (pickPhotoButton != null) pickPhotoButton.onClick.RemoveListener(OnPickPhoto);
         if (submitButton != null) submitButton.onClick.RemoveListener(OnSubmit);
+        if (beachDropdown != null) beachDropdown.onValueChanged.RemoveListener(OnBeachEdited);
+        if (dateInput != null)     dateInput.onValueChanged.RemoveListener(OnDateEdited);
+        if (timeInput != null)     timeInput.onValueChanged.RemoveListener(OnTimeEdited);
     }
 
     void OnDisable()
@@ -84,6 +103,7 @@ public class RegisterScreenController : MonoBehaviour
     {
         PopulateBeachDropdown();
         PrefillDateTime();
+        ClearAllFieldErrors();
         RefreshSubmitState();
         SetStatus("");
         if (scrollRect != null) scrollRect.verticalNormalizedPosition = 1f;
@@ -125,7 +145,7 @@ public class RegisterScreenController : MonoBehaviour
 
     void OnPickPhoto()
     {
-        if (isUploading) return;
+        if (submitCoroutine != null) return;
         SetStatus("");
         GalleryPicker.PickImage((path, error) =>
         {
@@ -136,6 +156,7 @@ public class RegisterScreenController : MonoBehaviour
             }
             pickedImagePath = path;
             ShowPhotoPreview(path);
+            SetFieldError(GetFieldBackground(pickPhotoButton), false);
             RefreshSubmitState();
         });
     }
@@ -177,15 +198,44 @@ public class RegisterScreenController : MonoBehaviour
 
     void OnSubmit()
     {
-        if (isUploading) return;
+        // Already submitting (overlay up, screen about to swap) — swallow re-taps.
+        if (submitCoroutine != null) return;
 
-        if (string.IsNullOrEmpty(pickedImagePath) || !File.Exists(pickedImagePath))
+        // Validate every field, collect a per-field message, and tint the offending
+        // input so the user sees both *what's* missing (highlight) and *why* (status).
+        var errors = new List<string>();
+
+        bool photoOk = !string.IsNullOrEmpty(pickedImagePath) && File.Exists(pickedImagePath);
+        SetFieldError(GetFieldBackground(pickPhotoButton), !photoOk);
+        if (!photoOk) errors.Add("Adicione uma foto.");
+
+        string beach = ResolveBeach();
+        bool beachOk = !string.IsNullOrEmpty(beach);
+        bool autoNoGps = beachDropdown != null && beachDropdown.value == 0
+            && (gpsHandler == null || string.IsNullOrEmpty(gpsHandler.CurrentPlaceName));
+        SetFieldError(GetFieldBackground(beachDropdown), !beachOk);
+        if (!beachOk)
+            errors.Add(autoNoGps
+                ? "Selecione uma praia (GPS ainda não detectou)."
+                : "Selecione uma praia.");
+
+        bool dateOk = TryParseDateInput(out _);
+        SetFieldError(GetFieldBackground(dateInput), !dateOk);
+        if (!dateOk) errors.Add("Insira uma data válida (DD/MM/AAAA).");
+
+        bool timeOk = TryParseTimeInput(out _);
+        SetFieldError(GetFieldBackground(timeInput), !timeOk);
+        if (!timeOk) errors.Add("Insira um horário válido (HH:MM).");
+
+        if (errors.Count > 0)
         {
-            SetStatus("Escolha uma foto antes de enviar.", isError: true);
+            string msg = errors.Count == 1
+                ? errors[0]
+                : "Verifique os campos destacados:\n• " + string.Join("\n• ", errors);
+            SetStatus(msg, isError: true);
             return;
         }
 
-        string beach = ResolveBeach();
         string iso = BuildIsoTimestamp();
 
         string ext = Path.GetExtension(pickedImagePath);
@@ -344,19 +394,32 @@ public class RegisterScreenController : MonoBehaviour
 
     string BuildIsoTimestamp()
     {
-        // Parse the user's date+time inputs ("dd/MM/yyyy" + "HH:mm"). Fall back to now.
-        if (dateInput != null && timeInput != null
-            && !string.IsNullOrEmpty(dateInput.text) && !string.IsNullOrEmpty(timeInput.text)
-            && DateTime.TryParseExact(
-                dateInput.text + " " + timeInput.text,
-                "dd/MM/yyyy HH:mm",
-                System.Globalization.CultureInfo.InvariantCulture,
-                System.Globalization.DateTimeStyles.AssumeLocal,
-                out DateTime dt))
+        // Submit-time path: validators already ensured both inputs parse, so this
+        // can only fall back to "now" if a caller bypasses validation.
+        if (TryParseDateInput(out DateTime d) && TryParseTimeInput(out DateTime t))
         {
+            var dt = new DateTime(d.Year, d.Month, d.Day, t.Hour, t.Minute, 0, DateTimeKind.Local);
             return dt.ToUniversalTime().ToString("o");
         }
         return DateTime.UtcNow.ToString("o");
+    }
+
+    bool TryParseDateInput(out DateTime date)
+    {
+        date = default;
+        if (dateInput == null || string.IsNullOrEmpty(dateInput.text)) return false;
+        return DateTime.TryParseExact(
+            dateInput.text, "dd/MM/yyyy",
+            CultureInfo.InvariantCulture, DateTimeStyles.None, out date);
+    }
+
+    bool TryParseTimeInput(out DateTime time)
+    {
+        time = default;
+        if (timeInput == null || string.IsNullOrEmpty(timeInput.text)) return false;
+        return DateTime.TryParseExact(
+            timeInput.text, "HH:mm",
+            CultureInfo.InvariantCulture, DateTimeStyles.None, out time);
     }
 
     static string GuessMime(string ext)
@@ -392,9 +455,43 @@ public class RegisterScreenController : MonoBehaviour
 
     void RefreshSubmitState()
     {
+        // Always tappable except while a previous submit's overlay is still up —
+        // the user can only learn what's missing by tapping submit and reading the
+        // per-field errors. A disabled button would just swallow that question.
         if (submitButton != null)
-            submitButton.interactable = !string.IsNullOrEmpty(pickedImagePath) && !isUploading;
+            submitButton.interactable = submitCoroutine == null;
     }
+
+    // ------------------------------------------------------------------------
+    // Validation visuals — tint each invalid field's targetGraphic, restore on
+    // edit. Uses Selectable.targetGraphic (pickPhotoButton, beachDropdown,
+    // dateInput, timeInput all expose it) so no extra Inspector wiring is needed
+    // on already-built scenes.
+    // ------------------------------------------------------------------------
+    static Image GetFieldBackground(Selectable s) => s != null ? s.targetGraphic as Image : null;
+
+    void SetFieldError(Image img, bool hasError)
+    {
+        if (img == null) return;
+        if (!originalFieldColors.ContainsKey(img))
+            originalFieldColors[img] = img.color;
+        img.color = hasError ? invalidFieldColor : originalFieldColors[img];
+    }
+
+    void ClearAllFieldErrors()
+    {
+        SetFieldError(GetFieldBackground(pickPhotoButton), false);
+        SetFieldError(GetFieldBackground(beachDropdown), false);
+        SetFieldError(GetFieldBackground(dateInput), false);
+        SetFieldError(GetFieldBackground(timeInput), false);
+    }
+
+    // Field-edit handlers — clear that field's red highlight as soon as the user
+    // touches it, and clear the summary message so the form feels responsive.
+    // The other fields' highlights persist until they're individually fixed.
+    void OnBeachEdited(int _) { SetFieldError(GetFieldBackground(beachDropdown), false); SetStatus(""); }
+    void OnDateEdited(string _) { SetFieldError(GetFieldBackground(dateInput), false); SetStatus(""); }
+    void OnTimeEdited(string _) { SetFieldError(GetFieldBackground(timeInput), false); SetStatus(""); }
 
     void SetStatus(string message, bool isError = false)
     {
