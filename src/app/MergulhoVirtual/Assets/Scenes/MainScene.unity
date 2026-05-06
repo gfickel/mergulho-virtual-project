@@ -7686,7 +7686,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.5351689, g: 0.5351689, b: 0.5351689, a: 1}
+  m_Color: {r: 0.07531606, g: 0.10013562, b: 0.34212625, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -7900,7 +7900,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0838ed09db0e7407bbb14b38e07d31b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RegisterScreenController
-  uploadUrl: https://example.invalid/sightings
+  uploadUrl: http://192.168.68.108:8000/avistamentos
   pickPhotoButton: {fileID: 1088853690}
   photoPreview: {fileID: 232956371}
   photoPlaceholder: {fileID: 987168474}

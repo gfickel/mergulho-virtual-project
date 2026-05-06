@@ -18,8 +18,8 @@ using UnityEngine.UI;
 public class RegisterScreenController : MonoBehaviour
 {
     [Header("Backend")]
-    [Tooltip("Multipart POST endpoint for sightings. Must be HTTPS (cleartext is blocked by AndroidManifest).")]
-    [SerializeField] private string uploadUrl = "https://example.invalid/sightings";
+    [Tooltip("Multipart POST endpoint for sightings. Cleartext is blocked by AndroidManifest — works in editor against the dev LAN backend, but device builds need this swapped to HTTPS.")]
+    [SerializeField] private string uploadUrl = "http://192.168.1.122:8000/avistamentos";
 
     [Header("Photo")]
     [SerializeField] private Button pickPhotoButton;
