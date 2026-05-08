@@ -7,8 +7,28 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: LemonSharkMat
-    second: {fileID: 2100000, guid: d338564774181a7bda51aee40aeaab50, type: 2}
+      name: MeshyLemonSharkMat
+    second: {fileID: 2100000, guid: 6c1375447549aea8fa3d529caa232abb, type: 2}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Meshy_AI_Lemon_Shark_0505203351_texture
+    second: {fileID: 2800000, guid: f40c0e5d85ff65d87848b69f6de571c6, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Meshy_AI_Lemon_Shark_0505203351_texture_metallic
+    second: {fileID: 2800000, guid: 3a9062fb02d80b58dac68502ed76f66f, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Meshy_AI_Lemon_Shark_0505203351_texture_normal
+    second: {fileID: 2800000, guid: 1a30b897d3853587e9c6f8b96e9b3561, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Meshy_AI_Lemon_Shark_0505203351_texture_roughness
+    second: {fileID: 2800000, guid: 68624e737f20495d78d6d953bde7a8eb, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -27,7 +47,7 @@ ModelImporter:
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
     importConstraints: 0
-    animationCompression: 3
+    animationCompression: 1
     animationRotationError: 0.5
     animationPositionError: 0.5
     animationScaleError: 0.5
@@ -40,7 +60,7 @@ ModelImporter:
       takeName: Scene
       internalID: -623603649343465320
       firstFrame: 1
-      lastFrame: 60
+      lastFrame: 120
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -63,11 +83,11 @@ ModelImporter:
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}
-      additiveReferencePoseFrame: 0.9
+      additiveReferencePoseFrame: 1
     isReadable: 0
   meshes:
     lODScreenPercentages: []
-    globalScale: 0.0071
+    globalScale: 0.3151
     meshCompression: 0
     addColliders: 0
     useSRGBMaterialColor: 1
@@ -125,10 +145,10 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 0.000071
+    globalScale: 0.003151
     rootMotionBoneName: 
     hasTranslationDoF: 0
-    hasExtraRoot: 1
+    hasExtraRoot: 0
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
   autoGenerateAvatarMappingIfUnspecified: 1
