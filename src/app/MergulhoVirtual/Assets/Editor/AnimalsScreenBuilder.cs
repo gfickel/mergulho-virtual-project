@@ -3,6 +3,7 @@ using UnityEditor;
 using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -11,9 +12,13 @@ using UnityEngine.UI;
 /// ScreenUI canvas, plus a sibling-of-ScreenUI 3D viewer rig at the scene root.
 ///
 /// The list view reuses the project's ListItem prefab + ListItemView (same
-/// cards as Beaches). The detail view shows a hero 3D viewer card (a RawImage
-/// rendering a dedicated camera's RenderTexture, with AnimalViewerInput for
-/// drag-rotate / pinch-zoom) and a scrollable name + description below.
+/// cards as Beaches). The detail view is wrapped in a single ScrollRect so
+/// the whole panel — hero 3D viewer card, name, description, credits —
+/// scrolls vertically; this is the only way the description stays reachable
+/// in landscape, where the fixed-height viewer card alone exceeds the
+/// available height. AnimalViewerInput on the RawImage intercepts drag/pinch
+/// before the ScrollRect, so dragging on the viewer rotates the model and
+/// dragging anywhere else scrolls.
 ///
 /// The 3D viewer rig is positioned far from world origin so it can never
 /// overlap or be visible from the AR camera; the dedicated viewer camera and
@@ -42,7 +47,7 @@ public static class AnimalsScreenBuilder
 
     const float ScreenSidePadding = 32f;
     const float ScreenTopPadding  = 48f;
-    const float BottomNavClearance = 240f;
+    const float BottomNavClearance = 120f;
     const float ViewerCardHeight  = 420f;   // hero size in canvas units (Reference 800x600, MatchWidthOrHeight 0.5)
     const string ViewerLayerName  = "AnimalViewer";
     // Far from world origin so the rig is never within the AR camera's far plane.
@@ -96,6 +101,15 @@ public static class AnimalsScreenBuilder
             "Assets/RenderTextures/AnimalViewer.renderTexture");
         if (viewerRT == null)
             Debug.LogWarning("[AnimalsScreenBuilder] AnimalViewer.renderTexture not found at Assets/RenderTextures/ — viewer will render to a default texture.");
+        else if (viewerRT.antiAliasing != 8)
+        {
+            // Force MSAA 8x on the target — combined with SMAA High on the
+            // camera below this is the highest-quality AA URP can produce
+            // for an RT-targeted camera.
+            if (viewerRT.IsCreated()) viewerRT.Release();
+            viewerRT.antiAliasing = 8;
+            EditorUtility.SetDirty(viewerRT);
+        }
 
         GameObject listItemPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
             "Assets/Prefabs/UI/ListItem.prefab");
@@ -132,6 +146,13 @@ public static class AnimalsScreenBuilder
         cam.allowMSAA = true;
         cam.targetTexture = viewerRT;
         camGo.layer = viewerLayer;
+
+        // URP per-camera AA — SMAA at High quality, layered on top of the
+        // RT's MSAA 8x. The combination is what "High quality" antialiasing
+        // looks like for the model viewer.
+        var urpCamData = cam.GetUniversalAdditionalCameraData();
+        urpCamData.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
+        urpCamData.antialiasingQuality = AntialiasingQuality.High;
 
         // Key light — warm, from upper-front.
         var keyGo = new GameObject("KeyLight");
@@ -220,29 +241,68 @@ public static class AnimalsScreenBuilder
         listScrollRect.content = listContentRT;
 
         // ========================================================================
-        // DetailPanel — ViewerCard (top hero), InfoCard (description below),
-        // BackButton (top-left overlay).
+        // DetailPanel — single ScrollRect wraps ViewerCard + InfoCard so the
+        // full detail scrolls vertically (required in landscape, where the
+        // viewer card alone is taller than the screen). BackButton is an
+        // overlay sibling so it stays anchored regardless of scroll position.
         // ========================================================================
         var detailPanel = NewUI("DetailPanel", screen.transform);
         StretchFull(detailPanel);
         detailPanel.SetActive(false);
 
-        // ViewerCard: anchored top, fixed height, side margin.
-        var viewerCard = NewUI("ViewerCard", detailPanel.transform);
-        var viewerCardRT = viewerCard.GetComponent<RectTransform>();
-        viewerCardRT.anchorMin = new Vector2(0, 1);
-        viewerCardRT.anchorMax = new Vector2(1, 1);
-        viewerCardRT.pivot     = new Vector2(0.5f, 1);
-        viewerCardRT.anchoredPosition = new Vector2(0, -ScreenTopPadding);
-        viewerCardRT.sizeDelta = new Vector2(-ScreenSidePadding * 2, ViewerCardHeight);
+        var detailScrollGo = NewUI("Scroll View", detailPanel.transform);
+        var detailScrollRT = detailScrollGo.GetComponent<RectTransform>();
+        detailScrollRT.anchorMin = new Vector2(0, 0);
+        detailScrollRT.anchorMax = new Vector2(1, 1);
+        detailScrollRT.pivot     = new Vector2(0.5f, 0.5f);
+        detailScrollRT.offsetMin = new Vector2(0, BottomNavClearance);
+        detailScrollRT.offsetMax = Vector2.zero;
+        var detailScrollRect = detailScrollGo.AddComponent<ScrollRect>();
+        detailScrollRect.horizontal = false;
+        detailScrollRect.vertical = true;
+        detailScrollRect.movementType = ScrollRect.MovementType.Elastic;
+        detailScrollRect.scrollSensitivity = 30f;
+
+        var detailViewport = NewUI("Viewport", detailScrollGo.transform);
+        StretchFull(detailViewport);
+        detailViewport.AddComponent<RectMask2D>();
+        detailScrollRect.viewport = detailViewport.GetComponent<RectTransform>();
+
+        var detailContent = NewUI("Content", detailViewport.transform);
+        var detailContentRT = detailContent.GetComponent<RectTransform>();
+        detailContentRT.anchorMin = new Vector2(0, 1);
+        detailContentRT.anchorMax = new Vector2(1, 1);
+        detailContentRT.pivot     = new Vector2(0.5f, 1);
+        detailContentRT.anchoredPosition = Vector2.zero;
+        detailContentRT.sizeDelta = Vector2.zero;
+        var detailVlg = detailContent.AddComponent<VerticalLayoutGroup>();
+        detailVlg.padding = new RectOffset((int)ScreenSidePadding, (int)ScreenSidePadding,
+                                           (int)ScreenTopPadding, 24);
+        detailVlg.spacing = 24f;
+        detailVlg.childControlWidth = true;
+        detailVlg.childControlHeight = true;
+        detailVlg.childForceExpandWidth = true;
+        detailVlg.childForceExpandHeight = false;
+        detailVlg.childAlignment = TextAnchor.UpperCenter;
+        var detailFitter = detailContent.AddComponent<ContentSizeFitter>();
+        detailFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        detailFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        detailScrollRect.content = detailContentRT;
+
+        // ViewerCard: fixed-height card sitting at the top of the scroll content.
+        var viewerCard = NewUI("ViewerCard", detailContent.transform);
         viewerCard.AddComponent<RectMask2D>();
         var viewerCardBg = viewerCard.AddComponent<Image>();
         viewerCardBg.color = CardSurface;
         if (roundedMat != null) viewerCardBg.material = roundedMat;
         viewerCardBg.raycastTarget = false;
+        AddLayoutElement(viewerCard, preferredHeight: ViewerCardHeight);
 
         // RawImage holding the RenderTexture — fills the card. AnimalViewerInput
         // lives on this RectTransform so drag/pinch are scoped to the viewer area.
+        // Because AnimalViewerInput implements IDragHandler on a child of the
+        // ScrollRect, drags inside the viewer rotate the model and never bubble
+        // up to scroll the page; drags outside the viewer scroll normally.
         var rawGo = NewUI("Viewport3D", viewerCard.transform);
         StretchFull(rawGo);
         var rawImage = rawGo.AddComponent<RawImage>();
@@ -270,66 +330,36 @@ public static class AnimalsScreenBuilder
         hint.alignment = TextAlignmentOptions.Center;
         hint.raycastTarget = false;
 
-        // InfoCard: full-stretch with margins so it sits below the viewer card
-        // and clears BottomNav at the bottom.
-        var infoCard = NewUI("InfoCard", detailPanel.transform);
-        var infoRT = infoCard.GetComponent<RectTransform>();
-        infoRT.anchorMin = new Vector2(0, 0);
-        infoRT.anchorMax = new Vector2(1, 1);
-        infoRT.pivot     = new Vector2(0.5f, 0.5f);
-        infoRT.offsetMin = new Vector2(ScreenSidePadding, BottomNavClearance);
-        infoRT.offsetMax = new Vector2(-ScreenSidePadding, -(ScreenTopPadding + ViewerCardHeight + 24f));
-        infoCard.AddComponent<RectMask2D>();
+        // InfoCard: VerticalLayoutGroup whose own preferred height (sum of
+        // children) is read by the outer Content VLG — no ContentSizeFitter
+        // needed here, the outer fitter on Content drives the scroll height.
+        var infoCard = NewUI("InfoCard", detailContent.transform);
         var infoBg = infoCard.AddComponent<Image>();
         infoBg.color = CardSurface;
         if (roundedMat != null) infoBg.material = roundedMat;
         infoBg.raycastTarget = true;
-
-        // ScrollView inside the info card.
-        var infoScrollGo = NewUI("Scroll View", infoCard.transform);
-        StretchFull(infoScrollGo);
-        var infoScrollRT = infoScrollGo.GetComponent<RectTransform>();
-        infoScrollRT.offsetMin = new Vector2(8, 8);
-        infoScrollRT.offsetMax = new Vector2(-8, -8);
-        var infoScrollRect = infoScrollGo.AddComponent<ScrollRect>();
-        infoScrollRect.horizontal = false;
-        infoScrollRect.vertical = true;
-        infoScrollRect.movementType = ScrollRect.MovementType.Elastic;
-        infoScrollRect.scrollSensitivity = 30f;
-
-        var infoViewport = NewUI("Viewport", infoScrollGo.transform);
-        StretchFull(infoViewport);
-        infoViewport.AddComponent<RectMask2D>();
-        infoScrollRect.viewport = infoViewport.GetComponent<RectTransform>();
-
-        var infoContent = NewUI("Content", infoViewport.transform);
-        var infoContentRT = infoContent.GetComponent<RectTransform>();
-        infoContentRT.anchorMin = new Vector2(0, 1);
-        infoContentRT.anchorMax = new Vector2(1, 1);
-        infoContentRT.pivot     = new Vector2(0.5f, 1);
-        infoContentRT.anchoredPosition = Vector2.zero;
-        infoContentRT.sizeDelta = Vector2.zero;
-        var infoVlg = infoContent.AddComponent<VerticalLayoutGroup>();
+        infoCard.AddComponent<RectMask2D>();
+        var infoVlg = infoCard.AddComponent<VerticalLayoutGroup>();
         infoVlg.padding = new RectOffset(20, 20, 16, 24);
         infoVlg.spacing = 12f;
         infoVlg.childControlWidth = true;
         infoVlg.childControlHeight = true;
         infoVlg.childForceExpandWidth = true;
         infoVlg.childForceExpandHeight = false;
-        var infoFitter = infoContent.AddComponent<ContentSizeFitter>();
-        infoFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-        infoFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-        infoScrollRect.content = infoContentRT;
 
-        var nameText = NewText("NameText", infoContent.transform, "Nome", 36, FontStyles.Bold, TextPrimary);
+        var nameText = NewText("NameText", infoCard.transform, "Nome", 36, FontStyles.Bold, TextPrimary);
         AddLayoutElement(nameText.gameObject, preferredHeight: 48);
         nameText.alignment = TextAlignmentOptions.Left;
 
-        var descText = NewText("DescriptionText", infoContent.transform, "Descrição",
+        var descText = NewText("DescriptionText", infoCard.transform, "Descrição",
             18, FontStyles.Normal, TextSecondary);
         descText.alignment = TextAlignmentOptions.TopLeft;
         descText.textWrappingMode = TextWrappingModes.Normal;
-        AddLayoutElement(descText.gameObject, flexibleHeight: 1);
+
+        var creditsText = NewText("CreditsText", infoCard.transform, string.Empty,
+            13, FontStyles.Italic, TextMuted);
+        creditsText.alignment = TextAlignmentOptions.TopLeft;
+        creditsText.textWrappingMode = TextWrappingModes.Normal;
 
         // BackButton — top-left, semi-transparent dark pill with "← Voltar".
         var backGo = NewUI("BackButton", detailPanel.transform);
@@ -364,9 +394,10 @@ public static class AnimalsScreenBuilder
         if (listItemView != null)
             so.FindProperty("listItemPrefab").objectReferenceValue = listItemView;
         so.FindProperty("detailPanel").objectReferenceValue = detailPanel;
-        so.FindProperty("detailScroll").objectReferenceValue = infoScrollRect;
+        so.FindProperty("detailScroll").objectReferenceValue = detailScrollRect;
         so.FindProperty("detailName").objectReferenceValue = nameText;
         so.FindProperty("detailDescription").objectReferenceValue = descText;
+        so.FindProperty("detailCredits").objectReferenceValue = creditsText;
         so.FindProperty("backButton").objectReferenceValue = backButton;
         so.FindProperty("viewerRig").objectReferenceValue = rig;
         so.FindProperty("turntable").objectReferenceValue = turntable.transform;

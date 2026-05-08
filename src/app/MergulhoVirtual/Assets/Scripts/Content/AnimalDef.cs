@@ -12,4 +12,5 @@ public class AnimalDef : ScriptableObject
     public Vector3 viewerOffset = Vector3.zero;
 
     [TextArea(2, 4)] public string photoCredit;
+    [TextArea(2, 4)] public string modelCredit;
 }

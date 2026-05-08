@@ -13,9 +13,35 @@ MonoBehaviour:
   m_Name: hammerhead
   m_EditorClassIdentifier: Assembly-CSharp::AnimalDef
   displayName: "Tubar\xE3o Martelo"
-  imageName: "hammerhead"
-  description: "O tubar\xE3o-martelo-pan\xE3 (nome cient\xEDfico: Sphyrna mokarran), tamb\xE9m chamado popularmente tubar\xE3o-pan\xE3, ca\xE7\xE3o-pan\xE3, ca\xE7\xE3o-rodela, cambeva-pata, pan\xE3, panapan\xE1 ou panapan\xE3, \xE9 a maior esp\xE9cie de tubar\xE3o-martelo da fam\xEDlia dos esfirn\xEDdeos (Sphyrnidae), podendo chegar a ter entre 4-6 metros de comprimento e pesar cerca de 230-450 quilos. \xC9 encontrado em \xE1guas tropicais e temperadas quentes no mundo todo, habitando \xE1reas costeiras e a plataforma continental."
+  imageName: hammerhead
+  description: "O tubar\xE3o-martelo-pan\xE3 (nome cient\xEDfico: Sphyrna mokarran),
+    tamb\xE9m chamado popularmente tubar\xE3o-pan\xE3, ca\xE7\xE3o-pan\xE3, ca\xE7\xE3o-rodela,
+    cambeva-pata, pan\xE3, panapan\xE1 ou panapan\xE3, \xE9 a maior esp\xE9cie de
+    tubar\xE3o-martelo da fam\xEDlia dos esfirn\xEDdeos (Sphyrnidae), podendo chegar
+    a ter entre 4-6 metros de comprimento e pesar cerca de 230-450 quilos. \xC9 encontrado
+    em \xE1guas tropicais e temperadas quentes no mundo todo, habitando \xE1reas
+    costeiras e a plataforma continental."
   prefab: {fileID: 4105619840064323925, guid: a1ee6694f6bcf49ba98207182a8afd06, type: 3}
   viewerScale: {x: 1, y: 1, z: 1}
   viewerOffset: {x: 0, y: 0, z: 0}
-  photoCredit: "Foto: Albert kok / CC BY-SA 4.0 (Wikimedia Commons)"
+  photoCredit: 'Foto: Albert kok / CC BY-SA 4.0 (Wikimedia Commons)'
+  modelCredit: 'This is an animation of an adult female Great Hammerhead Shark (Sphyrna
+    mokarran) that was reconstructed from multiple cameras arranged around a dive
+    in South Bimini, Bahamas in February 2020. Casey Sapp coordinated all videography.
+    Kevin Davidson kindly contributed useful reference photos.
+
+
+    CG artist Jer
+    Bot used the software Blender to align these camera views to reconstruct the
+    accurate shape and color of Nemesis (PIT tag 900236000107365), which had an estimated
+    length of 329 cm based on laser photogrammetry. Nemesis commonly frequents dive
+    spots near Bimini and is well-known to divers and scientists from the Bimini
+    shark lab (www.biminisharklab.com).
+
+
+    The ANGARI Foundation (www.angari.org)
+    coordinated and supported this research, along with Sean Williams, Ken Morton,
+    Jonathan and Jameson Bayuk, Annabelle Brooks, and Vital Heim.
+
+
+    CC Attribution-NonComercial'

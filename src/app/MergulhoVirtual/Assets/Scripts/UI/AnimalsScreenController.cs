@@ -15,6 +15,7 @@ public class AnimalsScreenController : MonoBehaviour
     [SerializeField] private ScrollRect detailScroll;
     [SerializeField] private TMP_Text detailName;
     [SerializeField] private TMP_Text detailDescription;
+    [SerializeField] private TMP_Text detailCredits;
     [SerializeField] private Button backButton;
 
     [Header("3D viewer")]
@@ -84,6 +85,7 @@ public class AnimalsScreenController : MonoBehaviour
 
         if (detailName != null) detailName.text = animal.displayName;
         if (detailDescription != null) detailDescription.text = animal.description;
+        if (detailCredits != null) detailCredits.text = BuildCreditsText(animal);
 
         if (listPanel != null) listPanel.SetActive(false);
         if (detailPanel != null) detailPanel.SetActive(true);
@@ -146,6 +148,18 @@ public class AnimalsScreenController : MonoBehaviour
             Destroy(currentViewerInstance);
             currentViewerInstance = null;
         }
+    }
+
+    static string BuildCreditsText(AnimalDef animal)
+    {
+        string photo = animal.photoCredit?.Trim();
+        string model = animal.modelCredit?.Trim();
+        bool hasPhoto = !string.IsNullOrEmpty(photo);
+        bool hasModel = !string.IsNullOrEmpty(model);
+        if (hasPhoto && hasModel) return photo + "\n" + model;
+        if (hasPhoto) return photo;
+        if (hasModel) return model;
+        return string.Empty;
     }
 
     static Sprite LoadAnimalSprite(string imageName)
