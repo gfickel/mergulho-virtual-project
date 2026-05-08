@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8277b3cc71e9e73f2b7ba113e110e6b5, type: 3}
+  m_Name: nurse_shark
+  m_EditorClassIdentifier: Assembly-CSharp::AnimalDef
+  displayName: "Tubar\xE3o Lixa"
+  imageName: nurse_shark
+  description: "Tubar\xE3o-lixa, ca\xE7\xE3o-lixa, ca\xE7\xE3o-barroso, ca\xE7\xE3o-gata
+    ou lambaru (nome cient\xEDfico: Ginglymostoma cirratum) \xE9 uma esp\xE9cie de
+    tubar\xE3o elasmobr\xE2nquio da fam\xEDlia dos ginglimostomat\xEDdeos (Ginglymostomatidae).
+    \nS\xE3o uma esp\xE9cie importante \xE0 pesquisa de tubar\xF5es (predominantemente
+    em fisiologia). S\xE3o robustos e capazes de tolerar captura, manuseio e marca\xE7\xE3o
+    extremamente bem. Por mais inofensivos que possam parecer, est\xE3o em quarto
+    lugar em mordidas de tubar\xE3o documentadas em humanos."
+  prefab: {fileID: 5167488574530924845, guid: 1e545f2ef1429fe60aed23b7a790e346, type: 3}
+  viewerScale: {x: 1, y: 1, z: 1}
+  viewerOffset: {x: 0, y: 0, z: 0}
+  photoCredit: 'Foto: desconhecido / Public domain (Wikimedia Commons)'
+  modelCredit: '"Nurse Shark Buccal Resting" (https://skfb.ly/pFrnq) by jgrabo20
+    is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).'
