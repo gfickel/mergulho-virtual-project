@@ -101,13 +101,15 @@ public static class AnimalsScreenBuilder
             "Assets/RenderTextures/AnimalViewer.renderTexture");
         if (viewerRT == null)
             Debug.LogWarning("[AnimalsScreenBuilder] AnimalViewer.renderTexture not found at Assets/RenderTextures/ — viewer will render to a default texture.");
-        else if (viewerRT.antiAliasing != 8)
+        else if (viewerRT.antiAliasing != 1)
         {
-            // Force MSAA 8x on the target — combined with SMAA High on the
-            // camera below this is the highest-quality AA URP can produce
-            // for an RT-targeted camera.
+            // RT must be single-sample. URP allocates its own multisampled
+            // buffer (URPAsset.msaaSampleCount) and resolves into the RT;
+            // a multisampled RT here triggers a renderpass mismatch on
+            // Android (driver caps Adreno/Mali at 4x) and isn't sample-able
+            // by RawImage on most mobile GPUs.
             if (viewerRT.IsCreated()) viewerRT.Release();
-            viewerRT.antiAliasing = 8;
+            viewerRT.antiAliasing = 1;
             EditorUtility.SetDirty(viewerRT);
         }
 
@@ -132,7 +134,7 @@ public static class AnimalsScreenBuilder
         // Viewer camera — looks at the turntable from a slightly elevated angle.
         var camGo = new GameObject("ViewerCamera");
         camGo.transform.SetParent(rig.transform, worldPositionStays: false);
-        camGo.transform.localPosition = new Vector3(0f, 0.6f, -3.2f);
+        camGo.transform.localPosition = new Vector3(0f, 0.0f, -3.2f);
         camGo.transform.LookAt(rig.transform.position);
         var cam = camGo.AddComponent<Camera>();
         cam.clearFlags = CameraClearFlags.SolidColor;
@@ -148,9 +150,11 @@ public static class AnimalsScreenBuilder
         camGo.layer = viewerLayer;
 
         // URP per-camera AA — SMAA at High quality, layered on top of the
-        // RT's MSAA 8x. The combination is what "High quality" antialiasing
-        // looks like for the model viewer.
+        // pipeline's MSAA (URPAsset.msaaSampleCount). renderPostProcessing
+        // must be true for SMAA to actually run (SMAA is a post-processing
+        // pass; URP skips it otherwise and shows an Inspector warning).
         var urpCamData = cam.GetUniversalAdditionalCameraData();
+        urpCamData.renderPostProcessing = true;
         urpCamData.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
         urpCamData.antialiasingQuality = AntialiasingQuality.High;
 
