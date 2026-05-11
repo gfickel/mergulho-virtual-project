@@ -2,6 +2,9 @@
 # Service account
 serviceAccountKey.json
 
+# Debug-mode local stand-ins for GCS bucket / Firestore data
+local_storage/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

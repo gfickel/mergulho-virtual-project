@@ -1,231 +1,209 @@
-<html>
-<head>
-    <title>Novo Avistamento</title>
-    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        form {
-            display: grid;
-            gap: 15px;
-        }
-        .form-group {
-            display: grid;
-            grid-template-columns: 200px 1fr;
-            gap: 10px;
-            align-items: center;
-        }
-        label {
-            font-weight: bold;
-        }
-        input[type="text"],
-        input[type="number"],
-        input[type="url"],
-        textarea,
-        select {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-        .form-actions {
-            grid-column: 1 / -1;
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        button[type="submit"] {
-            background-color: #4CAF50;
-            color: white;
-        }
-        button[type="submit"]:hover {
-            background-color: #45a049;
-        }
-        .btn-cancel {
-            background-color: #f44336;
-            color: white;
-            text-decoration: none;
-            display: inline-block;
-            padding: 10px 20px;
-            border-radius: 4px;
-        }
-        .btn-cancel:hover {
-            background-color: #da190b;
-        }
-    </style>
-</head>
-<body>
-    <h1>Novo Avistamento</h1>
+{% extends "base.html" %}
 
-    <form method="post" action="/avistamentos">
-        <div class="form-group">
-            <label for="registro">Registro (obrigatório):</label>
-            <input type="text" id="registro" name="registro" required>
-        </div>
+{% set active_nav = 'avistamentos' %}
+{% block title %}Novo avistamento · Mergulho Virtual{% endblock %}
+{% block main_class %}site-main--narrow{% endblock %}
 
-        <div class="form-group">
-            <label for="nome_popular">Nome Popular:</label>
-            <input type="text" id="nome_popular" name="nome_popular">
-        </div>
+{% block content %}
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Início</a>
+    <span class="breadcrumbs__sep">/</span>
+    <a href="/avistamentos">Avistamentos</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span>Novo</span>
+</nav>
 
-        <div class="form-group">
-            <label for="nome_cientifico">Nome Científico:</label>
-            <input type="text" id="nome_cientifico" name="nome_cientifico">
-        </div>
+<header class="page-header">
+    <div class="page-header__titles">
+        <div class="page-header__eyebrow">Cadastro</div>
+        <h1>Novo avistamento</h1>
+        <p class="page-header__subtitle">
+            Preencha apenas os campos relevantes — apenas o registro é obrigatório.
+        </p>
+    </div>
+</header>
 
-        <div class="form-group">
-            <label for="observador">Observador:</label>
-            <input type="text" id="observador" name="observador">
-        </div>
-
-        <div class="form-group">
-            <label for="classificacao_observador">Classificação Observador:</label>
-            <select id="classificacao_observador" name="classificacao_observador">
-                <option value="">Selecione...</option>
-                <option value="Guia">Guia</option>
-                <option value="Mergulhador">Mergulhador</option>
-                <option value="Fotógrafo">Fotógrafo</option>
-                <option value="Cientista">Cientista</option>
-                <option value="Morador">Morador</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>Data de Registro:</label>
-            <div style="display: flex; gap: 10px;">
-                <input type="number" id="dia_registro" name="dia_registro" placeholder="Dia" min="1" max="31" style="width: 80px;">
-                <input type="number" id="mes_registro" name="mes_registro" placeholder="Mês" min="1" max="12" style="width: 80px;">
-                <input type="number" id="ano_registro" name="ano_registro" placeholder="Ano" style="width: 120px;">
+<form method="post" action="/avistamentos" novalidate>
+    <section class="card">
+        <div class="card__header"><h2>Identificação</h2></div>
+        <div class="card__body">
+            <div class="form-grid">
+                <div class="field span-full">
+                    <label class="field__label" for="registro">Registro<span class="req" aria-hidden="true">*</span></label>
+                    <input class="input mono" type="text" id="registro" name="registro" required autofocus placeholder="ex. AV-2026-001">
+                    <span class="field__hint">Identificador único deste avistamento.</span>
+                </div>
+                <div class="field">
+                    <label class="field__label" for="nome_popular">Nome popular</label>
+                    <input class="input" type="text" id="nome_popular" name="nome_popular" placeholder="ex. Tubarão-martelo">
+                </div>
+                <div class="field">
+                    <label class="field__label" for="nome_cientifico">Nome científico</label>
+                    <input class="input" type="text" id="nome_cientifico" name="nome_cientifico" placeholder="ex. Sphyrna mokarran">
+                </div>
+                <div class="field">
+                    <label class="field__label" for="quantidade">Quantidade</label>
+                    <input class="input" type="number" id="quantidade" name="quantidade" min="1" placeholder="1">
+                </div>
+                <div class="field">
+                    <label class="field__label" for="sexo">Sexo</label>
+                    <select class="select" id="sexo" name="sexo">
+                        <option value="">Selecione…</option>
+                        <option value="M">Macho</option>
+                        <option value="F">Fêmea</option>
+                        <option value="NA">Não identificado</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="field__label" for="tamanho_estimado">Tamanho estimado</label>
+                    <select class="select" id="tamanho_estimado" name="tamanho_estimado">
+                        <option value="">Selecione…</option>
+                        <option value="Pequeno">Pequeno</option>
+                        <option value="Médio">Médio</option>
+                        <option value="Grande">Grande</option>
+                    </select>
+                </div>
             </div>
         </div>
+    </section>
 
-        <div class="form-group">
-            <label for="local">Local:</label>
-            <input type="text" id="local" name="local">
-        </div>
-
-        <div class="form-group">
-            <label for="quantidade">Quantidade:</label>
-            <input type="number" id="quantidade" name="quantidade" min="1">
-        </div>
-
-        <div class="form-group">
-            <label for="comportamento">Comportamento:</label>
-            <select id="comportamento" name="comportamento">
-                <option value="">Selecione...</option>
-                <option value="Nadando">Nadando</option>
-                <option value="Repouso">Repouso</option>
-                <option value="Alimentando-se">Alimentando-se</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="tamanho_estimado">Tamanho Estimado:</label>
-            <select id="tamanho_estimado" name="tamanho_estimado">
-                <option value="">Selecione...</option>
-                <option value="Pequeno">Pequeno</option>
-                <option value="Médio">Médio</option>
-                <option value="Grande">Grande</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="sexo">Sexo:</label>
-            <select id="sexo" name="sexo">
-                <option value="">Selecione...</option>
-                <option value="M">M</option>
-                <option value="F">F</option>
-                <option value="NA">NA</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="interacao">Interação:</label>
-            <select id="interacao" name="interacao">
-                <option value="">Selecione...</option>
-                <option value="Mergulho">Mergulho</option>
-                <option value="Snorkel">Snorkel</option>
-                <option value="Observação fora d'água">Observação fora d'água</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="modo_registro">Modo de Registro:</label>
-            <select id="modo_registro" name="modo_registro">
-                <option value="">Selecione...</option>
-                <option value="Foto">Foto</option>
-                <option value="Vídeo">Vídeo</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="link_instagram">Link Instagram:</label>
-            <input type="url" id="link_instagram" name="link_instagram">
-        </div>
-
-        <div class="form-group">
-            <label>Data de Anotação:</label>
-            <div style="display: flex; gap: 10px;">
-                <input type="number" id="dia_anotacao" name="dia_anotacao" placeholder="Dia" min="1" max="31" style="width: 80px;">
-                <input type="number" id="mes_anotacao" name="mes_anotacao" placeholder="Mês" min="1" max="12" style="width: 80px;">
-                <input type="number" id="ano_anotacao" name="ano_anotacao" placeholder="Ano" style="width: 120px;">
+    <section class="card">
+        <div class="card__header"><h2>Quando &amp; onde</h2></div>
+        <div class="card__body">
+            <div class="form-grid">
+                <div class="field span-2">
+                    <label class="field__label">Data do registro</label>
+                    <div class="input-group">
+                        <input class="input" type="number" name="dia_registro" placeholder="Dia" min="1" max="31" aria-label="Dia">
+                        <input class="input" type="number" name="mes_registro" placeholder="Mês" min="1" max="12" aria-label="Mês">
+                        <input class="input" type="number" name="ano_registro" placeholder="Ano" aria-label="Ano">
+                    </div>
+                </div>
+                <div class="field span-2">
+                    <label class="field__label" for="local">Local</label>
+                    <input class="input" type="text" id="local" name="local" placeholder="ex. Baía do Sancho">
+                </div>
+                <div class="field span-2">
+                    <label class="field__label">Data da anotação</label>
+                    <div class="input-group">
+                        <input class="input" type="number" name="dia_anotacao" placeholder="Dia" min="1" max="31" aria-label="Dia da anotação">
+                        <input class="input" type="number" name="mes_anotacao" placeholder="Mês" min="1" max="12" aria-label="Mês da anotação">
+                        <input class="input" type="number" name="ano_anotacao" placeholder="Ano" aria-label="Ano da anotação">
+                    </div>
+                </div>
             </div>
         </div>
+    </section>
 
-        <div class="form-group">
-            <label for="responsavel_anotacao">Responsável Anotação:</label>
-            <input type="text" id="responsavel_anotacao" name="responsavel_anotacao">
+    <section class="card">
+        <div class="card__header"><h2>Comportamento &amp; contexto</h2></div>
+        <div class="card__body">
+            <div class="form-grid">
+                <div class="field">
+                    <label class="field__label" for="comportamento">Comportamento</label>
+                    <select class="select" id="comportamento" name="comportamento">
+                        <option value="">Selecione…</option>
+                        <option value="Nadando">Nadando</option>
+                        <option value="Repouso">Repouso</option>
+                        <option value="Alimentando-se">Alimentando-se</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="field__label" for="interacao">Interação</label>
+                    <select class="select" id="interacao" name="interacao">
+                        <option value="">Selecione…</option>
+                        <option value="Mergulho">Mergulho</option>
+                        <option value="Snorkel">Snorkel</option>
+                        <option value="Observação fora d'água">Observação fora d'água</option>
+                    </select>
+                </div>
+            </div>
         </div>
+    </section>
 
-        <div class="form-group">
-            <label for="operadora_empresa_foto">Operadora/Empresa Foto:</label>
-            <input type="text" id="operadora_empresa_foto" name="operadora_empresa_foto">
+    <section class="card">
+        <div class="card__header"><h2>Observador</h2></div>
+        <div class="card__body">
+            <div class="form-grid">
+                <div class="field">
+                    <label class="field__label" for="observador">Observador</label>
+                    <input class="input" type="text" id="observador" name="observador" placeholder="Quem viu">
+                </div>
+                <div class="field">
+                    <label class="field__label" for="classificacao_observador">Classificação</label>
+                    <select class="select" id="classificacao_observador" name="classificacao_observador">
+                        <option value="">Selecione…</option>
+                        <option value="Guia">Guia</option>
+                        <option value="Mergulhador">Mergulhador</option>
+                        <option value="Fotógrafo">Fotógrafo</option>
+                        <option value="Cientista">Cientista</option>
+                        <option value="Morador">Morador</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="field__label" for="responsavel_anotacao">Responsável pela anotação</label>
+                    <input class="input" type="text" id="responsavel_anotacao" name="responsavel_anotacao">
+                </div>
+                <div class="field">
+                    <label class="field__label" for="operadora_empresa_foto">Operadora / empresa</label>
+                    <input class="input" type="text" id="operadora_empresa_foto" name="operadora_empresa_foto">
+                </div>
+            </div>
         </div>
+    </section>
 
-        <div class="form-group">
-            <label for="recebido_por">Recebido por:</label>
-            <select id="recebido_por" name="recebido_por">
-                <option value="">Selecione...</option>
-                <option value="Whatsapp">Whatsapp</option>
-                <option value="Instagram">Instagram</option>
-            </select>
+    <section class="card">
+        <div class="card__header"><h2>Origem do registro</h2></div>
+        <div class="card__body">
+            <div class="form-grid">
+                <div class="field">
+                    <label class="field__label" for="modo_registro">Modo de registro</label>
+                    <select class="select" id="modo_registro" name="modo_registro">
+                        <option value="">Selecione…</option>
+                        <option value="Foto">Foto</option>
+                        <option value="Vídeo">Vídeo</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="field__label" for="recebido_por">Recebido por</label>
+                    <select class="select" id="recebido_por" name="recebido_por">
+                        <option value="">Selecione…</option>
+                        <option value="Whatsapp">WhatsApp</option>
+                        <option value="Instagram">Instagram</option>
+                    </select>
+                </div>
+                <div class="field span-2">
+                    <label class="field__label" for="link_instagram">Link do Instagram</label>
+                    <input class="input" type="url" id="link_instagram" name="link_instagram" placeholder="https://instagram.com/p/…">
+                </div>
+                <div class="field">
+                    <label class="field__label" for="outra_ID">Outra ID</label>
+                    <input class="input" type="text" id="outra_ID" name="outra_ID">
+                </div>
+                <div class="field">
+                    <label class="field__label" for="concatenado">Concatenado</label>
+                    <input class="input mono" type="text" id="concatenado" name="concatenado" readonly placeholder="Gerado automaticamente">
+                </div>
+            </div>
         </div>
+    </section>
 
-        <div class="form-group">
-            <label for="observacao">Observação:</label>
-            <textarea id="observacao" name="observacao"></textarea>
+    <section class="card">
+        <div class="card__header"><h2>Notas</h2></div>
+        <div class="card__body">
+            <div class="field">
+                <label class="field__label" for="observacao">Observação</label>
+                <textarea class="textarea" id="observacao" name="observacao" placeholder="Detalhes adicionais — condições, comportamento, qualquer coisa que valha a pena registrar."></textarea>
+            </div>
         </div>
+    </section>
 
-        <div class="form-group">
-            <label for="outra_ID">Outra ID:</label>
-            <input type="text" id="outra_ID" name="outra_ID">
-        </div>
-
-        <div class="form-group">
-            <label for="concatenado">Concatenado:</label>
-            <input type="text" id="concatenado" name="concatenado" readonly>
-        </div>
-
-        <div class="form-actions">
-            <button type="submit">Criar Avistamento</button>
-            <a href="/avistamentos" class="btn-cancel">Cancelar</a>
-        </div>
-    </form>
-</body>
-</html>
-
+    <div class="action-bar">
+        <a href="/avistamentos" class="btn btn--ghost">Cancelar</a>
+        <button type="submit" class="btn btn--primary btn--lg">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Criar avistamento
+        </button>
+    </div>
+</form>
+{% endblock %}

@@ -1,5 +1,4 @@
 import datetime
-import json
 import os
 from fastapi import APIRouter, Request, HTTPException, Header, Form, File, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
@@ -138,6 +137,17 @@ async def list_avistamentos(
         or (accept and "application/json" in accept and "text/html" not in accept)
     )
 
+    # Thumbnail URL per item for the HTML listing. signed-URL generation is
+    # local (crypto sign, no network call), so doing it per row is cheap; we
+    # don't check blob existence — the <img onerror> in the template falls
+    # back to a placeholder when the object is missing.
+    if not return_json:
+        for a in items:
+            try:
+                a["image_url"] = generate_signed_url(f"imagens/{a['registro']}.jpg")
+            except Exception:
+                a["image_url"] = None
+
     if return_json:
         return JSONResponse(
             {
@@ -181,14 +191,6 @@ async def list_avistamentos(
             "ano_registro": ano_registro,
         },
     )
-
-
-@router.post("/avistamentos/{registro}")
-async def create_avistamento(registro, body):
-    json_data = json.loads(body)
-    registro_ref = db.collection("avistamentos").document(registro)
-    registro_ref.set(json_data)
-    return {"message": "Avistamento criado com sucesso", "avistamento": json_data}
 
 
 @router.get("/avistamentos/{registro}")

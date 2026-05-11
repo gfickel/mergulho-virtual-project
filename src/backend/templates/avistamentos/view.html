@@ -1,55 +1,208 @@
-<html>
+{% extends "base.html" %}
 
-<head>
-    <title>Avistamento {{ registro }}</title>
-    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
-</head>
+{% set active_nav = 'avistamentos' %}
+{% block title %}{{ avistamento.nome_popular or 'Avistamento' }} · {{ registro }}{% endblock %}
 
-<body>
-    <h1>Avistamento {{ registro }}</h1>
+{# Curated field groups: each entry is (label, key). The "extras" section catches anything else. #}
+{% set groups = [
+    ('Identificação', [
+        ('Nome popular', 'nome_popular'),
+        ('Nome científico', 'nome_cientifico'),
+        ('Sexo', 'sexo'),
+        ('Tamanho estimado', 'tamanho_estimado'),
+        ('Quantidade', 'quantidade'),
+    ]),
+    ('Quando & Onde', [
+        ('Data do registro', '__data_registro__'),
+        ('Data/hora ISO', 'data_hora_iso'),
+        ('Local', 'local'),
+        ('Data da anotação', '__data_anotacao__'),
+    ]),
+    ('Comportamento', [
+        ('Comportamento', 'comportamento'),
+        ('Interação', 'interacao'),
+    ]),
+    ('Observador', [
+        ('Observador', 'observador'),
+        ('Classificação', 'classificacao_observador'),
+        ('Responsável pela anotação', 'responsavel_anotacao'),
+        ('Operadora / Empresa', 'operadora_empresa_foto'),
+        ('Recebido por', 'recebido_por'),
+    ]),
+    ('Origem do registro', [
+        ('Modo de registro', 'modo_registro'),
+        ('Link Instagram', 'link_instagram'),
+        ('Outra ID', 'outra_ID'),
+        ('Concatenado', 'concatenado'),
+    ]),
+] %}
 
-    <div style="display: flex; gap: 20px; align-items: flex-start;">
-        <div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Campo</th>
-                        <th>Valor</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for campo, valor in avistamento.items() %}
-                    <tr>
-                        <td>{{ campo }}</td>
-                        <td>{{ valor }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+{% set curated_keys = ['nome_popular','nome_cientifico','sexo','tamanho_estimado','quantidade',
+    'data_hora_iso','local','dia_registro','mes_registro','ano_registro',
+    'dia_anotacao','mes_anotacao','ano_anotacao',
+    'comportamento','interacao','observador','classificacao_observador',
+    'responsavel_anotacao','operadora_empresa_foto','recebido_por',
+    'modo_registro','link_instagram','outra_ID','concatenado','observacao','registro'] %}
+
+{% block content %}
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Início</a>
+    <span class="breadcrumbs__sep">/</span>
+    <a href="/avistamentos">Avistamentos</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span class="mono">{{ registro }}</span>
+</nav>
+
+<header class="page-header">
+    <div class="page-header__titles">
+        <div class="page-header__eyebrow">Avistamento</div>
+        <h1>{{ avistamento.nome_popular or 'Sem identificação' }}</h1>
+        {% if avistamento.nome_cientifico %}
+        <p class="page-header__subtitle"><em>{{ avistamento.nome_cientifico }}</em></p>
+        {% endif %}
+    </div>
+    <div class="page-header__actions">
+        <a href="/avistamentos" class="btn btn--ghost">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M11 5l-7 7 7 7"/></svg>
+            Voltar
+        </a>
+        <a href="/avistamentos/{{ registro }}/edit" class="btn btn--primary">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-6"/><path d="M18.5 2.5a2.12 2.12 0 1 1 3 3L12 15l-4 1 1-4z"/></svg>
+            Editar
+        </a>
+    </div>
+</header>
+
+<div class="detail-grid">
+    <div>
+        <div class="photo-card">
+            {% if image_url %}
+                <a href="{{ image_url }}" target="_blank" rel="noopener" aria-label="Abrir foto em nova guia">
+                    <img src="{{ image_url }}" alt="Foto do avistamento {{ registro }}">
+                </a>
+                <div class="photo-card__caption">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg>
+                    <span>Toque para abrir em tamanho original</span>
+                </div>
+            {% else %}
+                <div class="photo-card__placeholder">
+                    <div>
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="opacity:.7;display:block;margin:0 auto 12px;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+                        <div>Sem foto disponível</div>
+                    </div>
+                </div>
+            {% endif %}
         </div>
 
-        {% if image_url %}
-        <div>
-            <a href="{{ image_url }}" target="_blank">
-                <img src="{{ image_url }}" alt="Foto do avistamento {{ registro }}"
-                    style="max-width: 300px; height: auto; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            </a>
+        {% if avistamento.observacao %}
+        <div class="card" style="margin-top:18px;">
+            <div class="card__header">
+                <h2>Observações</h2>
+            </div>
+            <div class="card__body">
+                <p style="white-space:pre-wrap;line-height:1.6;color:var(--text-2);">{{ avistamento.observacao }}</p>
+            </div>
         </div>
         {% endif %}
     </div>
 
-    <p>
-        <a href="/avistamentos/{{ registro }}/edit">Editar</a> |
-        <a href="/avistamentos">Voltar para lista de avistamentos</a>
-    </p>
+    <div>
+        <div class="card">
+            <div class="card__header">
+                <h2>Detalhes</h2>
+                <span class="mono small muted">{{ registro }}</span>
+            </div>
+            <div class="card__body">
+                {% for group_name, fields in groups %}
+                    {% set ns = namespace(any=false) %}
+                    {% for label, key in fields %}
+                        {% if key == '__data_registro__' %}
+                            {% if avistamento.dia_registro and avistamento.mes_registro and avistamento.ano_registro %}{% set ns.any = true %}{% endif %}
+                        {% elif key == '__data_anotacao__' %}
+                            {% if avistamento.dia_anotacao and avistamento.mes_anotacao and avistamento.ano_anotacao %}{% set ns.any = true %}{% endif %}
+                        {% else %}
+                            {% if avistamento[key] %}{% set ns.any = true %}{% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    {% if ns.any %}
+                        <h3 class="section-title">{{ group_name }}</h3>
+                        <div class="kv-list" style="margin-bottom:18px;">
+                            {% for label, key in fields %}
+                                {% if key == '__data_registro__' %}
+                                    {% if avistamento.dia_registro and avistamento.mes_registro and avistamento.ano_registro %}
+                                    <div class="row">
+                                        <div class="k">{{ label }}</div>
+                                        <div class="v">{{ '%02d'|format(avistamento.dia_registro|int) }}/{{ '%02d'|format(avistamento.mes_registro|int) }}/{{ avistamento.ano_registro }}</div>
+                                    </div>
+                                    {% endif %}
+                                {% elif key == '__data_anotacao__' %}
+                                    {% if avistamento.dia_anotacao and avistamento.mes_anotacao and avistamento.ano_anotacao %}
+                                    <div class="row">
+                                        <div class="k">{{ label }}</div>
+                                        <div class="v">{{ '%02d'|format(avistamento.dia_anotacao|int) }}/{{ '%02d'|format(avistamento.mes_anotacao|int) }}/{{ avistamento.ano_anotacao }}</div>
+                                    </div>
+                                    {% endif %}
+                                {% elif avistamento[key] %}
+                                    <div class="row">
+                                        <div class="k">{{ label }}</div>
+                                        <div class="v">
+                                            {% if key == 'link_instagram' %}
+                                                <a href="{{ avistamento[key] }}" target="_blank" rel="noopener">{{ avistamento[key] }}</a>
+                                            {% elif key == 'modo_registro' and avistamento[key] == 'app' %}
+                                                <span class="badge badge--app">App</span>
+                                            {% elif key == 'modo_registro' and avistamento[key] == 'Foto' %}
+                                                <span class="badge badge--foto">Foto</span>
+                                            {% elif key == 'modo_registro' and avistamento[key] == 'Vídeo' %}
+                                                <span class="badge badge--video">Vídeo</span>
+                                            {% elif key == 'concatenado' %}
+                                                <span class="mono small">{{ avistamento[key] }}</span>
+                                            {% else %}
+                                                {{ avistamento[key] }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
 
-    <form method="post" action="/avistamentos/{{ registro }}/delete"
-        onsubmit="return confirm('Tem certeza que deseja excluir este avistamento?');">
-        <button type="submit"
-            style="background-color:#f44336;color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;">
-            Excluir avistamento
-        </button>
-    </form>
-</body>
+                {# Extras: any unexpected fields we don't have curated #}
+                {% set extras = [] %}
+                {% for campo, valor in avistamento.items() %}
+                    {% if campo not in curated_keys and valor not in (None, '') %}
+                        {% set _ = extras.append((campo, valor)) %}
+                    {% endif %}
+                {% endfor %}
+                {% if extras %}
+                <details class="extra-fields">
+                    <summary>Outros campos ({{ extras|length }})</summary>
+                    <div class="kv-list" style="margin-top:10px;">
+                        {% for campo, valor in extras %}
+                        <div class="row">
+                            <div class="k mono small">{{ campo }}</div>
+                            <div class="v small">{{ valor }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </details>
+                {% endif %}
+            </div>
+        </div>
 
-</html>
+        <div class="danger-zone">
+            <div class="danger-zone__text">
+                <strong>Zona de perigo</strong>
+                <p>Excluir um avistamento é permanente e não pode ser desfeito.</p>
+            </div>
+            <form method="post" action="/avistamentos/{{ registro }}/delete"
+                  onsubmit="return confirm('Tem certeza que deseja excluir este avistamento? Esta ação não pode ser desfeita.');">
+                <button type="submit" class="btn btn--danger">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                    Excluir
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,7 +1,12 @@
 import datetime
 import logging
 
-from config import GCP_BUCKET_NAME, DEBUG_MODE
+from config import (
+    GCP_BUCKET_NAME,
+    DEBUG_MODE,
+    LOCAL_STORAGE_DIR,
+    LOCAL_STORAGE_URL_PREFIX,
+)
 
 logger = logging.getLogger("backend.debug")
 
@@ -19,21 +24,28 @@ def _get_bucket():
     return _client.bucket(GCP_BUCKET_NAME)
 
 
+def _local_path(blob_name: str):
+    return LOCAL_STORAGE_DIR / blob_name
+
+
 def upload_bytes(blob_name: str, data: bytes, content_type: str = "application/octet-stream") -> str:
     """
-    Upload raw bytes to the configured GCP bucket.
+    Upload raw bytes to the configured GCP bucket (or local folder in debug mode).
 
     :param blob_name: Object key inside the bucket (e.g. "imagens/abc.jpg").
     :param data: Raw bytes to upload.
     :param content_type: MIME type recorded on the object's metadata.
-    :return: gs:// URI of the uploaded object.
+    :return: gs:// URI in prod, or a relative /local_storage/... URL in debug.
     """
     if DEBUG_MODE:
+        path = _local_path(blob_name)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
         logger.info(
-            "[DEBUG] gcs.upload_bytes bucket=%s blob=%s content_type=%s size=%d",
-            GCP_BUCKET_NAME, blob_name, content_type, len(data),
+            "[DEBUG] local storage write blob=%s size=%d content_type=%s -> %s",
+            blob_name, len(data), content_type, path,
         )
-        return f"gs://{GCP_BUCKET_NAME}/{blob_name}"
+        return f"{LOCAL_STORAGE_URL_PREFIX}/{blob_name}"
     blob = _get_bucket().blob(blob_name)
     blob.upload_from_string(data, content_type=content_type)
     return f"gs://{GCP_BUCKET_NAME}/{blob_name}"
@@ -41,15 +53,14 @@ def upload_bytes(blob_name: str, data: bytes, content_type: str = "application/o
 
 def generate_signed_url(blob_name: str, expiration=3600) -> str:
     """
-    Generates a v4 signed URL for a blob.
+    Generates a v4 signed URL for a blob (or a local /local_storage/... URL in debug mode).
 
     :param blob_name: The name of the blob (file) in the bucket.
-    :param expiration: Expiration time in seconds (default 1 hour).
-    :return: The signed URL.
+    :param expiration: Expiration time in seconds (default 1 hour). Ignored in debug mode.
+    :return: The browser-loadable URL.
     """
     if DEBUG_MODE:
-        logger.info("[DEBUG] gcs.generate_signed_url blob=%s", blob_name)
-        return f"https://debug.local/{GCP_BUCKET_NAME}/{blob_name}"
+        return f"{LOCAL_STORAGE_URL_PREFIX}/{blob_name}"
     blob = _get_bucket().blob(blob_name)
 
     url = blob.generate_signed_url(

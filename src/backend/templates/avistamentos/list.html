@@ -1,76 +1,176 @@
-<html>
-<head>
-    <title>Lista de Avistamentos</title>
-    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
-</head>
-<body>
-    <h1>Lista de Avistamentos</h1>
+{% extends "base.html" %}
 
-    <p>
-        <a href="/avistamentos/new" style="display:inline-block;padding:8px 14px;background:#4CAF50;color:#fff;text-decoration:none;border-radius:4px;">+ Novo avistamento</a>
-    </p>
+{% set active_nav = 'avistamentos' %}
+{% block title %}Avistamentos · Mergulho Virtual{% endblock %}
 
-    <form method="get" action="{{ url_for('list_avistamentos') }}">
-        <label>
-            Dia:
-            <input type="number" name="dia_registro" value="{{ dia_registro or '' }}" min="1" max="31">
-        </label>
-        <label>
-            Mês:
-            <input type="number" name="mes_registro" value="{{ mes_registro or '' }}" min="1" max="12">
-        </label>
-        <label>
-            Ano:
-            <input type="number" name="ano_registro" value="{{ ano_registro or '' }}">
-        </label>
-        <label>
-            Itens por página:
-            <input type="number" name="page_size" value="{{ page_size }}" min="1" max="100">
-        </label>
-        <button type="submit">Filtrar</button>
-    </form>
+{% block content %}
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Início</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span>Avistamentos</span>
+</nav>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Registro</th>
-                <th>Nome popular</th>
-                <th>Nome científico</th>
-                <th>Data</th>
-                <th>Local</th>
-                <th>Detalhes</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for a in items %}
-            <tr>
-                <td>{{ a.registro }}</td>
-                <td>{{ a.nome_popular }}</td>
-                <td>{{ a.nome_cientifico }}</td>
-                <td>{{ a.dia_registro }}/{{ a.mes_registro }}/{{ a.ano_registro }}</td>
-                <td>{{ a.local }}</td>
-                <td>
-                    <a href="{{ url_for('read_avistamento', registro=a.registro) }}">
-                        Ver
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <div class="pagination">
-        {% if prev_page_url %}
-            <a href="{{ prev_page_url }}">« Página anterior</a>
-        {% endif %}
-
-        <span>Página {{ page }}</span>
-
-        {% if next_page_url %}
-            <a href="{{ next_page_url }}">Próxima página »</a>
-        {% endif %}
+<header class="page-header">
+    <div class="page-header__titles">
+        <div class="page-header__eyebrow">Banco de dados</div>
+        <h1>Avistamentos</h1>
+        <p class="page-header__subtitle">
+            Registros de fauna marinha em Fernando de Noronha — observações de guias, mergulhadores e contribuições do app.
+        </p>
     </div>
-</body>
-</html>
+    <div class="page-header__actions">
+        <a href="/avistamentos/new" class="btn btn--primary">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            Novo avistamento
+        </a>
+    </div>
+</header>
 
+<section class="card" aria-labelledby="filtros-heading">
+    <div class="card__header">
+        <h2 id="filtros-heading">
+            <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px;color:var(--accent-2)"><path d="M3 6h18M6 12h12M10 18h4"/></svg>
+            Filtros
+        </h2>
+        <span class="hint">Refine por data de registro</span>
+    </div>
+    <div class="card__body">
+        <form method="get" action="{{ url_for('list_avistamentos') }}" class="filter-bar">
+            <div class="field">
+                <label class="field__label" for="dia_registro">Dia</label>
+                <input class="input" type="number" id="dia_registro" name="dia_registro" value="{{ dia_registro or '' }}" min="1" max="31" placeholder="—">
+            </div>
+            <div class="field">
+                <label class="field__label" for="mes_registro">Mês</label>
+                <input class="input" type="number" id="mes_registro" name="mes_registro" value="{{ mes_registro or '' }}" min="1" max="12" placeholder="—">
+            </div>
+            <div class="field">
+                <label class="field__label" for="ano_registro">Ano</label>
+                <input class="input" type="number" id="ano_registro" name="ano_registro" value="{{ ano_registro or '' }}" placeholder="—">
+            </div>
+            <div class="field">
+                <label class="field__label" for="page_size">Por página</label>
+                <input class="input" type="number" id="page_size" name="page_size" value="{{ page_size }}" min="1" max="100">
+            </div>
+            <div class="filter-actions">
+                {% if dia_registro or mes_registro or ano_registro %}
+                <a href="{{ url_for('list_avistamentos') }}" class="btn btn--ghost">Limpar</a>
+                {% endif %}
+                <button type="submit" class="btn btn--accent">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                    Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
 
+<section class="card" style="margin-top:18px;">
+    <div class="card__header">
+        <h2>Resultados</h2>
+        <span class="hint">{{ items|length }} {{ 'registro' if items|length == 1 else 'registros' }} nesta página</span>
+    </div>
+
+    {% if items and items|length > 0 %}
+    <div class="card__body card__body--flush">
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="col-thumb"><span class="sr-only">Foto</span></th>
+                        <th>Registro</th>
+                        <th>Espécie</th>
+                        <th>Data</th>
+                        <th>Local</th>
+                        <th>Origem</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in items %}
+                    <tr>
+                        <td class="col-thumb">
+                            <a class="thumb" href="{{ url_for('read_avistamento', registro=a.registro) }}" aria-label="Ver avistamento {{ a.registro }}">
+                                <span class="thumb__placeholder" aria-hidden="true">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+                                </span>
+                                {% if a.image_url %}
+                                <img src="{{ a.image_url }}" alt="" loading="lazy" decoding="async" onerror="this.remove()">
+                                {% endif %}
+                            </a>
+                        </td>
+                        <td><span class="registro">{{ a.registro }}</span></td>
+                        <td>
+                            <div class="nome-popular">{{ a.nome_popular or '—' }}</div>
+                            {% if a.nome_cientifico %}
+                            <div class="nome-cientifico small">{{ a.nome_cientifico }}</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if a.dia_registro and a.mes_registro and a.ano_registro %}
+                                {{ '%02d'|format(a.dia_registro|int) }}/{{ '%02d'|format(a.mes_registro|int) }}/{{ a.ano_registro }}
+                            {% else %}
+                                <span class="faint">—</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ a.local or '' }}</td>
+                        <td>
+                            {% if a.modo_registro == 'app' %}
+                                <span class="badge badge--app">App</span>
+                            {% elif a.modo_registro == 'Foto' %}
+                                <span class="badge badge--foto">Foto</span>
+                            {% elif a.modo_registro == 'Vídeo' %}
+                                <span class="badge badge--video">Vídeo</span>
+                            {% elif a.modo_registro %}
+                                <span class="badge badge--muted">{{ a.modo_registro }}</span>
+                            {% else %}
+                                <span class="faint">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="actions">
+                            <a href="{{ url_for('read_avistamento', registro=a.registro) }}" class="btn btn--ghost btn--sm" aria-label="Ver avistamento {{ a.registro }}">
+                                Ver
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 5l7 7-7 7"/></svg>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty">
+        <div class="empty__icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        </div>
+        <h3>Nenhum avistamento encontrado</h3>
+        <p>Ajuste os filtros ou adicione um novo registro.</p>
+    </div>
+    {% endif %}
+
+    <div class="card__footer">
+        <div class="page-info">
+            Página <strong>{{ page }}</strong>
+        </div>
+        <div class="pagination__nav">
+            {% if prev_page_url %}
+                <a href="{{ prev_page_url }}" class="btn btn--ghost btn--sm">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M11 5l-7 7 7 7"/></svg>
+                    Anterior
+                </a>
+            {% else %}
+                <span class="btn btn--ghost btn--sm" style="opacity:.4;pointer-events:none;">Anterior</span>
+            {% endif %}
+            {% if next_page_url %}
+                <a href="{{ next_page_url }}" class="btn btn--ghost btn--sm">
+                    Próxima
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 5l7 7-7 7"/></svg>
+                </a>
+            {% else %}
+                <span class="btn btn--ghost btn--sm" style="opacity:.4;pointer-events:none;">Próxima</span>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
