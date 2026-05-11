@@ -158,28 +158,48 @@ public static class AnimalsScreenBuilder
         urpCamData.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;
         urpCamData.antialiasingQuality = AntialiasingQuality.High;
 
-        // Key light — warm, from upper-front.
+        // Three-point rig: warm key + neutral-cool fill + cool rim. Sun-like
+        // direction from above on both key and fill (no uplighting); rim is
+        // behind-above to separate the silhouette from the deep-navy
+        // background. All three are scoped to the AnimalViewer layer; the
+        // scene's main directional light is also configured to exclude this
+        // layer (m_CullingMask bit 3 cleared) so the rig is fully isolated.
+
+        // Key light — slight warm tint, from upper-front-right. Sun-like.
         var keyGo = new GameObject("KeyLight");
         keyGo.transform.SetParent(rig.transform, worldPositionStays: false);
         keyGo.transform.localPosition = Vector3.zero;
-        keyGo.transform.localRotation = Quaternion.Euler(40f, -30f, 0f);
+        keyGo.transform.localRotation = Quaternion.Euler(45f, -35f, 0f);
         var keyLight = keyGo.AddComponent<Light>();
         keyLight.type = LightType.Directional;
-        keyLight.color = new Color(1f, 0.96f, 0.88f, 1f);
-        keyLight.intensity = 1.6f;
+        keyLight.color = new Color(1f, 0.97f, 0.93f, 1f);
+        keyLight.intensity = 1.2f;
         keyLight.cullingMask = 1 << viewerLayer;
         keyGo.layer = viewerLayer;
 
-        // Fill light — cool, from below-back; suggests light bouncing off water.
+        // Fill light — gentle cool, from upper-opposite side (pitched down,
+        // NOT from below). Softens the key's shadow side without uplighting.
         var fillGo = new GameObject("FillLight");
         fillGo.transform.SetParent(rig.transform, worldPositionStays: false);
-        fillGo.transform.localRotation = Quaternion.Euler(-15f, 150f, 0f);
+        fillGo.transform.localRotation = Quaternion.Euler(25f, 140f, 0f);
         var fillLight = fillGo.AddComponent<Light>();
         fillLight.type = LightType.Directional;
-        fillLight.color = new Color(0.55f, 0.78f, 1f, 1f);
-        fillLight.intensity = 0.6f;
+        fillLight.color = new Color(0.85f, 0.92f, 1f, 1f);
+        fillLight.intensity = 0.45f;
         fillLight.cullingMask = 1 << viewerLayer;
         fillGo.layer = viewerLayer;
+
+        // Rim light — soft aquatic blue from behind-above, kissing the
+        // silhouette so the body separates from the dark background.
+        var rimGo = new GameObject("RimLight");
+        rimGo.transform.SetParent(rig.transform, worldPositionStays: false);
+        rimGo.transform.localRotation = Quaternion.Euler(15f, 200f, 0f);
+        var rimLight = rimGo.AddComponent<Light>();
+        rimLight.type = LightType.Directional;
+        rimLight.color = new Color(0.6f, 0.85f, 1f, 1f);
+        rimLight.intensity = 0.4f;
+        rimLight.cullingMask = 1 << viewerLayer;
+        rimGo.layer = viewerLayer;
 
         // ========================================================================
         // AnimalsScreen root: full-stretch under ScreenUI, dark navy background.
