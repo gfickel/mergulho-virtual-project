@@ -425,6 +425,7 @@ public static class AnimalsScreenBuilder
         so.FindProperty("backButton").objectReferenceValue = backButton;
         so.FindProperty("viewerRig").objectReferenceValue = rig;
         so.FindProperty("turntable").objectReferenceValue = turntable.transform;
+        so.FindProperty("viewerRawImage").objectReferenceValue = rawImage;
         so.FindProperty("viewerLayerName").stringValue = ViewerLayerName;
         so.ApplyModifiedPropertiesWithoutUndo();
 

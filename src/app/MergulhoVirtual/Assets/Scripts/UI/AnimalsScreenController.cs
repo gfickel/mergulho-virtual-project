@@ -21,21 +21,80 @@ public class AnimalsScreenController : MonoBehaviour
     [Header("3D viewer")]
     [SerializeField] private GameObject viewerRig;
     [SerializeField] private Transform turntable;
+    [SerializeField] private RawImage viewerRawImage;
+    [SerializeField] private int maxRenderTextureDimension = 2048;
     [SerializeField] private string viewerLayerName = "AnimalViewer";
 
     private readonly List<ListItemView> spawnedItems = new List<ListItemView>();
     private GameObject currentViewerInstance;
     private AnimalDef[] animals;
     private bool listPopulated;
+    private Camera viewerCamera;
+    private RenderTexture originalRT;
+    private RenderTexture runtimeRT;
 
     void Awake()
     {
         if (backButton != null) backButton.onClick.AddListener(ShowList);
+        if (viewerRawImage != null) originalRT = viewerRawImage.texture as RenderTexture;
+        if (viewerRig != null) viewerCamera = viewerRig.GetComponentInChildren<Camera>(true);
     }
 
     void OnDestroy()
     {
         if (backButton != null) backButton.onClick.RemoveListener(ShowList);
+        ReleaseRuntimeRT();
+    }
+
+    void LateUpdate()
+    {
+        if (detailPanel != null && detailPanel.activeInHierarchy)
+            MatchRenderTextureToViewport();
+    }
+
+    void MatchRenderTextureToViewport()
+    {
+        if (viewerRawImage == null || originalRT == null || viewerCamera == null) return;
+
+        Rect r = viewerRawImage.rectTransform.rect;
+        Canvas canvas = viewerRawImage.canvas;
+        float scale = canvas != null ? canvas.scaleFactor : 1f;
+        int w = Mathf.Clamp(Mathf.RoundToInt(r.width  * scale), 128, maxRenderTextureDimension);
+        int h = Mathf.Clamp(Mathf.RoundToInt(r.height * scale), 128, maxRenderTextureDimension);
+        if (runtimeRT != null && runtimeRT.width == w && runtimeRT.height == h) return;
+
+        RenderTextureDescriptor desc = originalRT.descriptor;
+        desc.width = w;
+        desc.height = h;
+        var next = new RenderTexture(desc)
+        {
+            name = "AnimalViewer (runtime)",
+            filterMode = originalRT.filterMode,
+            wrapMode = originalRT.wrapMode,
+        };
+        next.Create();
+
+        viewerCamera.targetTexture = next;
+        viewerRawImage.texture = next;
+
+        if (runtimeRT != null)
+        {
+            runtimeRT.Release();
+            Destroy(runtimeRT);
+        }
+        runtimeRT = next;
+    }
+
+    void ReleaseRuntimeRT()
+    {
+        if (runtimeRT == null) return;
+        if (viewerCamera != null && viewerCamera.targetTexture == runtimeRT)
+            viewerCamera.targetTexture = originalRT;
+        if (viewerRawImage != null && viewerRawImage.texture == runtimeRT)
+            viewerRawImage.texture = originalRT;
+        runtimeRT.Release();
+        Destroy(runtimeRT);
+        runtimeRT = null;
     }
 
     void OnEnable()
