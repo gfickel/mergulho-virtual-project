@@ -576,8 +576,24 @@ code, pre, .mono { font-family: var(--font-mono); }
 .pagination .page-info strong { color: var(--text); font-weight: 700; }
 .pagination__nav {
     display: flex;
+    align-items: center;
     gap: 8px;
     margin-left: auto;
+    flex-wrap: wrap;
+}
+.page-jump {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.page-jump .input--sm {
+    width: 72px;
+    padding: 7px 10px;
+    font-size: .85rem;
+}
+.input--sm {
+    padding: 7px 10px;
+    font-size: .85rem;
 }
 
 /* ----- Empty state ---------------------------------------------------------- */

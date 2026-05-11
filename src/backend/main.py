@@ -1,13 +1,16 @@
 import logging
 from contextlib import asynccontextmanager
-from typing import Optional
 
-from fastapi import FastAPI, Header, Request
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from api.api import api_router
-from config import DEBUG_MODE, LOCAL_STORAGE_DIR, LOCAL_STORAGE_URL_PREFIX, templates
+from api.api import admin_router, api_router
+from config import (
+    DEBUG_MODE,
+    LOCAL_STORAGE_DIR,
+    LOCAL_STORAGE_URL_PREFIX,
+    ROUTER_MODE,
+)
 
 logger = logging.getLogger("backend.startup")
 
@@ -38,18 +41,7 @@ if DEBUG_MODE:
         name="local_storage",
     )
 
-app.include_router(api_router)
-
-@app.get("/")
-async def root(
-    request: Request,
-    format: Optional[str] = None,
-    accept: Optional[str] = Header(None),
-):
-    return_json = (
-        format == "json"
-        or (accept and "application/json" in accept and "text/html" not in accept)
-    )
-    if return_json:
-        return JSONResponse({"message": "API do Mergulho Virtual", "version": 0.1})
-    return templates.TemplateResponse("index.html", {"request": request})
+if ROUTER_MODE in ("api", "both"):
+    app.include_router(api_router)
+if ROUTER_MODE in ("admin", "both"):
+    app.include_router(admin_router)

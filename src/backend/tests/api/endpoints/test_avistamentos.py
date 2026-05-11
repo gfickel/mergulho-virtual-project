@@ -1,91 +1,135 @@
-
 import pytest
 from unittest.mock import MagicMock, patch
 from httpx import AsyncClient
 
+
 @pytest.fixture
-def mock_db():
-    with patch("api.endpoints.avistamentos.db") as mock:
+def mock_admin_db():
+    with patch("api.endpoints.avistamentos_admin.db") as mock:
         yield mock
+
+
+@pytest.fixture
+def mock_api_db():
+    with patch("api.endpoints.avistamentos_api.db") as mock:
+        yield mock
+
 
 @pytest.fixture
 def mock_query_avistamentos():
-    with patch("api.endpoints.avistamentos.query_avistamentos") as mock:
+    with patch("api.endpoints.avistamentos_admin.query_avistamentos") as mock:
         yield mock
 
+
 @pytest.mark.asyncio
-async def test_list_avistamentos(async_client: AsyncClient, mock_query_avistamentos):
+async def test_list_avistamentos_html(async_client: AsyncClient, mock_query_avistamentos):
     mock_query_avistamentos.return_value = ([], 1, 10, False)
-    
-    response = await async_client.get("/avistamentos", headers={"Accept": "application/json"})
-    
+
+    response = await async_client.get("/avistamentos")
+
     assert response.status_code == 200
-    data = response.json()
-    assert data["items"] == []
-    assert data["page"] == 1
-    assert data["page_size"] == 10
+    assert "text/html" in response.headers["content-type"]
+
 
 @pytest.mark.asyncio
-async def test_create_avistamento(async_client: AsyncClient, mock_db):
-    registro_id = "123"
-    payload = {"species": "Shark", "location": "Recife"}
-    
-    # Mock the document reference and set method
+async def test_create_avistamento(async_client: AsyncClient, mock_api_db):
+    # Idempotency-Key not yet present in Firestore → endpoint creates the doc.
     mock_doc_ref = MagicMock()
-    mock_db.collection.return_value.document.return_value = mock_doc_ref
-    
-    # We need to send body as string because the endpoint expects 'body' from path/query/form?
-    # Wait, the endpoint signature is async def create_avistamento(registro, body).
-    # 'body' is treated as a query param by FastAPI if not using Body/Pydantic model.
-    # Let's verify how it behaves. If I pass query param ?body=... it works.
-    
-    import json
-    body_str = json.dumps(payload)
-    
-    response = await async_client.post(f"/avistamentos/{registro_id}", params={"body": body_str})
-    
-    assert response.status_code == 200
-    assert response.json()["message"] == "Avistamento criado com sucesso"
-    mock_doc_ref.set.assert_called_once_with(payload)
+    mock_doc_ref.get.return_value.exists = False
+    mock_api_db.collection.return_value.document.return_value = mock_doc_ref
+
+    with patch(
+        "api.endpoints.avistamentos_api.resize_image_preserving_exif",
+        return_value=b"resized",
+    ), patch("api.endpoints.avistamentos_api.upload_bytes") as mock_upload:
+        response = await async_client.post(
+            "/api/v1/avistamentos",
+            headers={"Idempotency-Key": "test-key-001"},
+            data={
+                "timestamp": "2026-05-11T12:00:00Z",
+                "beach": "Baía do Sancho",
+                "species_guess": "Tubarão-martelo",
+                "notes": "Two sharks circling",
+            },
+            files={"photo": ("photo.jpg", b"fake-jpeg-bytes", "image/jpeg")},
+        )
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["status"] == "created"
+    assert body["registro"] == "test-key-001"
+    assert body["avistamento"]["modo_registro"] == "app"
+    assert mock_upload.call_count == 2  # originals/ + imagens/
+    mock_doc_ref.set.assert_called_once()
+
 
 @pytest.mark.asyncio
-async def test_read_avistamento(async_client: AsyncClient, mock_db):
+async def test_create_avistamento_idempotent(async_client: AsyncClient, mock_api_db):
+    # Existing doc with same Idempotency-Key → endpoint returns 200 + existing payload.
+    mock_doc_ref = MagicMock()
+    existing = mock_doc_ref.get.return_value
+    existing.exists = True
+    existing.to_dict.return_value = {"registro": "test-key-002", "modo_registro": "app"}
+    mock_api_db.collection.return_value.document.return_value = mock_doc_ref
+
+    response = await async_client.post(
+        "/api/v1/avistamentos",
+        headers={"Idempotency-Key": "test-key-002"},
+        data={"timestamp": "2026-05-11T12:00:00Z"},
+        files={"photo": ("photo.jpg", b"fake", "image/jpeg")},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "already_exists"
+    mock_doc_ref.set.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_create_avistamento_missing_idempotency_key(async_client: AsyncClient):
+    response = await async_client.post(
+        "/api/v1/avistamentos",
+        data={"timestamp": "2026-05-11T12:00:00Z"},
+        files={"photo": ("photo.jpg", b"fake", "image/jpeg")},
+    )
+    assert response.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_read_avistamento_html(async_client: AsyncClient, mock_admin_db):
     registro_id = "123"
     mock_doc = MagicMock()
     mock_doc.exists = True
-    mock_doc.to_dict.return_value = {"id": registro_id, "species": "Shark"}
-    
-    mock_db.collection.return_value.document.return_value.get.return_value = mock_doc
-    
-    response = await async_client.get(f"/avistamentos/{registro_id}", headers={"Accept": "application/json"})
-    
+    mock_doc.to_dict.return_value = {"registro": registro_id, "nome_popular": "Tubarão"}
+    mock_admin_db.collection.return_value.document.return_value.get.return_value = mock_doc
+
+    response = await async_client.get(f"/avistamentos/{registro_id}")
+
     assert response.status_code == 200
-    data = response.json()
-    assert data["id"] == registro_id
-    assert data["species"] == "Shark"
+    assert "text/html" in response.headers["content-type"]
+
 
 @pytest.mark.asyncio
-async def test_read_avistamento_not_found(async_client: AsyncClient, mock_db):
-    registro_id = "999"
+async def test_read_avistamento_not_found(async_client: AsyncClient, mock_admin_db):
     mock_doc = MagicMock()
     mock_doc.exists = False
-    
-    mock_db.collection.return_value.document.return_value.get.return_value = mock_doc
-    
-    response = await async_client.get(f"/avistamentos/{registro_id}", headers={"Accept": "application/json"})
-    
+    mock_admin_db.collection.return_value.document.return_value.get.return_value = mock_doc
+
+    response = await async_client.get("/avistamentos/999")
     assert response.status_code == 404
 
+
 @pytest.mark.asyncio
-async def test_delete_avistamento(async_client: AsyncClient, mock_db):
+async def test_delete_avistamento_form(async_client: AsyncClient, mock_admin_db):
     registro_id = "123"
     mock_doc = MagicMock()
     mock_doc.exists = True
-    
-    mock_db.collection.return_value.document.return_value.get.return_value = mock_doc
-    
-    response = await async_client.delete(f"/avistamentos/{registro_id}", params={"format": "json"})
-    
-    assert response.status_code == 200
-    assert response.json()["message"] == "Avistamento deletado com sucesso"
-    mock_db.collection.return_value.document.return_value.delete.assert_called_once()
+    mock_admin_db.collection.return_value.document.return_value.get.return_value = mock_doc
+
+    # 303 is a redirect — disable httpx auto-follow so we can assert on it directly.
+    response = await async_client.post(
+        f"/avistamentos/{registro_id}/delete", follow_redirects=False
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/avistamentos"
+    mock_admin_db.collection.return_value.document.return_value.delete.assert_called_once()

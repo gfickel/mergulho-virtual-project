@@ -1,5 +1,7 @@
 from typing import Optional, List, Tuple, Dict, Any
+from urllib.parse import urlencode
 from google.cloud import firestore
+from google.cloud.firestore_v1.base_query import FieldFilter
 from database import db
 
 
@@ -10,6 +12,8 @@ def query_avistamentos(
     dia_registro: Optional[int] = None,
     mes_registro: Optional[int] = None,
     ano_registro: Optional[int] = None,
+    local: Optional[str] = None,
+    nome_popular: Optional[str] = None,
 ) -> Tuple[List[Dict[str, Any]], int, int, bool]:
     """
     Função comum para buscar avistamentos do Firestore com paginação e filtros.
@@ -21,8 +25,8 @@ def query_avistamentos(
 
     offset = (page - 1) * page_size
 
-    query = _build_query(dia_registro, mes_registro, ano_registro)
-    
+    query = _build_query(dia_registro, mes_registro, ano_registro, local, nome_popular)
+
     query = query.offset(offset).limit(page_size)
     docs = query.stream()
     items = [doc.to_dict() for doc in docs]
@@ -38,32 +42,41 @@ def build_avistamentos_url(
     dia_registro: Optional[int] = None,
     mes_registro: Optional[int] = None,
     ano_registro: Optional[int] = None,
+    local: Optional[str] = None,
+    nome_popular: Optional[str] = None,
 ) -> str:
     """
     Constrói a URL para a lista de avistamentos com os parâmetros de query.
     """
-    params = []
-    params.append(f"page={page}")
-    params.append(f"page_size={page_size}")
+    params: List[Tuple[str, str]] = [
+        ("page", str(page)),
+        ("page_size", str(page_size)),
+    ]
     if dia_registro is not None:
-        params.append(f"dia_registro={dia_registro}")
+        params.append(("dia_registro", str(dia_registro)))
     if mes_registro is not None:
-        params.append(f"mes_registro={mes_registro}")
+        params.append(("mes_registro", str(mes_registro)))
     if ano_registro is not None:
-        params.append(f"ano_registro={ano_registro}")
+        params.append(("ano_registro", str(ano_registro)))
+    if local:
+        params.append(("local", local))
+    if nome_popular:
+        params.append(("nome_popular", nome_popular))
 
-    return "/avistamentos?" + "&".join(params)
+    return "/avistamentos?" + urlencode(params)
 
 
 def count_avistamentos(
     dia_registro: Optional[int] = None,
     mes_registro: Optional[int] = None,
     ano_registro: Optional[int] = None,
+    local: Optional[str] = None,
+    nome_popular: Optional[str] = None,
 ) -> int:
     """
     Conta o número total de avistamentos que correspondem aos filtros.
     """
-    query = _build_query(dia_registro, mes_registro, ano_registro)
+    query = _build_query(dia_registro, mes_registro, ano_registro, local, nome_popular)
     aggregate_query = query.count()
     results = aggregate_query.get()
     return results[0][0].value
@@ -73,18 +86,24 @@ def _build_query(
     dia_registro: Optional[int] = None,
     mes_registro: Optional[int] = None,
     ano_registro: Optional[int] = None,
+    local: Optional[str] = None,
+    nome_popular: Optional[str] = None,
 ):
     """
     Helper para construir a query base com filtros.
     """
     query = db.collection("avistamentos").order_by("registro")
 
-    # Filtros opcionais por data de registro (valores vêm como int; no Firestore são strings)
+    # Date filters: stored as strings in Firestore.
     if dia_registro is not None:
-        query = query.where("dia_registro", "==", str(dia_registro))
+        query = query.where(filter=FieldFilter("dia_registro", "==", str(dia_registro)))
     if mes_registro is not None:
-        query = query.where("mes_registro", "==", str(mes_registro))
+        query = query.where(filter=FieldFilter("mes_registro", "==", str(mes_registro)))
     if ano_registro is not None:
-        query = query.where("ano_registro", "==", str(ano_registro))
-        
+        query = query.where(filter=FieldFilter("ano_registro", "==", str(ano_registro)))
+    if local:
+        query = query.where(filter=FieldFilter("local", "==", local))
+    if nome_popular:
+        query = query.where(filter=FieldFilter("nome_popular", "==", nome_popular))
+
     return query

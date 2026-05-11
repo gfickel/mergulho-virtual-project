@@ -35,25 +35,59 @@
         <span class="hint">Refine por data de registro</span>
     </div>
     <div class="card__body">
+        {% set months = [
+            (1,  'Janeiro'),  (2,  'Fevereiro'), (3,  'Março'),
+            (4,  'Abril'),    (5,  'Maio'),      (6,  'Junho'),
+            (7,  'Julho'),    (8,  'Agosto'),    (9,  'Setembro'),
+            (10, 'Outubro'),  (11, 'Novembro'),  (12, 'Dezembro')
+        ] %}
         <form method="get" action="{{ url_for('list_avistamentos') }}" class="filter-bar">
             <div class="field">
-                <label class="field__label" for="dia_registro">Dia</label>
-                <input class="input" type="number" id="dia_registro" name="dia_registro" value="{{ dia_registro or '' }}" min="1" max="31" placeholder="—">
-            </div>
-            <div class="field">
                 <label class="field__label" for="mes_registro">Mês</label>
-                <input class="input" type="number" id="mes_registro" name="mes_registro" value="{{ mes_registro or '' }}" min="1" max="12" placeholder="—">
+                <select class="select" id="mes_registro" name="mes_registro">
+                    <option value="">Todos</option>
+                    {% for num, name in months %}
+                    <option value="{{ num }}" {% if mes_registro == num %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div class="field">
                 <label class="field__label" for="ano_registro">Ano</label>
-                <input class="input" type="number" id="ano_registro" name="ano_registro" value="{{ ano_registro or '' }}" placeholder="—">
+                <select class="select" id="ano_registro" name="ano_registro">
+                    <option value="">Todos</option>
+                    {% for y in year_options %}
+                    <option value="{{ y }}" {% if ano_registro == y %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label class="field__label" for="dia_registro">Dia <span class="field__hint">(opcional)</span></label>
+                <input class="input" type="number" id="dia_registro" name="dia_registro" value="{{ dia_registro or '' }}" min="1" max="31" placeholder="—">
+            </div>
+            <div class="field">
+                <label class="field__label" for="local">Praia</label>
+                <select class="select" id="local" name="local">
+                    <option value="">Todas</option>
+                    {% for b in beach_options %}
+                    <option value="{{ b }}" {% if local == b %}selected{% endif %}>{{ b }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label class="field__label" for="nome_popular">Espécie</label>
+                <select class="select" id="nome_popular" name="nome_popular">
+                    <option value="">Todas</option>
+                    {% for s in species_options %}
+                    <option value="{{ s }}" {% if nome_popular == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div class="field">
                 <label class="field__label" for="page_size">Por página</label>
                 <input class="input" type="number" id="page_size" name="page_size" value="{{ page_size }}" min="1" max="100">
             </div>
             <div class="filter-actions">
-                {% if dia_registro or mes_registro or ano_registro %}
+                {% if dia_registro or mes_registro or ano_registro or local or nome_popular %}
                 <a href="{{ url_for('list_avistamentos') }}" class="btn btn--ghost">Limpar</a>
                 {% endif %}
                 <button type="submit" class="btn btn--accent">
@@ -151,7 +185,8 @@
 
     <div class="card__footer">
         <div class="page-info">
-            Página <strong>{{ page }}</strong>
+            Página <strong>{{ page }}</strong> de <strong>{{ total_pages }}</strong>
+            <span class="faint">· {{ total }} {{ 'registro' if total == 1 else 'registros' }} no total</span>
         </div>
         <div class="pagination__nav">
             {% if prev_page_url %}
@@ -161,6 +196,19 @@
                 </a>
             {% else %}
                 <span class="btn btn--ghost btn--sm" style="opacity:.4;pointer-events:none;">Anterior</span>
+            {% endif %}
+            {% if total_pages > 1 %}
+            <form method="get" action="{{ url_for('list_avistamentos') }}" class="page-jump">
+                <input type="hidden" name="page_size" value="{{ page_size }}">
+                {% if dia_registro %}<input type="hidden" name="dia_registro" value="{{ dia_registro }}">{% endif %}
+                {% if mes_registro %}<input type="hidden" name="mes_registro" value="{{ mes_registro }}">{% endif %}
+                {% if ano_registro %}<input type="hidden" name="ano_registro" value="{{ ano_registro }}">{% endif %}
+                {% if local %}<input type="hidden" name="local" value="{{ local }}">{% endif %}
+                {% if nome_popular %}<input type="hidden" name="nome_popular" value="{{ nome_popular }}">{% endif %}
+                <label for="page-jump-input" class="sr-only">Ir para página</label>
+                <input class="input input--sm" type="number" id="page-jump-input" name="page" value="{{ page }}" min="1" max="{{ total_pages }}" aria-label="Número da página">
+                <button type="submit" class="btn btn--ghost btn--sm">Ir</button>
+            </form>
             {% endif %}
             {% if next_page_url %}
                 <a href="{{ next_page_url }}" class="btn btn--ghost btn--sm">

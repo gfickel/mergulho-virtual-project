@@ -19,5 +19,9 @@ if DEBUG_MODE:
     )
     db = firestore.Client(project=FIRESTORE_EMULATOR_PROJECT)
 else:
+    # ADC: on Cloud Run the runtime service account is auto-detected via the
+    # metadata server. Locally, set GOOGLE_APPLICATION_CREDENTIALS to the path
+    # of a service account JSON (or run `gcloud auth application-default login`)
+    # if you need prod-mode without BACKEND_DEBUG=1.
     from google.cloud import firestore
-    db = firestore.Client.from_service_account_json('./serviceAccountKey.json')
+    db = firestore.Client()

@@ -18,9 +18,16 @@ else:
 
 
 def _get_bucket():
+    """Lazy GCS client init.
+
+    Uses ADC — on Cloud Run the runtime service account is auto-detected. For
+    `generate_signed_url(version="v4")` to work without a private key, that SA
+    needs `roles/iam.serviceAccountTokenCreator` on itself so the library can
+    sign via the IAM Credentials API.
+    """
     global _client
     if _client is None:
-        _client = storage.Client.from_service_account_json('./serviceAccountKey.json')
+        _client = storage.Client()
     return _client.bucket(GCP_BUCKET_NAME)
 
 

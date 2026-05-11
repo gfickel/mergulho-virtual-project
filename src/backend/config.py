@@ -29,3 +29,14 @@ FIRESTORE_EMULATOR_HOST = os.getenv("FIRESTORE_EMULATOR_HOST", "localhost:8080")
 FIRESTORE_EMULATOR_PROJECT = os.getenv(
     "FIRESTORE_EMULATOR_PROJECT", "mergulho-virtual-debug"
 )
+
+# Which router(s) the FastAPI process serves. Prod deploys two Cloud Run
+# services from the same image, differing only by this env var:
+#   ROUTER_MODE=api    → /api/v1/* only (Unity client, App Check-gated)
+#   ROUTER_MODE=admin  → / + /avistamentos/* + /telemetria/* (HTML, IAP-gated)
+#   ROUTER_MODE=both   → both, for local dev (single uvicorn)
+ROUTER_MODE = os.getenv("ROUTER_MODE", "both").lower()
+if ROUTER_MODE not in ("api", "admin", "both"):
+    raise ValueError(
+        f"ROUTER_MODE must be one of api|admin|both, got {ROUTER_MODE!r}"
+    )
