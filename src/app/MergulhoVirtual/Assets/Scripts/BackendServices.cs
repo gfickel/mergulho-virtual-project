@@ -1,12 +1,13 @@
 using System.Collections;
+using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
-using TMPro;
 
 public class BackendServices : MonoBehaviour
 {
     public TMP_Text countText;
-    private const string ApiUrl = "http://192.168.1.122:8000/avistamentos?count=true";
+    private const string ApiUrl = "https://mergulhovirtual.dev/api/v1/avistamentos/count";
 
     [System.Serializable]
     private class CountResponse
@@ -27,9 +28,19 @@ public class BackendServices : MonoBehaviour
 
     private IEnumerator GetCount()
     {
+        // Fetch an App Check token first. Returns null until the Firebase
+        // Unity SDK is installed AND FIREBASE_APPCHECK_ENABLED is defined —
+        // see AppCheckTokenProvider.cs. Against a BACKEND_DEBUG=1 backend the
+        // missing header is ignored; against the prod backend it would 401.
+        Task<string> tokenTask = AppCheckTokenProvider.GetTokenAsync();
+        while (!tokenTask.IsCompleted) yield return null;
+        string token = tokenTask.Status == TaskStatus.RanToCompletion ? tokenTask.Result : null;
+
         using (UnityWebRequest webRequest = UnityWebRequest.Get(ApiUrl))
         {
-            // Send the request and wait for a response
+            if (!string.IsNullOrEmpty(token))
+                webRequest.SetRequestHeader("X-Firebase-AppCheck", token);
+
             yield return webRequest.SendWebRequest();
 
             if (webRequest.result == UnityWebRequest.Result.ConnectionError ||
@@ -44,7 +55,7 @@ public class BackendServices : MonoBehaviour
                 {
                     string jsonResponse = webRequest.downloadHandler.text;
                     CountResponse response = JsonUtility.FromJson<CountResponse>(jsonResponse);
-                    
+
                     if (response != null)
                     {
                         countText.text = "Avistamentos: " + response.count.ToString();

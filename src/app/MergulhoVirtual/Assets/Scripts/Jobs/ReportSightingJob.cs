@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -69,10 +70,18 @@ public class ReportSightingJob : Job
         AddIfPresent(form, "species_guess", SpeciesGuess);
         AddIfPresent(form, "notes", Notes);
 
+        // Force a fresh token on retry — the cached one is what the backend
+        // just rejected, and the SDK keeps it in cache until expiry otherwise.
+        Task<string> tokenTask = AppCheckTokenProvider.GetTokenAsync(forceRefresh: AttemptCount > 1);
+        while (!tokenTask.IsCompleted) yield return null;
+        string appCheckToken = tokenTask.Status == TaskStatus.RanToCompletion ? tokenTask.Result : null;
+
         using (var req = UnityWebRequest.Post(Url, form))
         {
             if (!string.IsNullOrEmpty(IdempotencyKey))
                 req.SetRequestHeader("Idempotency-Key", IdempotencyKey);
+            if (!string.IsNullOrEmpty(appCheckToken))
+                req.SetRequestHeader("X-Firebase-AppCheck", appCheckToken);
 
             yield return req.SendWebRequest();
 
@@ -92,7 +101,12 @@ public class ReportSightingJob : Job
             }
 
             long code = req.responseCode;
-            if (code >= 500 || code == 408 || code == 429 || code == 0)
+            // 401 on the first attempt is likely an expired App Check token —
+            // retry once with forceRefresh=true. If the second attempt 401s
+            // too, the app is genuinely deregistered → permanent failure.
+            if (code == 401 && AttemptCount == 1)
+                setResult(JobResult.TransientFailure);
+            else if (code >= 500 || code == 408 || code == 429 || code == 0)
                 setResult(JobResult.TransientFailure);
             else
                 setResult(JobResult.PermanentFailure);

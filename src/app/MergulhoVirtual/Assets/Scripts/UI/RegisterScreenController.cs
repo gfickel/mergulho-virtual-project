@@ -20,7 +20,7 @@ public class RegisterScreenController : MonoBehaviour
 {
     [Header("Backend")]
     [Tooltip("Multipart POST endpoint for sightings. Cleartext is blocked by AndroidManifest — works in editor against the dev LAN backend, but device builds need this swapped to HTTPS.")]
-    [SerializeField] private string uploadUrl = "http://192.168.1.122:8000/avistamentos";
+    [SerializeField] private string uploadUrl = "http://192.168.68.108:8000/api/v1/avistamentos";
 
     [Header("Photo")]
     [SerializeField] private Button pickPhotoButton;

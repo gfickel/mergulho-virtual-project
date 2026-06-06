@@ -1,7 +1,13 @@
+# Git LFS — large native binaries (Firebase Unity SDK desktop/native libs, etc.).
+# Targets the heavy binary types only; small managed .dll files stay as normal git blobs.
+*.bundle            filter=lfs diff=lfs merge=lfs -text
+*.so                filter=lfs diff=lfs merge=lfs -text
+*.srcaar            filter=lfs diff=lfs merge=lfs -text
+*.exe               filter=lfs diff=lfs merge=lfs -text
+FirebaseCppApp*.dll filter=lfs diff=lfs merge=lfs -text
 *.bundle filter=lfs diff=lfs merge=lfs -text
 *.so filter=lfs diff=lfs merge=lfs -text
 *.srcaar filter=lfs diff=lfs merge=lfs -text
 *.exe filter=lfs diff=lfs merge=lfs -text
-FirebaseCppApp*.dll filter=lfs diff=lfs merge=lfs -text
 *.fbx filter=lfs diff=lfs merge=lfs -text
 src/app/MergulhoVirtual/Assets/Models/**/*.png filter=lfs diff=lfs merge=lfs -text

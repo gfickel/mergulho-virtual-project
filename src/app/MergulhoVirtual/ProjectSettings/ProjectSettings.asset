@@ -171,9 +171,9 @@ PlayerSettings:
   androidMaxAspectRatio: 2.4
   androidMinAspectRatio: 1
   applicationIdentifier:
-    Android: com.trn.mergulhovirtual
-    Standalone: com.Unity-Technologies.com.unity.template.urp-blank
-    iPhone: com.Unity-Technologies.com.unity.template.urp-blank
+    Android: dev.mergulhovirtual
+    Standalone: dev.mergulhovirtual
+    iPhone: dev.mergulhovirtual
   buildNumber:
     Standalone: 0
     VisionOS: 0
@@ -848,8 +848,9 @@ PlayerSettings:
   webWasm2023: 0
   webEnableSubmoduleStrippingCompatibility: 0
   scriptingDefineSymbols:
-    Android: APP_UI_EDITOR_ONLY;SENTIS_ANALYTICS_ENABLED
-    Standalone: APP_UI_EDITOR_ONLY;SENTIS_ANALYTICS_ENABLED
+    Android: APP_UI_EDITOR_ONLY;SENTIS_ANALYTICS_ENABLED;FIREBASE_APPCHECK_ENABLED
+    Standalone: APP_UI_EDITOR_ONLY;SENTIS_ANALYTICS_ENABLED;FIREBASE_APPCHECK_ENABLED
+    iPhone: APP_UI_EDITOR_ONLY;SENTIS_ANALYTICS_ENABLED;FIREBASE_APPCHECK_ENABLED
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:
