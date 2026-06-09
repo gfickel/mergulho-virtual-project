@@ -25,6 +25,9 @@ public class AnimalsScreenController : MonoBehaviour
     [SerializeField] private int maxRenderTextureDimension = 2048;
     [SerializeField] private string viewerLayerName = "AnimalViewer";
 
+    [Header("Videos")]
+    [SerializeField] private VideoSection videoSection; // reusable; renders one card per AnimalDef.videos entry
+
     private readonly List<ListItemView> spawnedItems = new List<ListItemView>();
     private GameObject currentViewerInstance;
     private AnimalDef[] animals;
@@ -107,6 +110,7 @@ public class AnimalsScreenController : MonoBehaviour
     {
         if (viewerRig != null) viewerRig.SetActive(false);
         DestroyViewerInstance();
+        if (videoSection != null) videoSection.Clear();
     }
 
     void PopulateList()
@@ -136,6 +140,7 @@ public class AnimalsScreenController : MonoBehaviour
         if (detailPanel != null) detailPanel.SetActive(false);
         if (viewerRig != null) viewerRig.SetActive(false);
         DestroyViewerInstance();
+        if (videoSection != null) videoSection.Clear();
     }
 
     void ShowDetail(AnimalDef animal)
@@ -152,6 +157,7 @@ public class AnimalsScreenController : MonoBehaviour
 
         if (viewerRig != null) viewerRig.SetActive(true);
         SpawnViewerInstance(animal);
+        if (videoSection != null) videoSection.Show(animal.videos);
     }
 
     void SpawnViewerInstance(AnimalDef animal)

@@ -13,4 +13,8 @@ public class AnimalDef : ScriptableObject
 
     [TextArea(2, 4)] public string photoCredit;
     [TextArea(2, 4)] public string modelCredit;
+
+    // Zero or more educational clips. A VideoSection renders one inline,
+    // tap-to-play card per entry. Empty = no video section is shown.
+    public VideoRef[] videos;
 }

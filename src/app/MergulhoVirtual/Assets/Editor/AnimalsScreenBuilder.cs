@@ -385,6 +385,14 @@ public static class AnimalsScreenBuilder
         creditsText.alignment = TextAlignmentOptions.TopLeft;
         creditsText.textWrappingMode = TextWrappingModes.Normal;
 
+        // ========================================================================
+        // VideosSection — reusable video cards below the InfoCard. The whole
+        // section (header + card template + control bar + wiring) is built by
+        // VideoSectionBuilder so Beaches/About can reuse the identical card.
+        // ========================================================================
+        var videoSection = VideoSectionBuilder.Build(detailContent.transform,
+            roundedMat, Accent, CardSurface, TextPrimary, TextSecondary);
+
         // BackButton — top-left, semi-transparent dark pill with "← Voltar".
         var backGo = NewUI("BackButton", detailPanel.transform);
         var backRT = backGo.GetComponent<RectTransform>();
@@ -427,6 +435,7 @@ public static class AnimalsScreenBuilder
         so.FindProperty("turntable").objectReferenceValue = turntable.transform;
         so.FindProperty("viewerRawImage").objectReferenceValue = rawImage;
         so.FindProperty("viewerLayerName").stringValue = ViewerLayerName;
+        so.FindProperty("videoSection").objectReferenceValue = videoSection;
         so.ApplyModifiedPropertiesWithoutUndo();
 
         // ========================================================================

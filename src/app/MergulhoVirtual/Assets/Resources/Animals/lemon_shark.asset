@@ -27,3 +27,8 @@ MonoBehaviour:
   photoCredit: 'Foto: Albert Kok / CC BY-SA 3.0 (Wikimedia Commons)'
   modelCredit: "chenukabro2k19 , modelo de https://www.meshy.ai/3d-models/Lemon-Shark-v2-01999e4e-316e-7ed6-a8a2-20aa2766da98\n\nLicen\xE7a
     CC BY 4.0"
+  videos:
+  - title: "Tubar\xE3o-lim\xE3o em a\xE7\xE3o"
+    url: https://storage.googleapis.com/conteudos-educacionais/videos/reelsvideo.io_1780764982422.mp4
+  - title: "Tubar\xE3o-lim\xE3o (v\xEDdeo 2)"
+    url: https://storage.googleapis.com/conteudos-educacionais/videos/reelsvideo.io_1780764982422.mp4
