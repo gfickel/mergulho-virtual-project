@@ -1,0 +1,649 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ano_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "mes_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "dia_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "local",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "nome_popular",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ano_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "mes_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ano_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dia_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ano_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "local",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ano_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nome_popular",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "mes_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dia_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "mes_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "local",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "mes_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nome_popular",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "dia_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "local",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "dia_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nome_popular",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "local",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nome_popular",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ano_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "mes_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dia_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ano_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "mes_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "local",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ano_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "mes_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nome_popular",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ano_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dia_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "local",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ano_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dia_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nome_popular",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ano_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "local",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nome_popular",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "mes_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dia_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "local",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "mes_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dia_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nome_popular",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "mes_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "local",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nome_popular",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "dia_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "local",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nome_popular",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ano_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "mes_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dia_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "local",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ano_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "mes_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dia_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nome_popular",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ano_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "mes_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "local",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nome_popular",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ano_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dia_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "local",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nome_popular",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "mes_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dia_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "local",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nome_popular",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "avistamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ano_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "mes_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dia_registro",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "local",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nome_popular",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "registro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "telemetria",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "oid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "date",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
