@@ -1,0 +1,26 @@
+# Repo-root ignores. The Unity project lives in src/app/MergulhoVirtual/ and has
+# its own .gitignore; the backend in src/backend/ likewise. These rules cover
+# junk that lands at the REPOSITORY ROOT.
+
+# Stray Unity project accidentally generated at the repo root (the real project
+# is src/app/MergulhoVirtual/). Anchored with a leading slash so they only match
+# at root — the tracked src/app/.../Packages and ProjectSettings are untouched.
+/Library/
+/Logs/
+/Temp/
+/obj/
+/Packages/
+/ProjectSettings/
+/UserSettings/
+
+# Firebase Unity SDK download — hundreds of MB; each dev fetches their own.
+/firebase_unity_sdk_*/
+/firebase_unity_sdk_*.zip
+
+# Python virtualenvs / caches (tools/, scratch).
+.venv/
+__pycache__/
+
+# OS / editor cruft.
+.DS_Store
+Thumbs.db
