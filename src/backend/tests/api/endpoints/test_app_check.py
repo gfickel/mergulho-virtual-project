@@ -59,10 +59,11 @@ async def test_api_v1_accepts_valid_token(
 
 
 @pytest.mark.asyncio
-async def test_admin_routes_ignore_app_check_header(async_client: AsyncClient):
+async def test_admin_routes_ignore_app_check_header(
+    async_client: AsyncClient, mock_admin_list_services
+):
     """Admin routes are protected by IAP at the infra layer, not App Check.
     They must remain reachable in debug mode regardless of the header.
     """
-    with patch("api.endpoints.avistamentos_admin.query_avistamentos", return_value=([], 1, 10, False)):
-        response = await async_client.get("/avistamentos")
+    response = await async_client.get("/avistamentos")
     assert response.status_code == 200
