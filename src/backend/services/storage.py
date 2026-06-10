@@ -81,6 +81,26 @@ def upload_bytes(blob_name: str, data: bytes, content_type: str = "application/o
     return f"gs://{GCP_BUCKET_NAME}/{blob_name}"
 
 
+def find_video_blob(registro: str) -> "str | None":
+    """
+    Return the blob name of this registro's video (``videos/<registro>.<ext>``), or None.
+
+    Most registros have no video, and the extension varies, so existence is
+    probed with a single prefix listing instead of guessing extensions.
+    """
+    prefix = f"videos/{registro}."
+    if DEBUG_MODE:
+        directory = LOCAL_STORAGE_DIR / "videos"
+        if directory.is_dir():
+            for path in sorted(directory.iterdir()):
+                if path.name.startswith(f"{registro}."):
+                    return f"videos/{path.name}"
+        return None
+    for blob in _get_bucket().list_blobs(prefix=prefix, max_results=1):
+        return blob.name
+    return None
+
+
 def generate_signed_url(blob_name: str, expiration=3600) -> str:
     """
     Generates a v4 signed URL for a blob (or a local /local_storage/... URL in debug mode).

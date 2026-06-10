@@ -640,6 +640,13 @@ code, pre, .mono { font-family: var(--font-mono); }
     transition: transform 400ms cubic-bezier(.2, .8, .2, 1);
 }
 .photo-card:hover img { transform: scale(1.015); }
+.photo-card__video {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 70vh;
+    background: #04121d;
+}
 .photo-card__placeholder {
     aspect-ratio: 4 / 3;
     display: grid;

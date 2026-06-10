@@ -76,7 +76,19 @@
 <div class="detail-grid">
     <div>
         <div class="photo-card">
-            {% if image_url %}
+            {% if video_url %}
+                {# Signed URLs are generated blindly, so when a video exists we
+                   show only it — the image URL may point at a missing blob. #}
+                <video class="photo-card__video" controls preload="metadata" playsinline>
+                    <source src="{{ video_url }}" type="video/mp4">
+                    Seu navegador não suporta a reprodução de vídeo.
+                    <a href="{{ video_url }}" target="_blank" rel="noopener">Baixar o vídeo</a>
+                </video>
+                <div class="photo-card__caption">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <span>Vídeo do avistamento</span>
+                </div>
+            {% elif image_url %}
                 <a href="{{ image_url }}" target="_blank" rel="noopener" aria-label="Abrir foto em nova guia">
                     <img src="{{ image_url }}" alt="Foto do avistamento {{ registro }}">
                 </a>

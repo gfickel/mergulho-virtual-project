@@ -19,7 +19,7 @@ from services.avistamentos import (
     query_avistamentos,
 )
 from services.filter_options import list_distinct_filter_values
-from services.storage import generate_signed_url
+from services.storage import find_video_blob, generate_signed_url
 
 
 router = APIRouter()
@@ -140,6 +140,16 @@ async def read_avistamento(request: Request, registro: str):
         print(f"Erro ao gerar URL assinada: {e}")
         image_url = None
 
+    # Some registros are videos instead of photos,
+    # stored by convention at videos/<registro>.<ext>.
+    video_url = None
+    try:
+        video_blob = find_video_blob(registro)
+        if video_blob:
+            video_url = generate_signed_url(video_blob)
+    except Exception as e:
+        print(f"Erro ao gerar URL assinada do vídeo: {e}")
+
     return templates.TemplateResponse(
         request=request,
         name="avistamentos/view.html",
@@ -148,6 +158,7 @@ async def read_avistamento(request: Request, registro: str):
             "registro": registro,
             "avistamento": avistamento,
             "image_url": image_url,
+            "video_url": video_url,
         },
     )
 
