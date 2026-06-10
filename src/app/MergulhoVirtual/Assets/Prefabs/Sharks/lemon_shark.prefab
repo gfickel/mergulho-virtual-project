@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &538761382997944092
+--- !u!1001 &1784962668989544585
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -14,7 +14,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: abebb250faf075e58b1d90a8a63ec762, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: abebb250faf075e58b1d90a8a63ec762, type: 3}
       propertyPath: m_LocalPosition.z
@@ -55,7 +55,7 @@ PrefabInstance:
     - target: {fileID: 5866666021909216657, guid: abebb250faf075e58b1d90a8a63ec762, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: 7c8ccd13e11d33af3acb66fc9865ce35, type: 2}
+      objectReference: {fileID: 9100000, guid: 32c3f71afc483d3ecb1ba7d7b431be1a, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

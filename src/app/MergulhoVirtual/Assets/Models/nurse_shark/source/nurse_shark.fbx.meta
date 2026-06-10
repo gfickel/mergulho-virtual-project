@@ -36,9 +36,9 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: NurseShark_Idle
-      takeName: NurseShark_Idle
-      internalID: -7910198781091385902
+      name: Armature|NurseShark_Idle
+      takeName: Armature|NurseShark_Idle
+      internalID: -1616468367374528678
       firstFrame: 0
       lastFrame: 399
       wrapMode: 0
@@ -67,7 +67,7 @@ ModelImporter:
     isReadable: 0
   meshes:
     lODScreenPercentages: []
-    globalScale: 0.7485
+    globalScale: 0.7164179
     meshCompression: 0
     addColliders: 0
     useSRGBMaterialColor: 1
@@ -125,7 +125,7 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 0.007485
+    globalScale: 0.007164179
     rootMotionBoneName: 
     hasTranslationDoF: 0
     hasExtraRoot: 0

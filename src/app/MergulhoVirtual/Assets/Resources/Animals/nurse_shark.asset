@@ -21,9 +21,10 @@ MonoBehaviour:
     em fisiologia). S\xE3o robustos e capazes de tolerar captura, manuseio e marca\xE7\xE3o
     extremamente bem. Por mais inofensivos que possam parecer, est\xE3o em quarto
     lugar em mordidas de tubar\xE3o documentadas em humanos."
-  prefab: {fileID: 5167488574530924845, guid: 1e545f2ef1429fe60aed23b7a790e346, type: 3}
+  prefab: {fileID: 7081323169200236681, guid: 1e545f2ef1429fe60aed23b7a790e346, type: 3}
   viewerScale: {x: 1, y: 1, z: 1}
   viewerOffset: {x: 0, y: 0, z: 0}
   photoCredit: 'Foto: desconhecido / Public domain (Wikimedia Commons)'
   modelCredit: '"Nurse Shark Buccal Resting" (https://skfb.ly/pFrnq) by jgrabo20
     is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).'
+  videos: []

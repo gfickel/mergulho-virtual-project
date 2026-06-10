@@ -21,7 +21,7 @@ MonoBehaviour:
     crescer at\xE9 3,4 metros (11 p\xE9s) de comprimento. S\xE3o frequentemente encontrados
     em \xE1guas subtropicais rasas e s\xE3o conhecidos por habitar e retornar a locais
     de ber\xE7\xE1rio espec\xEDficos para reprodu\xE7\xE3o."
-  prefab: {fileID: 845402732860234317, guid: 0e7178ecefd3588ec848a2babbf2c331, type: 3}
+  prefab: {fileID: 1442312720131638744, guid: 0e7178ecefd3588ec848a2babbf2c331, type: 3}
   viewerScale: {x: 1, y: 1, z: 1}
   viewerOffset: {x: 0, y: 0, z: 0}
   photoCredit: 'Foto: Albert Kok / CC BY-SA 3.0 (Wikimedia Commons)'
