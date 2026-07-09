@@ -10,6 +10,12 @@ using System;
 public class GPSHandler : MonoBehaviour
 {
     public TextMeshProUGUI debugTxt;
+
+    [Tooltip("Resolve to a beach when the GPS point is within this many meters of the " +
+             "beach outline (0 if standing inside it). Larger = more forgiving of GPS " +
+             "drift and coastline imprecision, but more likely to name an adjacent beach.")]
+    [SerializeField] float beachBufferMeters = 50f;
+
     public bool gpsOk = false;
 
     public string CurrentPlaceName { get; private set; }
@@ -92,7 +98,7 @@ public class GPSHandler : MonoBehaviour
         if (gpsOk)
         {
             GPSLocation location = GetLocation();
-            string placeName = ReverseGeocoding.GetPlaceName(new Vector2(location.longitude, location.latitude));
+            string placeName = ReverseGeocoding.GetPlaceName(new Vector2(location.longitude, location.latitude), beachBufferMeters);
             debugTxt.text = "\nLat: " + location.latitude + "\nLon: " + location.longitude + "\nLocal: " + placeName;
 
             currLoc = location;
