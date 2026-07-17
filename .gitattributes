@@ -11,3 +11,7 @@ src/app/MergulhoVirtual/Assets/Models/**/*.png filter=lfs diff=lfs merge=lfs -te
 *.so filter=lfs diff=lfs merge=lfs -text
 *.srcaar filter=lfs diff=lfs merge=lfs -text
 *.exe filter=lfs diff=lfs merge=lfs -text
+
+# Sea-detector MobileCLIP encoder (45 MB). Scoped to the file so the pre-existing
+# non-LFS mobilenet_v2.onnx keeps its history/state.
+src/app/MergulhoVirtual/Assets/Resources/mobileclip_image_encoder.onnx filter=lfs diff=lfs merge=lfs -text

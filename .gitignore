@@ -24,3 +24,6 @@ __pycache__/
 # OS / editor cruft.
 .DS_Store
 Thumbs.db
+
+# sea_detector tooling: exported ONNX (canonical copy lives in Assets/Resources/; .venv/ is ignored above)
+tools/sea_detector/mobileclip_image_encoder.onnx
