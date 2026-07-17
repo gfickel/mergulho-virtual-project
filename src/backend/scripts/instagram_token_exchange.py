@@ -61,9 +61,17 @@ def main() -> int:
         help="Instagram App Secret (Meta dashboard → API Setup). "
         "Defaults to the INSTAGRAM_APP_SECRET env var. Never persisted.",
     )
+    parser.add_argument(
+        "--already-long-lived",
+        action="store_true",
+        help="Skip the exchange and store the given token directly. Use this when "
+        "the dashboard's Generate-token button issued a long-lived (60-day) token "
+        "— exchanging one of those fails with OAuthException 190 'Failed to decrypt'. "
+        "Only /me verification is performed; no app secret needed.",
+    )
     args = parser.parse_args()
 
-    if not args.app_secret:
+    if not args.already_long_lived and not args.app_secret:
         print(
             "ERROR: no app secret — pass --app-secret or set INSTAGRAM_APP_SECRET.",
             file=sys.stderr,
@@ -71,29 +79,43 @@ def main() -> int:
         return 1
 
     with httpx.Client(timeout=HTTP_TIMEOUT_SECONDS) as client:
-        # 1. Short-lived → long-lived exchange.
-        resp = client.get(
-            f"{GRAPH_BASE_URL}/access_token",
-            params={
-                "grant_type": "ig_exchange_token",
-                "client_secret": args.app_secret,
-                "access_token": args.short_lived_token,
-            },
-        )
-        if resp.status_code != 200:
-            print(
-                f"ERROR: token exchange failed (HTTP {resp.status_code}): {resp.text}\n"
-                "Short-lived tokens expire in ~1 hour — if this is an OAuth error, "
-                "generate a fresh one in the dashboard and retry.",
-                file=sys.stderr,
+        if args.already_long_lived:
+            # Dashboard-issued long-lived token: nothing to exchange. The API gives
+            # no way to read its expiry, so assume the documented 60-day window.
+            long_lived_token = args.short_lived_token
+            expires_in = 0
+        else:
+            # 1. Short-lived → long-lived exchange.
+            resp = client.get(
+                f"{GRAPH_BASE_URL}/access_token",
+                params={
+                    "grant_type": "ig_exchange_token",
+                    "client_secret": args.app_secret,
+                    "access_token": args.short_lived_token,
+                },
             )
-            return 1
-        payload = resp.json()
-        long_lived_token = payload.get("access_token")
-        expires_in = int(payload.get("expires_in", 0) or 0)
-        if not long_lived_token:
-            print(f"ERROR: exchange response carried no access_token: {payload}", file=sys.stderr)
-            return 1
+            if resp.status_code != 200:
+                print(
+                    f"ERROR: token exchange failed (HTTP {resp.status_code}): {resp.text}\n"
+                    "Likely causes:\n"
+                    "  - OAuthException 190 'Failed to decrypt': the dashboard token is "
+                    "usually ALREADY long-lived — rerun with --already-long-lived; or the "
+                    "secret is the Meta app's general App Secret (Settings → Basic) instead "
+                    "of the Instagram App Secret on the API-Setup-with-Instagram-Login page.\n"
+                    "  - Session expired: short-lived tokens last ~1 hour — generate a "
+                    "fresh one in the dashboard and retry.",
+                    file=sys.stderr,
+                )
+                return 1
+            payload = resp.json()
+            long_lived_token = payload.get("access_token")
+            expires_in = int(payload.get("expires_in", 0) or 0)
+            if not long_lived_token:
+                print(
+                    f"ERROR: exchange response carried no access_token: {payload}",
+                    file=sys.stderr,
+                )
+                return 1
 
         # 2. Verify the long-lived token and capture the account identity.
         me = client.get(
@@ -134,11 +156,15 @@ def main() -> int:
     days_left = (expires_at - now).days
     print(f"OK: long-lived token stored in Firestore (instagram/auth)")
     print(f"    account:  @{username} (user id {user_id})")
-    print(f"    expires:  {expires_at:%Y-%m-%d %H:%M} UTC (~{days_left} days)")
+    assumed = " (assumed — dashboard tokens don't report expiry)" if not expires_in else ""
+    print(f"    expires:  {expires_at:%Y-%m-%d %H:%M} UTC (~{days_left} days){assumed}")
     print("    the backend's refresh job now keeps it alive automatically")
     return 0
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
+    # httpx logs full request URLs at INFO — that would echo client_secret and
+    # the access token into the terminal/logs.
+    logging.getLogger("httpx").setLevel(logging.WARNING)
     sys.exit(main())
