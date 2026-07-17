@@ -38,11 +38,25 @@ public class VideoPlayerController : MonoBehaviour
     [SerializeField] private PointerHeldFlag seekHeld;   // true while the user drags the slider
     [SerializeField] private TMP_Text timeLabel;         // "0:12 / 1:23"
 
+    [Header("Audio (opt-in — defaults preserve existing card behavior)")]
+    [SerializeField] private bool startMuted = false;    // Instagram-style muted start
+    [SerializeField] private GameObject muteButton;      // optional toggle (e.g. in the controls bar)
+    [SerializeField] private TMP_Text muteLabel;         // "Ativar som" / "Silenciar"
+
     private VideoPlayer videoPlayer;
     private bool prepared;
+    private bool initialized;
+    private bool muted;
 
-    void Awake()
+    void Awake() => EnsureInit();
+
+    // Bind() can be called by another component's OnEnable before our Awake has
+    // run (Unity initializes scene objects one by one) — make init lazy so the
+    // call order doesn't matter.
+    void EnsureInit()
     {
+        if (initialized) return;
+        initialized = true;
         videoPlayer = GetComponent<VideoPlayer>();
         videoPlayer.source = VideoSource.Url;
         videoPlayer.renderMode = VideoRenderMode.APIOnly;
@@ -52,6 +66,8 @@ public class VideoPlayerController : MonoBehaviour
         videoPlayer.prepareCompleted += OnPrepared;
         videoPlayer.errorReceived += OnError;
         if (seekSlider != null) seekSlider.onValueChanged.AddListener(OnSeekChanged);
+        muted = startMuted;
+        UpdateMuteUi();
     }
 
     void OnDestroy()
@@ -89,7 +105,10 @@ public class VideoPlayerController : MonoBehaviour
     /// <summary>Point this card at a video. Resets to the idle (poster) state.</summary>
     public void Bind(string url, string title)
     {
+        EnsureInit();
         Stop();
+        muted = startMuted; // each new clip starts from the configured default
+        UpdateMuteUi();
         videoPlayer.url = url;
         if (titleText != null)
         {
@@ -150,7 +169,30 @@ public class VideoPlayerController : MonoBehaviour
             aspectFitter.aspectRatio = (float)vp.width / vp.height;
         SetOverlay(false);
         if (controlsBar != null) controlsBar.SetActive(true);
+        ApplyMute(vp); // track count is only known once prepared
+        if (muteButton != null) muteButton.SetActive(vp.audioTrackCount > 0);
+        UpdateMuteUi();
         vp.Play();
+    }
+
+    /// <summary>Wired to the optional mute button (Instagram-style tap-to-unmute).</summary>
+    public void ToggleMute()
+    {
+        muted = !muted;
+        ApplyMute(videoPlayer);
+        UpdateMuteUi();
+    }
+
+    void ApplyMute(VideoPlayer vp)
+    {
+        if (vp == null) return;
+        for (ushort i = 0; i < vp.audioTrackCount; i++)
+            vp.SetDirectAudioMute(i, muted);
+    }
+
+    void UpdateMuteUi()
+    {
+        if (muteLabel != null) muteLabel.text = muted ? "Ativar som" : "Silenciar";
     }
 
     void OnError(VideoPlayer vp, string message)

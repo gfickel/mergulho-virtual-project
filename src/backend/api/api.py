@@ -16,12 +16,18 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
 
 from api.dependencies import verify_app_check
-from api.endpoints import avistamentos_admin, avistamentos_api, telemetria_admin
+from api.endpoints import (
+    avistamentos_admin,
+    avistamentos_api,
+    instagram_api,
+    telemetria_admin,
+)
 from config import templates
 
 
 api_router = APIRouter(prefix="/api/v1", dependencies=[Depends(verify_app_check)])
 api_router.include_router(avistamentos_api.router, tags=["avistamentos"])
+api_router.include_router(instagram_api.router, tags=["instagram"])
 
 
 admin_router = APIRouter()

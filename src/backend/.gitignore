@@ -5,6 +5,9 @@ serviceAccountKey.json
 # Debug-mode local stand-ins for GCS bucket / Firestore data
 local_storage/
 
+# Prod-mode on-disk cache for the latest Instagram post image
+instagram_cache/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

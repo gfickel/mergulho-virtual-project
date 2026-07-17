@@ -22,6 +22,34 @@ DEBUG_MODE = os.getenv("BACKEND_DEBUG", "").lower() in ("1", "true", "yes", "on"
 LOCAL_STORAGE_DIR = Path(__file__).parent / "local_storage"
 LOCAL_STORAGE_URL_PREFIX = "/local_storage"
 
+# Public host the Unity client reaches this backend at. Used to build absolute
+# URLs in API responses (e.g. the cached Instagram image). Env-overridable for
+# LAN dev against a device build.
+PUBLIC_BASE_URL = os.getenv(
+    "PUBLIC_BASE_URL",
+    "http://localhost:8000" if DEBUG_MODE else "https://mergulhovirtual.dev",
+).rstrip("/")
+
+# On-disk cache for the latest Instagram post's image bytes. Instagram CDN
+# URLs expire, so the app is only ever served our cached copy (videos are the
+# exception — their fresh CDN URL is passed through; regular polling keeps it
+# valid). Lives under local_storage/ in debug so it's wiped with the rest of
+# the dev state; its own gitignored folder under the backend root in prod.
+INSTAGRAM_CACHE_DIR = (
+    LOCAL_STORAGE_DIR / "instagram"
+    if DEBUG_MODE
+    else Path(__file__).parent / "instagram_cache"
+)
+
+# Background job cadence (seconds). Fetch = latest-post poll; refresh = how
+# often the token-refresh job wakes up to check whether a refresh is due.
+INSTAGRAM_FETCH_INTERVAL_SECONDS = int(
+    os.getenv("INSTAGRAM_FETCH_INTERVAL_SECONDS", str(30 * 60))
+)
+INSTAGRAM_REFRESH_CHECK_INTERVAL_SECONDS = int(
+    os.getenv("INSTAGRAM_REFRESH_CHECK_INTERVAL_SECONDS", str(24 * 60 * 60))
+)
+
 # Firestore emulator coordinates. google-cloud-firestore reads
 # FIRESTORE_EMULATOR_HOST off the environment on client construction and skips
 # auth when it's set — same client code as prod, just a different endpoint.

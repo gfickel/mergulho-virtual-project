@@ -114,6 +114,59 @@ def _make_placeholder_jpeg(label: str, color: tuple[int, int, int]) -> bytes:
     return buf.getvalue()
 
 
+# Stable id for the seeded Instagram post — makes it obvious in the Firestore
+# doc and the cache dir that this is debug data, not a real Graph API media id.
+SEED_INSTAGRAM_MEDIA_ID = "seed-instagram-001"
+
+
+def seed_instagram_post() -> bool:
+    """Seed a placeholder instagram/latest_post so the Unity editor's
+    latest-post widget renders without real Instagram credentials.
+
+    Idempotent: skips when the seed doc and its cached image both already
+    exist (the seed's image is re-created if missing, e.g. after wiping
+    local_storage). Never touches a real fetched post — if the stored doc's
+    media_id isn't the seed sentinel, the fetch job owns it and seeding would
+    clobber real data. Returns True if anything was (re)created.
+    """
+    import config
+
+    doc_ref = db.collection("instagram").document("latest_post")
+    image_path = config.INSTAGRAM_CACHE_DIR / f"{SEED_INSTAGRAM_MEDIA_ID}.jpg"
+    snap = doc_ref.get()
+    if snap.exists:
+        stored = snap.to_dict() or {}
+        if stored.get("media_id") != SEED_INSTAGRAM_MEDIA_ID:
+            logger.info(
+                "[seed] instagram/latest_post holds a real post (%s) — not clobbering",
+                stored.get("media_id"),
+            )
+            return False
+        if image_path.is_file():
+            logger.info("[seed] instagram/latest_post already present — skipping")
+            return False
+
+    jpeg = _make_placeholder_jpeg(
+        "Instagram\nÚltimo post (seed)", (131, 58, 180)
+    )
+    config.INSTAGRAM_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    image_path.write_bytes(jpeg)
+
+    doc_ref.set(
+        {
+            "media_id": SEED_INSTAGRAM_MEDIA_ID,
+            "media_type": "IMAGE",
+            "video_url": "",
+            "caption": "Post de exemplo (seed de debug) — Mergulho Virtual 🦈",
+            "permalink": "https://www.instagram.com/p/EXEMPLO/",
+            "timestamp": "2026-07-01T12:00:00+0000",
+            "fetched_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        }
+    )
+    logger.info("[seed] created instagram/latest_post placeholder")
+    return True
+
+
 def seed_avistamentos() -> int:
     """Insert any missing seed avistamentos. Returns the number newly created."""
     coll = db.collection("avistamentos")
@@ -159,3 +212,4 @@ def seed_avistamentos() -> int:
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     seed_avistamentos()
+    seed_instagram_post()

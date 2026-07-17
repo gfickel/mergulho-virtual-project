@@ -11,4 +11,7 @@
     </activity>
   </application>
   <uses-permission android:name="android.permission.VIBRATE" />
+  <!-- GnssProvider subscribes to the raw GPS provider via LocationManager; Unity only
+       auto-injects this for Input.location, so declare it explicitly. -->
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 </manifest>
