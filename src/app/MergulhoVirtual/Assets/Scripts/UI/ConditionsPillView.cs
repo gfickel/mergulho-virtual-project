@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using MergulhoVirtual.UI.Navigation;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,7 +12,6 @@ public class ConditionsPillView : MonoBehaviour
     [SerializeField] ConditionsService conditions;
     [SerializeField] TideService tides;
     [SerializeField] GPSHandler gps;
-    [SerializeField] ScreenManager screenManager;
     [SerializeField] BeachesScreenController beachesController;
 
     Button button;
@@ -95,6 +95,6 @@ public class ConditionsPillView : MonoBehaviour
         {
             beachesController.ShowDetailFor(beach);
         }
-        if (screenManager != null) screenManager.ShowBeaches();
+        AppUiHost.NavigateTo(AppRoutes.Praias);
     }
 }

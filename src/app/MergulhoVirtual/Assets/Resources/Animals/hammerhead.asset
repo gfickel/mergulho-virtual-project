@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8277b3cc71e9e73f2b7ba113e110e6b5, type: 3}
   m_Name: hammerhead
   m_EditorClassIdentifier: Assembly-CSharp::AnimalDef
-  displayName: "Tubar\xE3o Martelo"
+  displayName: "Tubar\xE3o-martelo"
+  binomial: Sphyrna mokarran
   imageName: hammerhead
   description: "O tubar\xE3o-martelo-pan\xE3 (nome cient\xEDfico: Sphyrna mokarran),
     tamb\xE9m chamado popularmente tubar\xE3o-pan\xE3, ca\xE7\xE3o-pan\xE3, ca\xE7\xE3o-rodela,

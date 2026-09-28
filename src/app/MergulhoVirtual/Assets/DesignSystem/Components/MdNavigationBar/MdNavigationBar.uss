@@ -1,67 +1,136 @@
-/* M3 navigation bar — https://m3.material.io/components/navigation-bar/specs
- * Container 80dp on surface-container; each destination = 64x32 active
- * indicator pill (state-layer host) + label-medium label.
- * Each __item is its own ≥48dp touch target (full column width x 80dp).
+/* Bottom navigation — restyled to the V2 dark bar.
+ * Spec: DESIGN_IMPLEMENTATION.md §4 "Bar spec"; token mapping: Appendix A.1.
+ * Figma: `Pinned Bottom Navigation` 390x98 on every V2 frame (node 29:2154 et al).
+ *
+ * NOTE: no hex literals anywhere in this file, comments included —
+ * TokenDisciplineTests.ComponentUss_HasNoHardcodedColors scans the raw text.
+ *
+ * GEOMETRY (transcribed literally — 1 USS px = 1 dp = 1 Figma pt, §1.2)
+ *   container   inverse-surface fill, 1px primary (navy) top border
+ *   tab row     390x64, horizontal, space-between, padding 0 24
+ *   tab         64 wide, vertical, gap 4, centered
+ *   active      56x32 pill, padding 4/16, radius 16, secondary (amber) fill,
+ *               24dp icon tinted on-secondary (navy), label 600 11px white
+ *   inactive    no pill, icon + label white at 50%, label 500 11px
+ *
+ * The 34dp OS home-indicator strip under the row is SAFE-AREA PADDING APPLIED BY THE
+ * HOST, not a drawn element (§1, Appendix B). That is why the bar declares
+ * `min-height` (a floor) rather than `height`, and why the 64dp row height lives on
+ * the ITEM: a host `padding-bottom: 34px` then adds below a row that stays 64 tall,
+ * giving the 98dp total, instead of squeezing the row inside a fixed box.
+ *
+ * WHY THE BASE RULES ARE THE *INACTIVE* LOOK
+ *  USS has no `:not()`, so "inactive" cannot be selected directly. The base rules
+ *  therefore describe the inactive destination and `--active` overrides it. This is
+ *  also where `Inter-Medium.asset` (weight 500) earns its keep: V2's inactive labels
+ *  are 500 while the shared `.md-typescale-label-small` class is 600, so the 500 face
+ *  is applied here, on the inactive state only, and `--active` restores the 600 face.
+ *  Sizes/tracking still match label-small (11px / ls 0) — same values, different face.
+ *
+ * WHITE AT 50% IS NOT A LITERAL
+ *  `color: var(--md-sys-color-inverse-on-surface)` + `opacity: 0.5` (Appendix A.1 maps
+ *  "white at 50%" to inverse-on-surface at 50%). `opacity` is a number, not a color,
+ *  so TokenDisciplineTests stays green and a re-theme still moves it.
+ *
+ * ONE DELIBERATE DEVIATION: THE PILL BOX IS UNCONDITIONAL
+ *  V2's tabs are 41dp (inactive) and 49dp (active) tall, both centred in the 64dp row,
+ *  so its inactive labels sit ~4dp HIGHER than the active one. Here the 56x32 box is
+ *  always present and only its fill changes, which:
+ *    - keeps every icon centre exactly where V2 puts it (23.5dp down the row, identical
+ *      in both designs — the deviation is only that inactive labels join the active
+ *      one's baseline instead of floating 4dp above it);
+ *    - keeps the active/inactive switch a pure repaint, with no layout jump under the
+ *      background-color transition;
+ *    - keeps the state layer's rounded, clipped host alive for inactive presses;
+ *    - avoids clipping the glyph: TextCore's line box for a 24px font is taller than
+ *      24px, so a 24x24 `overflow: hidden` host would crop it.
  */
 
 .md-nav-bar {
     flex-direction: row;
-    min-height: 80px;
-    background-color: var(--md-sys-color-surface-container);
+    justify-content: space-between;
+    align-items: center;
+    min-height: 64px;
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 24px;
+    padding-right: 24px;
+    background-color: var(--md-sys-color-inverse-surface);
+    border-top-width: 1px;
+    border-top-color: var(--md-sys-color-primary);
 }
 
+/* One destination. Fixed 64dp width + space-between is what makes 3, 4 or 5
+ * destinations all lay out without touching this file (5 x 64 = 320 <= 342dp of
+ * content width at 390dp). `flex-shrink: 0` keeps that true at the 5-tab end. */
 .md-nav-bar__item {
-    flex-grow: 1;
-    flex-basis: 0;
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    padding-top: 12px;
-    padding-bottom: 16px;
 }
 
+/* Icon host — the active-indicator pill: 56x32, padding 4/16 around the 24dp icon.
+ * Transparent when inactive (V2: "no pill"), amber when active; see the deviation
+ * note in the header for why the BOX is unconditional and only the fill moves. */
 .md-nav-bar__indicator {
-    width: 64px;
+    width: 56px;
     height: 32px;
-    border-radius: var(--md-sys-shape-corner-full);
+    padding: 4px 16px;
+    flex-shrink: 0;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
+    border-radius: var(--md-sys-shape-corner-large);
+    background-color: rgba(0, 0, 0, 0);
     overflow: hidden;
     transition-property: background-color;
     transition-duration: var(--md-sys-motion-duration-short2);
 }
 
 .md-nav-bar__indicator .md-state-layer {
-    background-color: var(--md-sys-color-on-surface);
+    background-color: var(--md-sys-color-inverse-on-surface);
 }
 
 .md-nav-bar__icon {
     font-size: 24px;
-    color: var(--md-sys-color-on-surface-variant);
+    color: var(--md-sys-color-inverse-on-surface);
+    opacity: 0.5;
 }
 
-/* Label: M3 label-medium */
+/* Label — label-small metrics (11px / ls 0) at the 500 face (inactive).
+ * `margin-top: 4px` is V2's `gap: 4`; USS has no `gap`.
+ * Deliberately NOT clipped: V2 lets a long label ("Avistamentos", 72dp) overflow the
+ * 64dp tab symmetrically rather than ellipsize it, and space-between leaves room. */
 .md-nav-bar__label {
     margin-top: 4px;
     padding: 0;
-    font-size: 12px;
-    letter-spacing: 0.5px;
-    color: var(--md-sys-color-on-surface-variant);
-    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Roboto-Medium.asset");
+    flex-shrink: 0;
+    font-size: 11px;
+    letter-spacing: 0;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Medium.asset");
+    color: var(--md-sys-color-inverse-on-surface);
+    opacity: 0.5;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 /* ---- Active destination ---- */
 
 .md-nav-bar__item--active .md-nav-bar__indicator {
-    background-color: var(--md-sys-color-secondary-container);
+    background-color: var(--md-sys-color-secondary);
 }
 .md-nav-bar__item--active .md-nav-bar__icon {
-    color: var(--md-sys-color-on-secondary-container);
+    color: var(--md-sys-color-on-secondary);
+    opacity: 1;
 }
 .md-nav-bar__item--active .md-nav-bar__label {
-    color: var(--md-sys-color-on-surface);
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-SemiBold.asset");
+    opacity: 1;
+}
+/* Ripple on the amber pill must be the on-color, not white. */
+.md-nav-bar__item--active .md-state-layer {
+    background-color: var(--md-sys-color-on-secondary);
 }
 
 /* ---- Interaction states ---- */

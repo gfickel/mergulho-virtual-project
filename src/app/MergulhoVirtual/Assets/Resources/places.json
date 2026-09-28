@@ -1,6 +1,7 @@
 [
   {
     "name": "Praia do Sancho",
+    "displayName": "Praia do Sancho",
     "imageName": "praia_do_sancho",
     "description": "Considerada uma das praias mais bonitas do mundo, a Praia do Sancho fica em uma enseada cercada por falésias de até 70 metros. O acesso é feito por uma escada vertical instalada nas rochas. Águas cristalinas e ideais para mergulho.",
     "points": [
@@ -216,6 +217,7 @@
   },
   {
     "name": "Baía dos Porcos",
+    "displayName": "Baía dos Porcos",
     "points": [
       {
         "lat": -3.8511647,
@@ -276,6 +278,7 @@
   },
   {
     "name": "Praia da Cacimba do Padre",
+    "displayName": "Praia da Cacimba do Padre",
     "points": [
       {
         "lat": -3.85064,
@@ -440,6 +443,7 @@
   },
   {
     "name": "Praia da Quixaba",
+    "displayName": "Praia da Quixaba",
     "points": [
       {
         "lat": -3.849154408911247,
@@ -466,6 +470,7 @@
   },
   {
     "name": "Praia do Bode",
+    "displayName": "Praia do Bode",
     "points": [
       {
         "lat": -3.8484079,
@@ -566,6 +571,7 @@
   },
   {
     "name": "Praia do Americano",
+    "displayName": "Praia do Americano",
     "points": [
       {
         "lat": -3.8469896,
@@ -660,6 +666,7 @@
   },
   {
     "name": "Boldró Beach",
+    "displayName": "Praia do Boldró",
     "points": [
       {
         "lat": -3.8459244,
@@ -912,6 +919,7 @@
   },
   {
     "name": "Praia da Conceição",
+    "displayName": "Praia da Conceição",
     "points": [
       {
         "lat": -3.8425912,
@@ -1100,6 +1108,7 @@
   },
   {
     "name": "Praia do Meio",
+    "displayName": "Praia do Meio",
     "points": [
       {
         "lat": -3.8396086,
@@ -1204,6 +1213,7 @@
   },
   {
     "name": "Praia do Cachorro",
+    "displayName": "Praia do Cachorro",
     "points": [
       {
         "lat": -3.838682,
@@ -1288,6 +1298,7 @@
   },
   {
     "name": "Praia do Porto de Santo Antônio Noronha",
+    "displayName": "Praia do Porto de Santo Antônio",
     "points": [
       {
         "lat": -3.8347609,
@@ -1376,6 +1387,7 @@
   },
   {
     "name": "Sharks Cove",
+    "displayName": "Enseada dos Tubarões",
     "points": [
       {
         "lat": -3.833728986704995,
@@ -1402,6 +1414,7 @@
   },
   {
     "name": "Buraco da Raquel",
+    "displayName": "Buraco da Raquel",
     "points": [
       {
         "lat": -3.8349289867049947,
@@ -1430,6 +1443,7 @@
   },
   {
     "name": "Enseada da Caieira",
+    "displayName": "Enseada da Caieira",
     "points": [
       {
         "lat": -3.8375279,
@@ -1518,6 +1532,7 @@
   },
   {
     "name": "Atalaia Beach",
+    "displayName": "Praia do Atalaia",
     "points": [
       {
         "lat": -3.8578329,
@@ -1654,6 +1669,7 @@
   },
   {
     "name": "Sueste Beach",
+    "displayName": "Baía do Sueste",
     "points": [
       {
         "lat": -3.8661173,
@@ -1790,6 +1806,7 @@
   },
   {
     "name": "Praia do Leão",
+    "displayName": "Praia do Leão",
     "points": [
       {
         "lat": -3.8703844,

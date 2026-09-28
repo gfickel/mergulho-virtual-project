@@ -4,6 +4,15 @@ using UnityEngine;
 public class AnimalDef : ScriptableObject
 {
     public string displayName;
+
+    /// <summary>
+    /// Scientific binomial ("Sphyrna mokarran"), shown next to the common name on
+    /// the Praia detalhe species card and the AR species card. Optional and
+    /// deliberately blank where the species' identification is still open — a
+    /// wrong binomial is worse than none, so the screens render the name alone.
+    /// </summary>
+    public string binomial;
+
     public string imageName;
     [TextArea(3, 10)] public string description;
     public GameObject prefab;

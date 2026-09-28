@@ -28,9 +28,9 @@
     padding-top: 8px;
     padding-bottom: 8px;
     font-size: 14px;
-    letter-spacing: 0.25px;
+    letter-spacing: 0;
     color: var(--md-sys-color-inverse-on-surface);
-    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Roboto-Regular.asset");
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Regular.asset");
     white-space: normal;
     flex-grow: 1;
     flex-shrink: 1;

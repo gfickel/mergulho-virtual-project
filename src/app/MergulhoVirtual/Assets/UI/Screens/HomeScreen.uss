@@ -1,0 +1,335 @@
+/* Início (Home) screen — DESIGN_IMPLEMENTATION.md §8.1 (Tela 7 / Tela 6).
+ *
+ * TOKENS ONLY: TokenDisciplineTests scans every .uss under Assets/UI exactly like the
+ * design-system components — a hex literal or an undefined var() fails the suite.
+ * Sizes are transcribed literally from Figma (§1.2: 1 USS px = 1 dp = 1 Figma pt).
+ *
+ * Accepted fidelity losses, all pre-agreed:
+ *  - No box-shadow (§3.6): every V2 card also carries a 1px outline-variant border,
+ *    which is what actually separates it from the page; the border is rendered and
+ *    the shadow dropped.
+ *  - No `gap` in USS: Figma gaps become margins (and the two "skip the first child"
+ *    cases are modifier classes added in code, since USS has no :first-child).
+ *  - No line-height (Appendix B): the conditions card is `min-height: 234px` rather
+ *    than a fixed 234 so the five pt-BR rows can grow instead of clipping. At the
+ *    design's 14px body the five rows occupy 5x17 = 85dp against Figma's 5x13.4 = 67;
+ *    Inter's line box is the floor and USS cannot tighten it. The card still lands on
+ *    234 because the sparkline absorbs the slack (flex-grow) instead of being pinned.
+ *  - UI Toolkit's default theme gives every Label a padding/margin inset that no
+ *    Figma text node has. It is zeroed app-wide in Tokens/_typography.uss (see the
+ *    "Label metric reset" block there), so every gap below is one this file authored
+ *    and every wrapping label measures at its full column width.
+ */
+
+.mv-home {
+    flex-grow: 1;
+}
+
+/* The opaque page surface. The root above it stays transparent so the strip
+ * reserved for the navigation bar never paints over it or blocks its taps. */
+.mv-home__content {
+    flex-grow: 1;
+    background-color: var(--md-sys-color-background);
+}
+
+.mv-home__scroll {
+    flex-grow: 1;
+}
+
+/* Main Content Body: V, gap 16, padding 20/16/100/16 — the 100dp bottom is the
+ * pinned-nav clearance, which the shell reserves, so only a scroll tail remains. */
+.mv-home__body {
+    /* Scroll content sizes to its children. Without this the body is a shrinkable
+     * flex child of the ScrollView's content container and a viewport shorter than
+     * the content compresses the cards instead of scrolling them. */
+    flex-shrink: 0;
+    padding-top: 20px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-bottom: 24px;
+}
+
+.mv-home__body > * {
+    margin-bottom: 16px;
+}
+
+/* Shared card language: white surface, 1px border, radius 20. */
+.mv-home__card {
+    background-color: var(--md-sys-color-surface);
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-large-increased);
+}
+
+/* ---- Welcome card (Tela 6, first run only) ---- */
+
+.mv-home__welcome {
+    padding: 16px;
+}
+
+/* Figma: 305dp wide on ONE line (Inter 700 20), gap 8 to the body. The title measures
+ * 305 here too, and the card's content box is 326 — so it only needs to clear the
+ * dismiss badge, which starts 12dp in from the card's right edge. 36 was a whole
+ * gutter and forced a second line, which is what made the card ~50dp too tall. */
+.mv-home__welcome-title {
+    color: var(--md-sys-color-primary);
+    white-space: normal;
+    margin-bottom: 8px;
+    margin-right: 8px;
+}
+
+.mv-home__welcome-body {
+    color: var(--md-sys-color-on-surface-variant);
+    white-space: normal;
+}
+
+/* Dismiss badge. V2 draws `fi-ss-cross-circle` as a 24dp SOLID navy disc with a white
+ * cross, straddling the card's top-right corner (centred ~7dp inside the right edge and
+ * ~10dp below the top one) — hence MdIconButton's *filled* variant carrying a plain
+ * `close` glyph rather than the outlined `cancel` ring, which is a different mark.
+ *
+ * The negative insets pull the 48dp touch target out to the corner; -12 rather than the
+ * -17/-14 that would land the disc exactly on the Figma centre, because at -17 the
+ * target's right edge crosses the 390dp screen edge and the last strip of it stops being
+ * tappable. The disc lands within ~6dp of the design and the whole target stays on
+ * screen. Nothing on the path to the ScrollView viewport clips, so the overhang paints. */
+.mv-home__welcome-close {
+    position: absolute;
+    top: -12px;
+    right: -12px;
+}
+
+/* 24dp disc (the M3 default is 40) with a 16dp cross inside it, matching the V2 mark.
+ * The 48dp root is untouched — the touch target stays accessible. */
+.mv-home__welcome-close .md-icon-button__container {
+    width: 24px;
+    height: 24px;
+}
+
+.mv-home__welcome-close .md-icon {
+    font-size: 16px;
+}
+
+/* ---- Conditions card ("Hoje") ---- */
+
+/* 234dp in Figma, of which the five rows are a tight block (~13dp each) and the
+ * rest is tide curve. `min-height` rather than `height` so a long pt-BR value that
+ * wraps to two lines grows the card instead of clipping; the sparkline's flex-grow
+ * gives the curve every dp the rows did not need, which is what lands the normal
+ * case back on 234. */
+.mv-conditions {
+    min-height: 234px;
+    padding: 12px;
+    background-color: var(--md-sys-color-primary);
+}
+
+.mv-conditions__header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.mv-conditions__title-group {
+    flex-direction: row;
+    align-items: center;
+}
+
+.mv-conditions__title {
+    color: var(--md-sys-color-on-primary);
+}
+
+.mv-conditions__chevron {
+    font-size: 18px;
+    margin-left: 2px;
+    color: var(--md-sys-color-on-primary);
+}
+
+/* V2 underlines this link; UI Toolkit has no text-decoration, so the underline
+ * is a 1px bottom border. */
+.mv-conditions__link {
+    font-size: 10px;
+    color: var(--md-sys-color-on-primary);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--md-sys-color-on-primary);
+    padding-bottom: 1px;
+}
+
+.mv-conditions__row {
+    flex-direction: row;
+}
+
+.mv-conditions__row-label {
+    width: 68px;
+    flex-shrink: 0;
+    color: var(--md-sys-color-on-primary);
+}
+
+.mv-conditions__row-value {
+    flex-grow: 1;
+    flex-shrink: 1;
+    white-space: normal;
+    color: var(--md-sys-color-on-primary);
+}
+
+.mv-conditions__freshness {
+    margin-top: 8px;
+    color: var(--md-sys-color-on-primary);
+    opacity: 0.7;
+}
+
+/* Descendant selectors (specificity 0,2,0) so they beat MdSparkline.uss's own
+ * single-class rules regardless of stylesheet order.
+ *
+ * The card surface is `primary`, which INVERTS between themes (deep navy in light,
+ * pale blue in dark), so nothing painted on it may come from a *-fixed-* token: a
+ * "fixed" token is the same value in both themes, and `primary-fixed-dim` happens
+ * to be exactly the dark-theme card colour — which is how the curve, the low-tide
+ * dots and the "Atualizado" line vanished in dark. Two roles DO flip with the card
+ * and are the only ones used here:
+ *   · text  -> `on-primary`      (white on the navy card, deep navy on the pale one)
+ *   · chart -> `inverse-primary` (pale blue on the navy card, deep navy on the pale
+ *     one) — the soft blue the design draws the curve in, and still a contrasting
+ *     mark after the flip.
+ * Only the amber high-tide markers are absolute: `secondary` is brand amber in
+ * both themes and reads on either surface. */
+.mv-conditions .mv-conditions__sparkline {
+    /* Takes whatever the rows left over, so the card lands on 234 (and the curve
+     * keeps roughly its Figma share of the card) without being pinned to a height
+     * that would clip once a row wraps. */
+    flex-grow: 1;
+    flex-shrink: 0;
+    min-height: 60px;
+    margin-top: 6px;
+}
+
+.mv-conditions .md-sparkline__labels {
+    height: 14px;
+}
+
+.mv-conditions .md-sparkline__fill {
+    color: var(--md-sys-color-inverse-primary);
+    opacity: 0.14;
+}
+
+.mv-conditions .md-sparkline__line {
+    color: var(--md-sys-color-inverse-primary);
+}
+
+.mv-conditions .md-sparkline__baseline {
+    color: var(--md-sys-color-on-primary);
+    opacity: 0.4;
+}
+
+.mv-conditions .md-sparkline__high-dots {
+    color: var(--md-sys-color-secondary);
+}
+
+.mv-conditions .md-sparkline__low-dots {
+    color: var(--md-sys-color-inverse-primary);
+}
+
+.mv-conditions .md-sparkline__label {
+    color: var(--md-sys-color-on-primary);
+    opacity: 0.75;
+}
+
+/* ---- Feature grid (2 × 2 of 173×138, gap 12) ---- */
+
+.mv-home__grid-row {
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.mv-home__grid-row--gutter {
+    margin-top: 12px;
+}
+
+.mv-feature-card {
+    flex-grow: 1;
+    flex-basis: 0;
+    min-height: 138px;
+    padding: 12px;
+    background-color: var(--md-sys-color-surface);
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-large-increased);
+    overflow: hidden; /* so the state layer follows the rounded corners */
+}
+
+.mv-feature-card--gutter {
+    margin-left: 12px;
+}
+
+.mv-feature-card__tile {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--md-sys-color-primary);
+    border-radius: var(--md-sys-shape-corner-small);
+    margin-bottom: 10px;
+}
+
+.mv-feature-card__glyph {
+    font-size: 24px;
+    color: var(--md-sys-color-secondary);
+}
+
+.mv-feature-card__text {
+    flex-shrink: 1;
+}
+
+.mv-feature-card__title {
+    color: var(--md-sys-color-primary);
+    white-space: normal;
+    margin-bottom: 2px;
+}
+
+.mv-feature-card__body {
+    color: var(--md-sys-color-on-surface-variant);
+    white-space: normal;
+}
+
+/* Sobre (Decision D2) — same card language, laid out full-width so it reads as a
+ * section of its own rather than an orphaned fifth grid cell.
+ *
+ * `flex-grow`/`flex-basis` MUST be reset. The grid cells set `flex-grow: 1;
+ * flex-basis: 0` to split their ROW evenly, where basis means width; this card is a
+ * child of the COLUMN body, where the very same basis: 0 means "height 0" — and with
+ * min-height dropped to 0 there was nothing left holding the card open, so it
+ * collapsed to its 24dp of padding and clipped its own title. */
+.mv-feature-card--wide {
+    flex-direction: row;
+    align-items: center;
+    flex-grow: 0;
+    flex-basis: auto;
+    min-height: 0;
+}
+
+.mv-feature-card--wide .mv-feature-card__tile {
+    margin-bottom: 0;
+    margin-right: 12px;
+}
+
+.mv-feature-card--wide .mv-feature-card__text {
+    flex-grow: 1;
+}
+
+/* Press/hover/focus tint — the M3 state-layer pattern (_state.uss). */
+.mv-feature-card .md-state-layer {
+    background-color: var(--md-sys-color-primary);
+}
+
+.mv-feature-card:hover .md-state-layer {
+    opacity: var(--md-sys-state-hover-opacity);
+}
+
+.mv-feature-card:focus .md-state-layer {
+    opacity: var(--md-sys-state-focus-opacity);
+}
+
+.mv-feature-card:active .md-state-layer {
+    opacity: var(--md-sys-state-pressed-opacity);
+}

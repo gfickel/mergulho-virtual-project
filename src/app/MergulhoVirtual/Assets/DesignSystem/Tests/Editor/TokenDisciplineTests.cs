@@ -28,13 +28,22 @@ namespace MergulhoVirtual.DesignSystem.Tests
             files.SelectMany(f => VarDefinition.Matches(File.ReadAllText(f)).Select(m => m.Groups[1].Value))
                  .ToHashSet();
 
-        static string[] TokenFiles(string colorTheme) => new[]
+        /// <summary>
+        /// Token files that are swapped per theme: the generated M3 color roles plus the
+        /// hand-maintained brand extensions (success/warning — see DESIGN_IMPLEMENTATION §3.2).
+        /// </summary>
+        static string[] ThemeColorFiles(string colorTheme) => new[]
         {
             Path.Combine(DesignSystemPath, "Tokens", $"_colors-{colorTheme}.uss"),
+            Path.Combine(DesignSystemPath, "Tokens", $"_brand-{colorTheme}.uss"),
+        };
+
+        static string[] TokenFiles(string colorTheme) => ThemeColorFiles(colorTheme).Concat(new[]
+        {
             Path.Combine(DesignSystemPath, "Tokens", "_shape.uss"),
             Path.Combine(DesignSystemPath, "Tokens", "_state.uss"),
             Path.Combine(DesignSystemPath, "Tokens", "_motion.uss"),
-        };
+        }).ToArray();
 
         static string UiScreensPath => Path.Combine(Application.dataPath, "UI");
 
@@ -51,8 +60,8 @@ namespace MergulhoVirtual.DesignSystem.Tests
         [Test]
         public void LightAndDarkThemes_DefineIdenticalTokenSets()
         {
-            var light = DefinitionsIn(Path.Combine(DesignSystemPath, "Tokens", "_colors-light.uss"));
-            var dark = DefinitionsIn(Path.Combine(DesignSystemPath, "Tokens", "_colors-dark.uss"));
+            var light = DefinitionsIn(ThemeColorFiles("light"));
+            var dark = DefinitionsIn(ThemeColorFiles("dark"));
             Assert.That(light.SetEquals(dark), Is.True,
                 "themes drifted — only in light: [" + string.Join(", ", light.Except(dark)) +
                 "], only in dark: [" + string.Join(", ", dark.Except(light)) + "]");
@@ -100,12 +109,22 @@ namespace MergulhoVirtual.DesignSystem.Tests
         public void ThemeFiles_ImportTheSameComponentStylesheets()
         {
             var import = new Regex("@import url\\(\"([^\"]+)\"\\);");
+            // _colors-* and _brand-* are the per-theme token files; everything else must match.
             string Normalize(string path) =>
                 string.Join("\n", import.Matches(File.ReadAllText(Path.Combine(DesignSystemPath, path)))
                     .Select(m => m.Groups[1].Value)
-                    .Where(u => !u.Contains("_colors-")));
+                    .Where(u => !u.Contains("_colors-") && !u.Contains("_brand-")));
             Assert.That(Normalize("Theme-Light.tss"), Is.EqualTo(Normalize("Theme-Dark.tss")),
-                "Theme-Light.tss and Theme-Dark.tss import lists drifted (they must differ only in _colors-*)");
+                "Theme-Light.tss and Theme-Dark.tss import lists drifted " +
+                "(they must differ only in _colors-* and _brand-*)");
+
+            // ...and each theme must actually import its own side of those two.
+            foreach (var theme in new[] { "light", "dark" })
+            {
+                string text = File.ReadAllText(Path.Combine(DesignSystemPath, $"Theme-{char.ToUpper(theme[0])}{theme.Substring(1)}.tss"));
+                foreach (var token in new[] { $"_colors-{theme}.uss", $"_brand-{theme}.uss" })
+                    Assert.That(text, Does.Contain(token), $"Theme-{theme} does not import {token}");
+            }
         }
     }
 }

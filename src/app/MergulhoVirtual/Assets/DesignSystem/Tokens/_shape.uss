@@ -1,14 +1,45 @@
-/* M3 shape scale — https://m3.material.io/styles/shape/shape-scale-tokens
+/* Shape scale — retuned to the V2 design (DESIGN_IMPLEMENTATION.md §3.5).
  * Consume as: border-radius: var(--md-sys-shape-corner-medium);
- * "full" (pill) uses a large px value; UI Toolkit clamps radius to half the
- * element's smaller dimension, which yields the pill shape.
+ *
+ * WHY THIS DEVIATES FROM THE STOCK M3 SCALE
+ *  V2 uses 8 / 10 / 12 / 14 / 16 / 20 / 24 / pill. The stock M3 ladder
+ *  (4 / 8 / 12 / 16 / 28) has neither enough rungs nor the right ones, so the existing
+ *  token NAMES are retuned in place and the two missing rungs are named in the
+ *  M3-2025-expressive "*-increased" style rather than starting a parallel vocabulary.
+ *
+ *  token                 | M3 stock | V2  | V2 usage
+ *  ----------------------|----------|-----|-------------------------------------------
+ *  corner-none           |    0     |  0  | square surfaces
+ *  corner-extra-small    |    4     |  8  | chips
+ *  corner-small          |    8     | 10  | icon tiles (36dp navy squares)
+ *  corner-medium         |   12     | 12  | small buttons, upload thumbnails
+ *  corner-medium-increased |  --    | 14  | submit button            (added rung)
+ *  corner-large          |   16     | 16  | list cards, alert bar, nav pill, stat cards
+ *  corner-large-increased|   --     | 20  | feature cards, CTA, AR info card (added rung)
+ *  corner-extra-large    |   28     | 24  | large content cards
+ *  corner-full           |  1000    | 1000| pills (V2 writes 100/999)
+ *
+ * "full" (pill) uses a large px value; UI Toolkit clamps radius to half the element's
+ * smaller dimension, which yields the pill shape.
+ *
+ * Components whose look shifts with this retune (intentional — the component restyle
+ * slices re-point them where V2 disagrees):
+ *  - 4 -> 8  : MdMenu, MdDropdown popup, MdSnackbar, MdTextField
+ *  - 8 -> 10 : MdChip (V2 chips are 8 -> repoint to extra-small when MdChip is restyled),
+ *              MdListItem state layer, Gallery swatches
+ *  - 28 -> 24: MdDialog, MdBottomSheet top corners
+ *  - unchanged: corner-medium (MdCard, MdFab small) and corner-large (MdFab,
+ *              BeachesScreen cards). V2 wants 16 on cards, so MdCard moves from
+ *              corner-medium to corner-large in its restyle.
  */
 :root {
     --md-sys-shape-corner-none: 0;
-    --md-sys-shape-corner-extra-small: 4px;
-    --md-sys-shape-corner-small: 8px;
+    --md-sys-shape-corner-extra-small: 8px;
+    --md-sys-shape-corner-small: 10px;
     --md-sys-shape-corner-medium: 12px;
+    --md-sys-shape-corner-medium-increased: 14px;
     --md-sys-shape-corner-large: 16px;
-    --md-sys-shape-corner-extra-large: 28px;
+    --md-sys-shape-corner-large-increased: 20px;
+    --md-sys-shape-corner-extra-large: 24px;
     --md-sys-shape-corner-full: 1000px;
 }

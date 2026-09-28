@@ -1,0 +1,246 @@
+/* Praias landing — DESIGN_IMPLEMENTATION.md §8.2 (Tela 1, 9:109).
+ *
+ * TOKENS ONLY: TokenDisciplineTests scans every .uss under Assets/UI exactly like the
+ * design-system components — a color literal (in a rule OR in a comment) or an
+ * undefined var() fails the suite. Sizes transcribe literally from Figma
+ * (§1.2: 1 USS px = 1 dp = 1 Figma pt).
+ *
+ * Accepted fidelity losses, all pre-agreed:
+ *  - No box-shadow (§3.6): each V2 card also carries a 1px outline-variant border,
+ *    which is what separates it from the page. Border rendered, shadow dropped.
+ *  - No `gap` in USS: Figma gaps become margins (and the "skip the first child"
+ *    cases are modifier classes added in code, since USS has no :first-child).
+ *  - No text-transform: V2 renders the three caption labels ("VOCÊ ESTÁ EM",
+ *    "MARÉ AGORA", "PICO DE AVISTAMENTO") uppercased by a Figma text-case
+ *    transform while the text nodes themselves are title case. UI Toolkit has no
+ *    `text-transform`, and uppercasing in C# would mean a screen manufacturing a
+ *    user-visible string — so the labels ship as the ViewModel spells them.
+ *  - Label padding/margin is zeroed app-wide in Tokens/_typography.uss, so every
+ *    margin below is one this file authored.
+ */
+
+.mv-praias {
+    flex-grow: 1;
+}
+
+/* Opaque page surface. The root above it stays transparent so the strip reserved
+ * for the navigation bar never paints over it or blocks its taps. Note the TOP
+ * safe-area inset is NOT padding here (unlike Home): the hero is full-bleed and
+ * takes it through MvHeroHeader.TopInset instead. */
+.mv-praias__content {
+    flex-grow: 1;
+    background-color: var(--md-sys-color-background);
+}
+
+.mv-praias__scroll {
+    flex-grow: 1;
+}
+
+/* ---- Hero (240dp compact) ---- */
+
+/* Painted behind the photo so the three beaches with no cover image get a
+ * deliberate surface plus a glyph rather than an empty 240dp frame — the same
+ * treatment the beach list cards used. */
+.mv-praias__hero-placeholder {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--md-sys-color-surface-container-highest);
+}
+
+.mv-praias__hero-placeholder-icon {
+    font-size: 56px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ---- Body: V, gap 16, padding 20/16/100/16 ---- */
+
+.mv-praias__body {
+    /* Scroll content sizes to its children; without this the body is a shrinkable
+     * flex child and a short viewport compresses the cards instead of scrolling. */
+    flex-shrink: 0;
+    padding-top: 20px;
+    padding-left: 16px;
+    padding-right: 16px;
+    /* Figma's 100dp bottom is clearance for the pinned navigation bar, which the
+     * shell reserves below this screen — only a scroll tail remains. */
+    padding-bottom: 24px;
+}
+
+.mv-praias__body > * {
+    margin-bottom: 16px;
+}
+
+/* Shared card language: white surface, 1px border. */
+.mv-praias__card {
+    background-color: var(--md-sys-color-surface);
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline-variant);
+}
+
+/* ---- Location card ("Você está em") ---- */
+
+.mv-praias__location {
+    padding: 16px;
+    border-radius: var(--md-sys-shape-corner-large-increased);
+    overflow: hidden; /* so the state layer follows the rounded corners */
+}
+
+.mv-praias__location-head {
+    flex-direction: column;
+}
+
+/* 13/600 with the design's one-off 0.5 tracking (Appendix A.2 lists this string
+ * as one of the three in the whole design with non-zero letter-spacing). */
+.mv-praias__location-caption {
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-praias__location-name-row {
+    flex-direction: row;
+    align-items: center;
+}
+
+.mv-praias__location-name {
+    flex-grow: 1;
+    flex-shrink: 1;
+    white-space: normal;
+    color: var(--md-sys-color-primary);
+}
+
+.mv-praias__location-chevron {
+    font-size: 24px;
+    flex-shrink: 0;
+    margin-left: 8px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-praias__divider {
+    height: 1px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+    background-color: var(--md-sys-color-outline-variant);
+}
+
+.mv-praias__location-foot {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mv-praias__location-region {
+    flex-shrink: 1;
+    color: var(--md-sys-color-primary);
+}
+
+.mv-praias__risk {
+    margin-left: 12px;
+}
+
+.mv-praias__location .md-state-layer {
+    background-color: var(--md-sys-color-primary);
+}
+.mv-praias__location:hover .md-state-layer {
+    opacity: var(--md-sys-state-hover-opacity);
+}
+.mv-praias__location:focus .md-state-layer {
+    opacity: var(--md-sys-state-focus-opacity);
+}
+.mv-praias__location:active .md-state-layer {
+    opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* ---- Stats row (two 173x77 cards, gap 12) ---- */
+
+.mv-praias__stats-row {
+    flex-direction: row;
+    align-items: stretch;
+}
+
+/* flex-basis: 0 + grow splits the row evenly, which reproduces 173 at the 390dp
+ * design width and adapts on other widths. */
+.mv-praias__stat {
+    flex-grow: 1;
+    flex-basis: 0;
+    padding: 16px;
+    border-radius: var(--md-sys-shape-corner-large);
+}
+
+.mv-praias__stat--gutter {
+    margin-left: 12px;
+}
+
+.mv-praias__stat-caption {
+    margin-bottom: 8px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* "—" lives here, and only here: a stat column is a fixed slot whose label is
+ * the content, so an unfilled value shows the dash rather than collapsing the
+ * card and leaving its sibling stranded at half width. Sections that can
+ * disappear entirely are hidden in C# off the ViewModel's Has* flags instead. */
+.mv-praias__stat-value {
+    white-space: normal;
+    color: var(--md-sys-color-primary);
+}
+
+/* ---- "Ciência cidadã" CTA ---- */
+
+.mv-praias__cta {
+    flex-direction: row;
+    align-items: center;
+    padding: 16px;
+    background-color: var(--md-sys-color-primary);
+    border-radius: var(--md-sys-shape-corner-large-increased);
+}
+
+.mv-praias__cta-text {
+    flex-grow: 1;
+    flex-shrink: 1;
+    margin-right: 12px;
+}
+
+.mv-praias__cta-title {
+    font-size: 16px;
+    margin-bottom: 4px;
+    color: var(--md-sys-color-secondary);
+}
+
+.mv-praias__cta-body {
+    white-space: normal;
+    color: var(--md-sys-color-on-primary);
+}
+
+/* V2's button is the amber pair on the navy card, and 36dp tall with a 12dp
+ * radius rather than MdButton's 40dp pill. Three classes (0,3,0) so it beats
+ * `.md-button--filled .md-button__container` (0,2,0) whatever the stylesheet
+ * order turns out to be. The 48dp touch-target root is left alone. */
+.mv-praias__cta-button.md-button--filled .md-button__container {
+    height: 36px;
+    padding-left: 14px;
+    padding-right: 14px;
+    border-radius: var(--md-sys-shape-corner-medium);
+    background-color: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+}
+
+.mv-praias__cta-button.md-button--filled .md-state-layer {
+    background-color: var(--md-sys-color-on-secondary);
+}
+
+.mv-praias__cta-button .md-button__label {
+    font-size: 13px;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset");
+}
+
+/* The 48dp touch-target root stays 48dp — only the visible pill shrinks to 36. */
+.mv-praias__cta-button {
+    flex-shrink: 0;
+}

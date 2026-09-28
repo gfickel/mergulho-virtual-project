@@ -1,7 +1,23 @@
 # Icons included in the shipped MaterialSymbols subset font.
 # One icon name per line (names from MaterialSymbolsOutlined.codepoints).
+# Comment lines and blanks are ignored; the list is deduped and sorted by the script.
 # After editing, rerun:  .venv/bin/python tools/design_system/subset_material_symbols.py
 # then regenerate font assets (make ds-setup).
+#
+# The V2 design (DESIGN_IMPLEMENTATION.md §3.7) is drawn with Flaticon glyphs; we ship
+# the nearest Material Symbols equivalent (option (a)). Mapping:
+#   fi-sr-home           -> home                 fi-ss-doctor       -> medical_services
+#   fi-sr-map-marker     -> location_on          fi-ss-call-outgoing-> call
+#   fi-sr-mode-landscape -> filter_center_focus  fi-ss-cross-circle -> cancel
+#     (V2's Mergulho glyph is an AR-focus frame, NOT the mountains `landscape`
+#      reads as — see the Tela 7 tile and the bottom-bar tab.)
+#   alert-triangle       -> warning              fi-ss-plus-small   -> add
+#   arrow-left           -> arrow_back           add_circle         -> add_circle
+#   chart-column         -> bar_chart            close / x          -> close
+#   compass              -> explore              chevron_forward    -> chevron_right
+#   mail                 -> mail                 map-pin            -> location_on
+#   user                 -> person               checkbox (Material kit) -> check_box*
+# The Avistamentos tab's custom shark fin has NO equivalent — see the TODO at the end.
 
 # Navigation / chrome
 arrow_back
@@ -26,6 +42,8 @@ link
 
 # Status / feedback
 check
+check_box
+check_box_outline_blank
 check_circle
 error
 warning
@@ -43,6 +61,7 @@ download
 
 # Actions
 add
+add_circle
 remove
 delete
 edit
@@ -82,6 +101,7 @@ gps_fixed
 
 # Domain: sea / diving / AR
 waves
+landscape
 water
 water_drop
 pool
@@ -97,7 +117,32 @@ thermostat
 view_in_ar
 3d_rotation
 pinch
+filter_center_focus
 
 # Time / calendar
 calendar_month
 event
+
+# Contact / people / emergency  (V2 SOS screen + report form)
+call
+mail
+person
+medical_services
+
+# Data / stats
+bar_chart
+
+# ---------------------------------------------------------------------------
+# TODO (blocked on the designer — DESIGN_IMPLEMENTATION.md §3.7, Decision D7):
+#   The Avistamentos bottom-nav destination uses a CUSTOM SHARK-FIN glyph (in the
+#   Figma it is the node misleadingly named "heart", a boolean-union vector).
+#   Material Symbols has NO equivalent — `waves`, `surfing`, `scuba_diving` and
+#   `pool` were all considered and none reads as a fin. Do NOT substitute one.
+#   Resolution is option (b): get the SVG from the designer and either subset a
+#   second icon font or ship the fin as a sprite/VectorImage.
+#   UNTIL THEN both sites render ONE shared stand-in, `visibility` (an avistamento
+#   is a sighting — it is not pretending to be a fin), named once as
+#   MergulhoVirtual.UI.Navigation.AppIcons.AvistamentosPlaceholder and consumed by
+#   AppTabs.Default (bottom-bar tab) and HomeViewModel.GridFeatures (Home tile), so
+#   the two flip together in a single edit when the asset arrives.
+# ---------------------------------------------------------------------------

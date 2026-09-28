@@ -3,6 +3,7 @@
     "rootNamespace": "MergulhoVirtual.UI.Tests",
     "references": [
         "MergulhoVirtual.UI",
+        "MergulhoVirtual.DesignSystem",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

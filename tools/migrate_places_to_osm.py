@@ -8,8 +8,10 @@ Source geometry, in priority order:
   3. OSM point node + buffer       -> Sharks Cove, Buraco da Raquel (only points exist in OSM)
   4. geocoder center + buffer      -> Quixaba (no OSM geometry at all; shrink its old box)
 
-Only the `points` array of each beach is touched; name/imageName/description/
-photoCredit and file order are preserved verbatim. 13 beaches get exact OSM
+Only the `points` array of each beach is touched. Every other key -- name,
+displayName, imageName, description, photoCredit and anything hand-added later --
+survives verbatim, because the rewrite copies the entry's own `.items()` rather
+than rebuilding a fixed field list; file order is preserved too. 13 beaches get exact OSM
 outlines, Cacimba gets its real relation outline (14 precise total), and the 3
 un-traceable spots become small point-polygons centered on their best-known
 coordinate -- far tighter than the ~1 km boxes they replace, so the new

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEditor;
-using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,8 +19,8 @@ using UnityEngine.UI;
 ///   - ScrollRect pattern: Viewport (Mask) → Content (VLG + ContentSizeFitter Vertical=Preferred)
 ///   - Bottom clearance for BottomNav (220 px)
 ///
-/// Auto-wires the ScreenManager.registerScreen field and the BottomNav's
-/// ReportButton.onClick → ScreenManager.ShowRegister(). After running, the
+/// Navigation wiring is gone since Slice 1 — the screen is routed as
+/// AppRoutes.Avistamentos by AppUiHost (see AppUiBuilder). After running, the
 /// user just needs to press Play and tap the report icon.
 /// </summary>
 public static class RegisterScreenBuilder
@@ -297,7 +296,7 @@ public static class RegisterScreenBuilder
 
         Debug.Log("[RegisterScreenBuilder] RegisterScreen created. " +
                   "Don't forget to save the scene (Ctrl+S). " +
-                  "If the BottomNav ReportButton wasn't auto-wired, set its OnClick to ScreenManager.ShowRegister().");
+                  "Navigation is owned by MdRouter — run `make ui-setup` to (re)wire the shell.");
     }
 
     // ------------------------------------------------------------------------
@@ -492,47 +491,21 @@ public static class RegisterScreenBuilder
     }
 
     // ------------------------------------------------------------------------
-    // ScreenManager + ReportButton wiring.
+    // Navigation wiring — RETIRED in Slice 1 (DESIGN_IMPLEMENTATION.md §4).
+    //
+    // ScreenManager no longer holds per-screen GameObject fields or Show*()
+    // methods, and the uGUI BottomNav is deactivated in favour of the UI Toolkit
+    // MdNavigationBar. RegisterScreen is routed as AppRoutes.Avistamentos by
+    // AppUiHost (see AppUiBuilder / `make ui-setup`), so there is nothing for
+    // this builder to wire. Kept as no-ops so the build sequence still reads
+    // top-to-bottom; delete with the rest of the screen in Slice 6.
     // ------------------------------------------------------------------------
     static void WireScreenManager(GameObject registerScreen)
     {
-        var smGo = GameObject.Find("ScreenManager");
-        if (smGo == null) return;
-        var sm = smGo.GetComponent<ScreenManager>();
-        if (sm == null) return;
-        var so = new SerializedObject(sm);
-        var prop = so.FindProperty("registerScreen");
-        if (prop == null)
-        {
-            Debug.LogWarning("[RegisterScreenBuilder] ScreenManager has no 'registerScreen' field. " +
-                             "Recompile, then re-run.");
-            return;
-        }
-        prop.objectReferenceValue = registerScreen;
-        so.ApplyModifiedPropertiesWithoutUndo();
     }
 
     static void WireReportButton()
     {
-        // Find the ReportButton under BottomNav and bind its OnClick to ScreenManager.ShowRegister.
-        var reportTransform = FindDeep("BottomNav", "ReportButton");
-        if (reportTransform == null) return;
-        var btn = reportTransform.GetComponent<Button>();
-        if (btn == null) return;
-        var smGo = GameObject.Find("ScreenManager");
-        if (smGo == null) return;
-        var sm = smGo.GetComponent<ScreenManager>();
-        if (sm == null) return;
-
-        // Avoid duplicating if the call is already there.
-        for (int i = 0; i < btn.onClick.GetPersistentEventCount(); i++)
-        {
-            if (btn.onClick.GetPersistentTarget(i) == sm
-                && btn.onClick.GetPersistentMethodName(i) == nameof(ScreenManager.ShowRegister))
-                return;
-        }
-        UnityEventTools.AddPersistentListener(btn.onClick, sm.ShowRegister);
-        EditorUtility.SetDirty(btn);
     }
 
     static Transform FindDeep(string parentName, string childName)

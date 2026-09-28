@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8277b3cc71e9e73f2b7ba113e110e6b5, type: 3}
   m_Name: nurse_shark
   m_EditorClassIdentifier: Assembly-CSharp::AnimalDef
-  displayName: "Tubar\xE3o Lixa"
+  displayName: "Tubar\xE3o-lixa"
+  binomial: Ginglymostoma cirratum
   imageName: nurse_shark
   description: "Tubar\xE3o-lixa, ca\xE7\xE3o-lixa, ca\xE7\xE3o-barroso, ca\xE7\xE3o-gata
     ou lambaru (nome cient\xEDfico: Ginglymostoma cirratum) \xE9 uma esp\xE9cie de

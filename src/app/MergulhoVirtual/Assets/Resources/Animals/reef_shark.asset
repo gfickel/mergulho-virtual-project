@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8277b3cc71e9e73f2b7ba113e110e6b5, type: 3}
   m_Name: reef_shark
   m_EditorClassIdentifier: Assembly-CSharp::AnimalDef
-  displayName: "Tubar\xE3o Bico-Fino"
+  displayName: "Tubar\xE3o-bico-fino"
+  binomial: ''
   imageName: reef_shark
   description: "O tubar\xE3o-de-nariz-preto (Carcharhinus acronotus) \xE9 uma esp\xE9cie
     de tubar\xE3o requiem, pertencente \xE0 fam\xEDlia Carcharhinidae, comum nas

@@ -1,0 +1,119 @@
+/* MvMediaCarousel — horizontal strip of photo cards ("Galeria de avistamentos").
+ * Spec: DESIGN_IMPLEMENTATION.md §6 row 9, §8.3 "Gallery section".
+ * Figma: `Gallery Scroll Track` 15:624 — H, gap 12; `Gallery Item 1` 15:625 —
+ * 160x171, r16, surface fill, 1px outline-variant; image 160x120;
+ * caption pad 10, gap 2, title 13/700, credit 11/400.
+ *
+ * NOTE: no hex literals anywhere in this file, comments included —
+ * TokenDisciplineTests.ComponentUss_HasNoHardcodedColors scans the raw text.
+ *
+ * THE SCROLLBAR IS HIDDEN FROM C#, NOT FROM HERE
+ *   ScrollView writes its scrollers' `display` as an INLINE style every layout
+ *   pass, and inline beats stylesheet — so there is deliberately no
+ *   `.unity-scroller` rule in this file. See the remarks on MvMediaCarousel for
+ *   the full reason and for why it is duplicated from Assets/UI/Controls/AppScrollView.
+ *
+ * WHY THE HEIGHT IS FIXED
+ *   171 = 120 image + 51 caption (10 + 16 title + 2 + 13 credit + 10). A
+ *   horizontal ScrollView inside an auto-height column has no intrinsic height to
+ *   resolve against, so the strip declares V2's 171dp outright. Both labels are
+ *   single-line + ellipsised, so nothing can outgrow it; a caller wanting taller
+ *   cards overrides `height` on the root AND on `__card` together.
+ */
+
+.mv-media-carousel {
+    height: 171px;
+    flex-shrink: 0;
+}
+
+.mv-media-carousel__scroll {
+    flex-grow: 1;
+}
+
+.mv-media-carousel__track {
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+/* ---- Card ---- */
+
+.mv-media-carousel__card {
+    width: 160px;
+    height: 171px;
+    flex-shrink: 0;
+    margin-left: 12px;
+    flex-direction: column;
+    border-radius: var(--md-sys-shape-corner-large);
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-surface);
+    overflow: hidden;
+}
+
+.mv-media-carousel__card--first {
+    margin-left: 0;
+}
+
+/* Media well. Its own background is what a card with no photo yet shows, so a
+ * loading gallery keeps the strip's shape instead of collapsing. */
+.mv-media-carousel__media {
+    height: 120px;
+    flex-shrink: 0;
+    background-color: var(--md-sys-color-surface-container-high);
+}
+
+.mv-media-carousel__image {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.mv-media-carousel__caption {
+    flex-grow: 1;
+    flex-direction: column;
+    justify-content: center;
+    padding: 10px;
+}
+
+/* 13/700 — between body-medium and title-small, so the metrics are local. */
+.mv-media-carousel__title {
+    margin: 0;
+    padding: 0;
+    font-size: 13px;
+    letter-spacing: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset");
+    color: var(--md-sys-color-primary);
+}
+
+/* label-small size at the 400 face — a credit line is body copy, not a label. */
+.mv-media-carousel__credit {
+    margin: 0;
+    padding: 0;
+    margin-top: 2px;
+    font-size: 11px;
+    letter-spacing: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Regular.asset");
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-media-carousel__card .md-state-layer {
+    background-color: var(--md-sys-color-primary);
+}
+
+.mv-media-carousel__card:hover .md-state-layer {
+    opacity: var(--md-sys-state-hover-opacity);
+}
+.mv-media-carousel__card:focus .md-state-layer {
+    opacity: var(--md-sys-state-focus-opacity);
+}
+.mv-media-carousel__card:active .md-state-layer {
+    opacity: var(--md-sys-state-pressed-opacity);
+}

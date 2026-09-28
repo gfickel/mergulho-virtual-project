@@ -1,0 +1,43 @@
+/* Brand extension color tokens — LIGHT (DESIGN_IMPLEMENTATION.md §3.2).
+ * Consume as: background-color: var(--md-sys-color-success-container);
+ *
+ * WHY THIS FILE EXISTS
+ *  M3's role set has `error` but no `success` and no `warning`, and V2 needs both
+ *  (the "Risco: Baixo" badge and the lifeguard alert bar). `_colors-*.uss` is
+ *  GENERATED from tools/design_system/brand-theme.json and must not be hand-edited,
+ *  so the extensions get their own hand-maintained pair, following the
+ *  _shape / _state / _motion precedent. They keep the `--md-sys-color-*` prefix on
+ *  purpose: components should not care whether a color role is stock M3 or ours.
+ *
+ * THREE THINGS MOVE IN LOCKSTEP WITH THIS FILE OR THE SUITE GOES RED
+ *  1. _brand-dark.uss must define the IDENTICAL variable set.
+ *  2. Theme-Light.tss / Theme-Dark.tss each @import their side (parity-tested).
+ *  3. TokenDisciplineTests.TokenFiles(theme) lists these files explicitly.
+ *
+ *  token                    | value   | provenance
+ *  -------------------------|---------|---------------------------------------------
+ *  success                  | #34C759 | brand — V2 "Risco: Baixo" badge (A.1)
+ *  on-success               | #052E16 | green tone 10 (6.7:1 on success)
+ *  success-container        | #DCFCE7 | green tone 95
+ *  on-success-container     | #14532D | green tone 30 (8.3:1 on the container)
+ *  warning                  | #FEDF89 | brand — V2 alert-bar border (A.1)
+ *  on-warning               | #152336 | brand navy (12.2:1) — the warning hue IS the
+ *                           |         | brand amber hue, so it pairs with navy like
+ *                           |         | `on-secondary` does, not with a brown
+ *  warning-container        | #FFF7E6 | brand — V2 alert-bar fill (A.1)
+ *  on-warning-container     | #152336 | brand navy (14.9:1)
+ *
+ *  Green is the one hue in the system that is neither navy nor amber; it is
+ *  mandated by the design (#34C759) and so carries its own tonal on-colors.
+ */
+:root {
+    --md-sys-color-success: #34C759;
+    --md-sys-color-on-success: #052E16;
+    --md-sys-color-success-container: #DCFCE7;
+    --md-sys-color-on-success-container: #14532D;
+
+    --md-sys-color-warning: #FEDF89;
+    --md-sys-color-on-warning: #152336;
+    --md-sys-color-warning-container: #FFF7E6;
+    --md-sys-color-on-warning-container: #152336;
+}

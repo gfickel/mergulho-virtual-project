@@ -47,7 +47,13 @@ public class ReverseGeocoding : MonoBehaviour
     [System.Serializable]
     public class PlaceData
     {
+        /// <summary>Machine-owned key. Matches the BeachSharkSpawner Inspector list,
+        /// beaches_content.json keys and the backend's `local` field -- never show it
+        /// to the user and never translate it. Use <see cref="displayName"/> for UI.</summary>
         public string name;
+        /// <summary>pt-BR label the UI shows (Decision D4). Falls back to
+        /// <see cref="name"/> when empty -- older places.json files have no such field.</summary>
+        public string displayName;
         public string imageName;
         public string description;
         public string photoCredit;

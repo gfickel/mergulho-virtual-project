@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8277b3cc71e9e73f2b7ba113e110e6b5, type: 3}
   m_Name: lemon_shark
   m_EditorClassIdentifier: Assembly-CSharp::AnimalDef
-  displayName: "Tubar\xE3o Lim\xE3o"
+  displayName: "Tubar\xE3o-lim\xE3o"
+  binomial: Negaprion brevirostris
   imageName: lemon_shark
   description: "Tubar\xE3o-lim\xE3o ou ca\xE7\xE3o-lim\xE3o (nome cient\xEDfico:
     Negaprion brevirostris) \xE9 uma esp\xE9cie de tubar\xE3o da fam\xEDlia dos carcarrin\xEDdeos

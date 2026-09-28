@@ -1,0 +1,516 @@
+{
+  "_comment": "Conteúdo editorial das telas de Praias, escrito à mão. A geometria e a foto continuam em places.json -- este arquivo só acrescenta o que a tela V2 mostra. A chave é `name`, idêntica ao `name` de places.json (NÃO ao displayName). Campos vazios são legítimos: a tela mostra um espaço em branco ou esconde a seção, nunca inventa um valor. `_todo` lista o que falta preencher e `_sources` de onde veio o que já está preenchido; ambos são ignorados pelo JsonUtility. Checklist: docs/beaches-content-todo.md",
+  "schemaVersion": 1,
+  "riskLevelValues": [
+    "",
+    "baixo",
+    "medio",
+    "alto"
+  ],
+  "idealTideValues": [
+    "",
+    "baixa",
+    "alta",
+    "qualquer"
+  ],
+  "speciesKeySource": "Assets/Resources/Animals/<key>.asset (AnimalDef)",
+  "beaches": [
+    {
+      "name": "Praia do Sancho",
+      "riskLevel": "",
+      "environmentTags": [],
+      "bestSeason": "",
+      "idealTide": "",
+      "sightingPeak": "",
+      "lifeguardHours": "",
+      "advisories": [
+        "O acesso é feito por uma escada vertical instalada nas rochas."
+      ],
+      "species": [
+        {
+          "key": "hammerhead",
+          "tag": "",
+          "behaviour": ""
+        },
+        {
+          "key": "reef_shark",
+          "tag": "",
+          "behaviour": ""
+        }
+      ],
+      "tips": [],
+      "_todo": [
+        "riskLevel",
+        "environmentTags",
+        "bestSeason",
+        "idealTide",
+        "sightingPeak",
+        "lifeguardHours",
+        "tips",
+        "species[].behaviour"
+      ],
+      "_sources": {
+        "advisories": "places.json > description",
+        "species": "MainScene.unity > Beach Shark Spawner > Beaches"
+      }
+    },
+    {
+      "name": "Baía dos Porcos",
+      "riskLevel": "",
+      "environmentTags": [
+        "Área do parque",
+        "Piscina natural"
+      ],
+      "bestSeason": "",
+      "idealTide": "baixa",
+      "sightingPeak": "",
+      "lifeguardHours": "",
+      "advisories": [
+        "Faz parte do Parque Nacional Marinho e tem visitação controlada."
+      ],
+      "species": [
+        {
+          "key": "tiger_shark",
+          "tag": "",
+          "behaviour": ""
+        }
+      ],
+      "tips": [],
+      "_todo": [
+        "riskLevel",
+        "bestSeason",
+        "sightingPeak",
+        "lifeguardHours",
+        "tips",
+        "species[].behaviour"
+      ],
+      "_sources": {
+        "environmentTags": "places.json > description",
+        "idealTide": "places.json > description",
+        "advisories": "places.json > description",
+        "species": "MainScene.unity > Beach Shark Spawner > Beaches"
+      }
+    },
+    {
+      "name": "Praia da Cacimba do Padre",
+      "riskLevel": "",
+      "environmentTags": [],
+      "bestSeason": "",
+      "idealTide": "",
+      "sightingPeak": "",
+      "lifeguardHours": "",
+      "advisories": [],
+      "species": [
+        {
+          "key": "lemon_shark",
+          "tag": "",
+          "behaviour": ""
+        },
+        {
+          "key": "nurse_shark",
+          "tag": "",
+          "behaviour": ""
+        }
+      ],
+      "tips": [],
+      "_todo": [
+        "riskLevel",
+        "environmentTags",
+        "bestSeason",
+        "idealTide",
+        "sightingPeak",
+        "lifeguardHours",
+        "advisories",
+        "tips",
+        "species[].behaviour"
+      ],
+      "_sources": {
+        "species": "MainScene.unity > Beach Shark Spawner > Beaches"
+      }
+    },
+    {
+      "name": "Praia da Quixaba",
+      "riskLevel": "",
+      "environmentTags": [
+        "Mar de dentro"
+      ],
+      "bestSeason": "",
+      "idealTide": "",
+      "sightingPeak": "",
+      "lifeguardHours": "",
+      "advisories": [],
+      "species": [],
+      "tips": [],
+      "_todo": [
+        "riskLevel",
+        "bestSeason",
+        "idealTide",
+        "sightingPeak",
+        "lifeguardHours",
+        "advisories",
+        "species",
+        "tips"
+      ],
+      "_sources": {
+        "environmentTags": "places.json > description"
+      }
+    },
+    {
+      "name": "Praia do Bode",
+      "riskLevel": "",
+      "environmentTags": [
+        "Mar de dentro",
+        "Piscina natural"
+      ],
+      "bestSeason": "",
+      "idealTide": "baixa",
+      "sightingPeak": "",
+      "lifeguardHours": "",
+      "advisories": [],
+      "species": [],
+      "tips": [],
+      "_todo": [
+        "riskLevel",
+        "bestSeason",
+        "sightingPeak",
+        "lifeguardHours",
+        "advisories",
+        "species",
+        "tips"
+      ],
+      "_sources": {
+        "environmentTags": "places.json > description",
+        "idealTide": "places.json > description"
+      }
+    },
+    {
+      "name": "Praia do Americano",
+      "riskLevel": "",
+      "environmentTags": [],
+      "bestSeason": "",
+      "idealTide": "baixa",
+      "sightingPeak": "",
+      "lifeguardHours": "",
+      "advisories": [],
+      "species": [],
+      "tips": [],
+      "_todo": [
+        "riskLevel",
+        "environmentTags",
+        "bestSeason",
+        "sightingPeak",
+        "lifeguardHours",
+        "advisories",
+        "species",
+        "tips"
+      ],
+      "_sources": {
+        "idealTide": "places.json > description"
+      }
+    },
+    {
+      "name": "Boldró Beach",
+      "riskLevel": "",
+      "environmentTags": [
+        "Ambiente recifal"
+      ],
+      "bestSeason": "",
+      "idealTide": "",
+      "sightingPeak": "",
+      "lifeguardHours": "",
+      "advisories": [],
+      "species": [],
+      "tips": [],
+      "_todo": [
+        "riskLevel",
+        "bestSeason",
+        "idealTide",
+        "sightingPeak",
+        "lifeguardHours",
+        "advisories",
+        "species",
+        "tips"
+      ],
+      "_sources": {
+        "environmentTags": "places.json > description"
+      }
+    },
+    {
+      "name": "Praia da Conceição",
+      "riskLevel": "",
+      "environmentTags": [],
+      "bestSeason": "",
+      "idealTide": "",
+      "sightingPeak": "",
+      "lifeguardHours": "",
+      "advisories": [],
+      "species": [],
+      "tips": [],
+      "_todo": [
+        "riskLevel",
+        "environmentTags",
+        "bestSeason",
+        "idealTide",
+        "sightingPeak",
+        "lifeguardHours",
+        "advisories",
+        "species",
+        "tips"
+      ],
+      "_sources": {}
+    },
+    {
+      "name": "Praia do Meio",
+      "riskLevel": "",
+      "environmentTags": [],
+      "bestSeason": "",
+      "idealTide": "",
+      "sightingPeak": "",
+      "lifeguardHours": "",
+      "advisories": [],
+      "species": [],
+      "tips": [],
+      "_todo": [
+        "riskLevel",
+        "environmentTags",
+        "bestSeason",
+        "idealTide",
+        "sightingPeak",
+        "lifeguardHours",
+        "advisories",
+        "species",
+        "tips"
+      ],
+      "_sources": {}
+    },
+    {
+      "name": "Praia do Cachorro",
+      "riskLevel": "",
+      "environmentTags": [
+        "Piscina natural"
+      ],
+      "bestSeason": "",
+      "idealTide": "baixa",
+      "sightingPeak": "",
+      "lifeguardHours": "",
+      "advisories": [],
+      "species": [],
+      "tips": [],
+      "_todo": [
+        "riskLevel",
+        "bestSeason",
+        "sightingPeak",
+        "lifeguardHours",
+        "advisories",
+        "species",
+        "tips"
+      ],
+      "_sources": {
+        "environmentTags": "places.json > description",
+        "idealTide": "places.json > description"
+      }
+    },
+    {
+      "name": "Praia do Porto de Santo Antônio Noronha",
+      "riskLevel": "",
+      "environmentTags": [],
+      "bestSeason": "",
+      "idealTide": "",
+      "sightingPeak": "",
+      "lifeguardHours": "",
+      "advisories": [],
+      "species": [],
+      "tips": [],
+      "_todo": [
+        "riskLevel",
+        "environmentTags",
+        "bestSeason",
+        "idealTide",
+        "sightingPeak",
+        "lifeguardHours",
+        "advisories",
+        "species",
+        "tips"
+      ],
+      "_sources": {}
+    },
+    {
+      "name": "Sharks Cove",
+      "riskLevel": "",
+      "environmentTags": [
+        "Mar de fora"
+      ],
+      "bestSeason": "",
+      "idealTide": "",
+      "sightingPeak": "",
+      "lifeguardHours": "",
+      "advisories": [],
+      "species": [],
+      "tips": [],
+      "_todo": [
+        "riskLevel",
+        "bestSeason",
+        "idealTide",
+        "sightingPeak",
+        "lifeguardHours",
+        "advisories",
+        "species",
+        "tips"
+      ],
+      "_sources": {
+        "environmentTags": "places.json > description"
+      }
+    },
+    {
+      "name": "Buraco da Raquel",
+      "riskLevel": "",
+      "environmentTags": [
+        "Piscina natural"
+      ],
+      "bestSeason": "",
+      "idealTide": "",
+      "sightingPeak": "",
+      "lifeguardHours": "",
+      "advisories": [
+        "A descida é proibida — apenas a observação do alto é permitida."
+      ],
+      "species": [],
+      "tips": [],
+      "_todo": [
+        "riskLevel",
+        "bestSeason",
+        "idealTide",
+        "sightingPeak",
+        "lifeguardHours",
+        "species",
+        "tips"
+      ],
+      "_sources": {
+        "environmentTags": "places.json > description",
+        "advisories": "places.json > description"
+      }
+    },
+    {
+      "name": "Enseada da Caieira",
+      "riskLevel": "",
+      "environmentTags": [
+        "Piscina natural"
+      ],
+      "bestSeason": "",
+      "idealTide": "",
+      "sightingPeak": "",
+      "lifeguardHours": "",
+      "advisories": [
+        "O acesso é por trilha de alta dificuldade, com guia credenciado obrigatório (cerca de 3,5 horas só de ida).",
+        "O uso de protetor solar é proibido antes do banho."
+      ],
+      "species": [],
+      "tips": [],
+      "_todo": [
+        "riskLevel",
+        "bestSeason",
+        "idealTide",
+        "sightingPeak",
+        "lifeguardHours",
+        "species",
+        "tips"
+      ],
+      "_sources": {
+        "environmentTags": "places.json > description",
+        "advisories": "places.json > description"
+      }
+    },
+    {
+      "name": "Atalaia Beach",
+      "riskLevel": "",
+      "environmentTags": [
+        "Área do parque",
+        "Ambiente recifal",
+        "Piscina natural"
+      ],
+      "bestSeason": "",
+      "idealTide": "",
+      "sightingPeak": "",
+      "lifeguardHours": "",
+      "advisories": [
+        "O acesso é por trilha guiada com horário marcado e o banho dura 30 minutos.",
+        "O uso de dermocosméticos como protetor solar é proibido."
+      ],
+      "species": [],
+      "tips": [],
+      "_todo": [
+        "riskLevel",
+        "bestSeason",
+        "idealTide",
+        "sightingPeak",
+        "lifeguardHours",
+        "species",
+        "tips"
+      ],
+      "_sources": {
+        "environmentTags": "places.json > description",
+        "advisories": "places.json > description"
+      }
+    },
+    {
+      "name": "Sueste Beach",
+      "riskLevel": "",
+      "environmentTags": [
+        "Ambiente recifal",
+        "Manguezal"
+      ],
+      "bestSeason": "",
+      "idealTide": "",
+      "sightingPeak": "",
+      "lifeguardHours": "",
+      "advisories": [
+        "O snorkeling é permitido apenas nas raias delimitadas.",
+        "É proibido pisar nos recifes ou tocar a fauna."
+      ],
+      "species": [],
+      "tips": [],
+      "_todo": [
+        "riskLevel",
+        "bestSeason",
+        "idealTide",
+        "sightingPeak",
+        "lifeguardHours",
+        "species",
+        "tips"
+      ],
+      "_sources": {
+        "environmentTags": "places.json > description",
+        "advisories": "places.json > description"
+      }
+    },
+    {
+      "name": "Praia do Leão",
+      "riskLevel": "",
+      "environmentTags": [
+        "Ambiente recifal"
+      ],
+      "bestSeason": "",
+      "idealTide": "",
+      "sightingPeak": "",
+      "lifeguardHours": "",
+      "advisories": [
+        "Não é permitido caminhar sobre os recifes nem nadar fora das áreas indicadas."
+      ],
+      "species": [],
+      "tips": [],
+      "_todo": [
+        "riskLevel",
+        "bestSeason",
+        "idealTide",
+        "sightingPeak",
+        "lifeguardHours",
+        "species",
+        "tips"
+      ],
+      "_sources": {
+        "environmentTags": "places.json > description",
+        "advisories": "places.json > description"
+      }
+    }
+  ]
+}

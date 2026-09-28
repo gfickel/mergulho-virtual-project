@@ -3,6 +3,7 @@
  */
 @import url("unity-theme://default");
 @import url("Tokens/_colors-dark.uss");
+@import url("Tokens/_brand-dark.uss");
 @import url("Tokens/_typography.uss");
 @import url("Tokens/_shape.uss");
 @import url("Tokens/_state.uss");
@@ -24,3 +25,10 @@
 @import url("Components/MdSnackbar/MdSnackbar.uss");
 @import url("Components/MdBottomSheet/MdBottomSheet.uss");
 @import url("Components/MdSparkline/MdSparkline.uss");
+
+/* Mv* — project components with no M3 counterpart (DESIGN_IMPLEMENTATION.md §6). */
+@import url("Components/MvTag/MvTag.uss");
+@import url("Components/MvAlertBar/MvAlertBar.uss");
+@import url("Components/MvNumberedList/MvNumberedList.uss");
+@import url("Components/MvHeroHeader/MvHeroHeader.uss");
+@import url("Components/MvMediaCarousel/MvMediaCarousel.uss");

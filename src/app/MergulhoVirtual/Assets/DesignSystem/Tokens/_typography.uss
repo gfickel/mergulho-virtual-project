@@ -35,6 +35,40 @@
     color: var(--md-sys-color-on-surface);
 }
 
+/* ---- Label metric reset — READ THIS BEFORE TRANSCRIBING ANY FIGMA SPACING ----
+ *
+ * Unity's default runtime theme (`@import url("unity-theme://default")`, the first
+ * import in both .tss files) ships every Label with
+ *
+ *     padding: 4px 2px 4px 1px;      margin: 4px 4px 2px 2px;
+ *
+ * i.e. **14dp of invisible vertical space and 9dp of invisible horizontal space on
+ * every single label**. Nothing in the design has that: every number in
+ * DESIGN_IMPLEMENTATION.md is a Figma pt transcribed 1:1 (§1.2), and Figma text nodes
+ * have no such inset. Left in place it silently
+ *   - inflates a stack of rows (the Home conditions card measured 31dp per 17dp row),
+ *   - and eats 9dp of every wrapping label's measure, which costs whole LINES: the
+ *     Home feature-card body wrapped to 4 lines at 140dp where Figma fits 3 at 149.
+ *
+ * So the metrics are zeroed ONCE, here, for the whole app — design system and screens
+ * alike. Every gap you then see on screen is one the component or screen USS authored.
+ *
+ * Cascade, which is what makes this safe:
+ *   default theme  <  THIS FILE  <  Components/*.uss  <  a screen's own stylesheet
+ * The selector is a single class (0,1,0), exactly like the default theme's own rule and
+ * like `.md-button__label` / `.mv-conditions__row-label`. Because the token imports come
+ * after the default theme and before the component imports, anything a component or
+ * screen puts back (MdTopAppBar's 8dp title margins, a screen's `margin-top`) still
+ * wins with a plain single-class rule — no specificity gymnastics needed.
+ *
+ * Only `Label` is reset. MdIcon and the TextField input are TextElements with their own
+ * component-authored insets and are deliberately left alone.
+ */
+.unity-label {
+    padding: 0;
+    margin: 0;
+}
+
 /* Display — no V2 usage; kept at the M3 sizes so the scale stays complete. */
 .md-typescale-display-large  { font-size: 57px; letter-spacing: 0;
     -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Regular.asset"); }

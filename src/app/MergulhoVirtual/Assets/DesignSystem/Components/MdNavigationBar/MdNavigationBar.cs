@@ -18,12 +18,24 @@ namespace MergulhoVirtual.DesignSystem
     }
 
     /// <summary>
-    /// M3 navigation bar: 3–5 destinations, each an icon in an active-indicator
+    /// Navigation bar: 3–5 destinations, each an icon in an active-indicator
     /// pill plus a label. Destinations are set from code via
     /// <see cref="SetDestinations"/> (same pattern as MdDropdown.SetChoices —
     /// no UXML item support). Tapping a destination sets
     /// <see cref="SelectedIndex"/> and raises <see cref="SelectionChanged"/>;
     /// re-tapping the selected one is a no-op.
+    /// <para>
+    /// Styled to the V2 dark bar (DESIGN_IMPLEMENTATION.md §4 "Bar spec"): an
+    /// inverse-surface container, an amber pill behind the active icon and
+    /// white-at-50% icon+label on the inactive ones. That is entirely
+    /// <c>MdNavigationBar.uss</c> — the element tree below is identical for
+    /// active and inactive destinations, which is what lets the restyle be a
+    /// stylesheet change rather than a component rewrite.
+    /// </para>
+    /// <para>
+    /// The 34dp OS home-indicator strip below the bar is safe-area padding the
+    /// HOST applies; the bar itself is the 64dp tab row and nothing else.
+    /// </para>
     /// </summary>
     [UxmlElement]
     public partial class MdNavigationBar : VisualElement

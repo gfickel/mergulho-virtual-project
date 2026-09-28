@@ -1,6 +1,5 @@
 using TMPro;
 using UnityEditor;
-using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
@@ -27,8 +26,8 @@ using UnityEngine.UI;
 ///
 /// Idempotent: deletes a pre-existing "AnimalsScreen" + "AnimalViewerRig"
 /// before rebuilding. Auto-wires AnimalsScreenController fields,
-/// AnimalViewerInput fields, ScreenManager.animalsScreen, and the BottomNav
-/// AnimalsButton.onClick → ScreenManager.ShowAnimals().
+/// AnimalViewerInput fields. Navigation wiring is gone since Slice 1 —
+/// V2 has no Animais tab (Decision D1).
 /// </summary>
 public static class AnimalsScreenBuilder
 {
@@ -462,48 +461,19 @@ public static class AnimalsScreenBuilder
     }
 
     // ------------------------------------------------------------------------
-    // ScreenManager + BottomNav wiring.
+    // Navigation wiring — RETIRED in Slice 1 (DESIGN_IMPLEMENTATION.md §4).
+    //
+    // V2 has no Animais tab (Decision D1): the catalog becomes a sub-screen
+    // reached from species cards, and ScreenManager no longer holds per-screen
+    // fields or Show*() methods. Nothing to wire; kept as no-ops so the build
+    // sequence still reads top-to-bottom.
     // ------------------------------------------------------------------------
     static void WireScreenManager(GameObject animalsScreen)
     {
-        var smGo = GameObject.Find("ScreenManager");
-        if (smGo == null) return;
-        var sm = smGo.GetComponent<ScreenManager>();
-        if (sm == null) return;
-        var so = new SerializedObject(sm);
-        var prop = so.FindProperty("animalsScreen");
-        if (prop == null)
-        {
-            Debug.LogWarning("[AnimalsScreenBuilder] ScreenManager has no 'animalsScreen' field. Recompile, then re-run.");
-            return;
-        }
-        prop.objectReferenceValue = animalsScreen;
-        so.ApplyModifiedPropertiesWithoutUndo();
     }
 
     static void WireAnimalsButton()
     {
-        var animalsTransform = FindDeep("BottomNav", "AnimalsButton");
-        if (animalsTransform == null)
-        {
-            Debug.LogWarning("[AnimalsScreenBuilder] Could not find BottomNav/AnimalsButton — wire its OnClick to ScreenManager.ShowAnimals() manually.");
-            return;
-        }
-        var btn = animalsTransform.GetComponent<Button>();
-        if (btn == null) return;
-        var smGo = GameObject.Find("ScreenManager");
-        if (smGo == null) return;
-        var sm = smGo.GetComponent<ScreenManager>();
-        if (sm == null) return;
-
-        for (int i = 0; i < btn.onClick.GetPersistentEventCount(); i++)
-        {
-            if (btn.onClick.GetPersistentTarget(i) == sm
-                && btn.onClick.GetPersistentMethodName(i) == nameof(ScreenManager.ShowAnimals))
-                return;
-        }
-        UnityEventTools.AddPersistentListener(btn.onClick, sm.ShowAnimals);
-        EditorUtility.SetDirty(btn);
     }
 
     static Transform FindDeep(string parentName, string childName)

@@ -845,7 +845,7 @@ PlayerSettings:
   webWasm2023: 0
   webEnableSubmoduleStrippingCompatibility: 0
   scriptingDefineSymbols:
-    Android: FIREBASE_APPCHECK_ENABLED
+    Android: FIREBASE_APPCHECK_ENABLED;SENTIS_ANALYTICS_ENABLED
     Standalone: APP_UI_EDITOR_ONLY;SENTIS_ANALYTICS_ENABLED;FIREBASE_APPCHECK_ENABLED
     iPhone: APP_UI_EDITOR_ONLY;SENTIS_ANALYTICS_ENABLED;FIREBASE_APPCHECK_ENABLED
   additionalCompilerArguments: {}

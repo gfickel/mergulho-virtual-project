@@ -1,0 +1,420 @@
+/* Praia detalhe — DESIGN_IMPLEMENTATION.md §8.3 (Tela 4, 15:550; Tela 9, 89:1930).
+ *
+ * TOKENS ONLY: TokenDisciplineTests scans every .uss under Assets/UI exactly like the
+ * design-system components — a color literal (in a rule OR in a comment) or an
+ * undefined var() fails the suite. Sizes transcribe literally from Figma
+ * (§1.2: 1 USS px = 1 dp = 1 Figma pt).
+ *
+ * Accepted fidelity losses, all pre-agreed:
+ *  - No box-shadow (§3.6): every V2 surface here also carries a 1px
+ *    outline-variant border, which is what separates it from the page. The one
+ *    place the shadow was doing real work — the SOS pill floating over the page —
+ *    keeps the 2px darker-red stroke the design already gives it.
+ *  - No `gap`: Figma gaps become margins; "skip the first child" is a modifier
+ *    class added in code, since USS has no :first-child.
+ *  - No baseline alignment: V2 baseline-aligns the species name and its binomial.
+ *    `align-items: flex-end` is the closest UI Toolkit offers, and at 18px next to
+ *    12px it lands within a pixel or two of the baseline.
+ *  - No text-transform: V2 uppercases the stat labels with a Figma text-case
+ *    transform while the text nodes are title case. UI Toolkit has no
+ *    `text-transform`, and uppercasing in C# would mean a screen manufacturing a
+ *    user-visible string — so they ship as the ViewModel spells them.
+ *  - No 800 weight: the shipped Inter set is 400/500/600/700, so V2's 800 "SOS"
+ *    renders at 700.
+ *  - Label padding/margin is zeroed app-wide in Tokens/_typography.uss, so every
+ *    margin below is one this file authored.
+ */
+
+.mv-praia {
+    flex-grow: 1;
+}
+
+/* Opaque page surface. The root above it stays transparent so the strip reserved
+ * for the navigation bar never paints over it or blocks its taps. The TOP
+ * safe-area inset is NOT padding here: the hero is full-bleed and takes it
+ * through MvHeroHeader.TopInset. */
+.mv-praia__content {
+    flex-grow: 1;
+    background-color: var(--md-sys-color-background);
+}
+
+.mv-praia__scroll {
+    flex-grow: 1;
+}
+
+/* ---- Hero (340dp) ---- */
+
+/* Painted behind the photo so the beaches with no cover image get a deliberate
+ * surface plus a glyph rather than an empty 340dp frame. */
+.mv-praia__hero-placeholder {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--md-sys-color-surface-container-highest);
+}
+
+.mv-praia__hero-placeholder-icon {
+    font-size: 56px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ---- Body: V, gap 24, padding 24/16/120/16 ---- */
+
+.mv-praia__body {
+    /* Scroll content sizes to its children; without this the body is a shrinkable
+     * flex child and a short viewport compresses the cards instead of scrolling. */
+    flex-shrink: 0;
+    padding-top: 24px;
+    padding-left: 16px;
+    padding-right: 16px;
+    /* Figma's 120dp bottom is clearance for the pinned navigation bar, which the
+     * shell reserves below this screen; what is left is the tail the floating SOS
+     * pill needs so it never covers the last card. */
+    padding-bottom: 72px;
+}
+
+.mv-praia__body > * {
+    margin-bottom: 24px;
+}
+
+/* Shared card language: white surface, 1px border, radius 24. */
+.mv-praia__card {
+    background-color: var(--md-sys-color-surface);
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-extra-large);
+}
+
+/* ---- Title row ---- */
+
+.mv-praia__title-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 4px;
+}
+
+.mv-praia__title-column {
+    flex-grow: 1;
+    flex-shrink: 1;
+    margin-right: 12px;
+}
+
+/* title-large is the 20px rung; V2 sets the beach name at 24 (Appendix A.2 lists
+ * the rung as "20-24 / 700"), so the size is bumped locally rather than moving
+ * the shared class and dragging every other title-large with it. */
+.mv-praia__title {
+    font-size: 24px;
+    white-space: normal;
+    color: var(--md-sys-color-primary);
+}
+
+/* body-medium metrics at V2's 500 face. */
+.mv-praia__region {
+    margin-top: 2px;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Medium.asset");
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-praia__risk {
+    flex-shrink: 0;
+}
+
+/* ---- Description card (not in V2 — see PraiaDetalheScreen's remarks) ---- */
+
+.mv-praia__about {
+    padding: 20px;
+}
+
+.mv-praia__description {
+    white-space: normal;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-praia__credit {
+    margin-top: 12px;
+    white-space: normal;
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.8;
+}
+
+/* ---- Stats card ---- */
+
+.mv-praia__stats {
+    padding: 20px;
+}
+
+.mv-praia__stat-columns {
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+.mv-praia__stat-column {
+    flex-grow: 1;
+    flex-basis: 0;
+}
+
+.mv-praia__stat-column--gutter {
+    margin-left: 12px;
+}
+
+.mv-praia__stat-label {
+    color: var(--md-sys-color-primary);
+}
+
+/* "—" lives here, and only here: a stat column is a fixed slot whose label is
+ * the content, so an unfilled value shows the dash. Every section that can
+ * vanish is hidden in C# off the ViewModel's Has* flags instead. */
+.mv-praia__stat-value {
+    margin-top: 4px;
+    white-space: normal;
+    color: var(--md-sys-color-primary);
+}
+
+/* The live half of "Maré Ideal" ("próx. baixa 14:40"), which V2 folds into the
+ * value as "(até 14h)" — a window the DHN table does not publish. */
+.mv-praia__stat-caption {
+    margin-top: 2px;
+    white-space: normal;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-praia__divider {
+    height: 1px;
+    margin-top: 16px;
+    margin-bottom: 16px;
+    background-color: var(--md-sys-color-outline-variant);
+}
+
+.mv-praia__sightings {
+    flex-direction: row;
+    align-items: center;
+}
+
+.mv-praia__sightings-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+    margin-right: 8px;
+    color: var(--md-sys-color-primary);
+}
+
+.mv-praia__sightings-text {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+/* 15/600 — between body-large and title-small, so the metrics are local. */
+.mv-praia__sightings-value {
+    margin-top: 2px;
+    font-size: 15px;
+    letter-spacing: 0;
+    white-space: normal;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-SemiBold.asset");
+    color: var(--md-sys-color-primary);
+}
+
+/* ---- Alert bars ---- */
+
+.mv-praia__alerts {
+    flex-direction: column;
+}
+
+/* V2 draws one bar; a beach with both a lifeguard line and an advisory stacks
+ * them, so every bar after the first carries the gutter. */
+.mv-praia__alert--gutter {
+    margin-top: 12px;
+}
+
+/* ---- Sections (species / tips / gallery) ---- */
+
+.mv-praia__section {
+    flex-direction: column;
+    padding-top: 4px;
+}
+
+.mv-praia__section-title {
+    margin-bottom: 12px;
+    white-space: normal;
+    color: var(--md-sys-color-primary);
+}
+
+/* ---- Species ---- */
+
+/* A horizontal ScrollView inside an auto-height column has no intrinsic height
+ * to resolve against, so the chip strip declares MdChip's 48dp touch-target
+ * height outright (the visible chip is 32dp, centred in it). */
+.mv-praia__chips {
+    height: 48px;
+    flex-shrink: 0;
+    margin-bottom: 12px;
+}
+
+.mv-praia__chips-track {
+    flex-direction: row;
+    align-items: center;
+}
+
+.mv-praia__chip {
+    flex-shrink: 0;
+    margin-right: 8px;
+}
+
+.mv-praia__species-card {
+    overflow: hidden; /* so the media's top corners follow the card */
+}
+
+.mv-praia__species-media {
+    height: 160px;
+    flex-shrink: 0;
+    /* Its own fill is what a species with no photo shows, so the card keeps its
+     * shape instead of collapsing to the text block. */
+    background-color: var(--md-sys-color-surface-container-high);
+}
+
+.mv-praia__species-image {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.mv-praia__species-placeholder {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.mv-praia__species-tag {
+    position: absolute;
+    left: 16px;
+    bottom: 12px;
+}
+
+.mv-praia__species-content {
+    padding: 16px;
+}
+
+.mv-praia__species-name-row {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+.mv-praia__species-name {
+    flex-shrink: 1;
+    margin-right: 8px;
+    white-space: normal;
+    color: var(--md-sys-color-primary);
+}
+
+.mv-praia__species-binomial {
+    flex-shrink: 0;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-praia__species-behaviour {
+    margin-top: 12px;
+    white-space: normal;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* V2 underlines this and pins it right; UI Toolkit has no text-decoration, so
+ * the underline is a 1px bottom border (same trade as the Home tide link). */
+.mv-praia__species-link {
+    align-self: flex-end;
+    margin-top: 12px;
+    padding-bottom: 1px;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-primary);
+}
+
+/* ---- Tips ---- */
+
+.mv-praia__tips-card {
+    padding: 20px;
+}
+
+/* ---- Floating SOS ---- */
+
+/* 97x52 pill, pad 12/18, gap 10. Absolute against the screen root — NOT the
+ * scroll content — so it stays put while the page scrolls, and 16dp above the
+ * root's bottom, which is where the navigation bar's reservation ends. Figma
+ * parks it at x=16 in the flattened frame, i.e. bottom-left. */
+.mv-praia__sos {
+    position: absolute;
+    left: 16px;
+    bottom: 16px;
+    height: 52px;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 18px;
+    padding-right: 18px;
+    border-radius: var(--md-sys-shape-corner-full);
+    border-width: 2px;
+    border-color: var(--md-sys-color-error-dim);
+    background-color: var(--md-sys-color-error);
+    overflow: hidden; /* so the state layer follows the pill */
+}
+
+.mv-praia__sos-icon {
+    font-size: 20px;
+    margin-right: 10px;
+    color: var(--md-sys-color-on-error);
+}
+
+/* V2 sets this at 800; the shipped Inter set tops out at 700. */
+.mv-praia__sos-label {
+    font-size: 16px;
+    letter-spacing: 0;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset");
+    color: var(--md-sys-color-on-error);
+}
+
+.mv-praia__sos .md-state-layer {
+    background-color: var(--md-sys-color-on-error);
+}
+.mv-praia__sos:hover .md-state-layer {
+    opacity: var(--md-sys-state-hover-opacity);
+}
+.mv-praia__sos:focus .md-state-layer {
+    opacity: var(--md-sys-state-focus-opacity);
+}
+.mv-praia__sos:active .md-state-layer {
+    opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* ---- Beach selector menu (Tela 9) ----
+ * Shared by both Praias screens: the hero pill on this one and the landing's
+ * location card when GPS has resolved nothing. MdMenu's own rules are single-class
+ * (0,1,0); the compound and descendant selectors here (0,2,0) beat them whatever
+ * the stylesheet order turns out to be. The popup lives on the overlay layer at
+ * the UIDocument root, which is where the host loads this sheet, so it is in scope.
+ *
+ * V2: 295 wide, radius 16, 56dp items, ~332 tall (≈6 items) before it scrolls —
+ * against MdMenu's stock 8dp radius, 48dp items and 240dp cap. With 18 entries
+ * ("Automático (GPS)" + 17 beaches) the list scrolls either way; 332 just shows
+ * more of it at once.
+ *
+ * WIDTH IS NOT SET HERE. MdMenu writes `min-width = anchor width` as an INLINE
+ * style, and inline beats every stylesheet — so a rule here would be dead code.
+ * It lands on V2's 295 anyway: the hero pill it hangs off is 298dp wide at the
+ * 390dp design width, and off the landing card it matches that card instead,
+ * which is the better answer on both. */
+.md-menu.mv-beach-menu {
+    max-height: 332px;
+    border-radius: var(--md-sys-shape-corner-large);
+}
+
+.mv-beach-menu .md-menu__item {
+    height: 56px;
+}

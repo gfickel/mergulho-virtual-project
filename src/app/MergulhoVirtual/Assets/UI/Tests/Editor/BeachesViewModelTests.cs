@@ -244,8 +244,8 @@ namespace MergulhoVirtual.UI.Tests
                 WindowStartUtc = new DateTime(2000, 1, 6, 10, 0, 0, DateTimeKind.Utc),
             };
             var vm = NewVm();
-            Assert.That(vm.FormatTideExtremumLabel(3, true), Is.EqualTo("13:00"));
-            Assert.That(vm.FormatTideExtremumLabel(0, false), Is.EqualTo("10:00"));
+            Assert.That(vm.FormatTideExtremumLabel(3, true), Is.EqualTo("\u25B2 13:00"));
+            Assert.That(vm.FormatTideExtremumLabel(0, false), Is.EqualTo("\u25BC 10:00"));
 
             tides.Current = default;
             Assert.That(vm.FormatTideExtremumLabel(3, true), Is.Null, "invalid tide — no label");

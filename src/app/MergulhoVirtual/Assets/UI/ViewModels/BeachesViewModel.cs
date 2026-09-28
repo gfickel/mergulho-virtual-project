@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 
 namespace MergulhoVirtual.UI
 {
@@ -8,28 +7,34 @@ namespace MergulhoVirtual.UI
     /// State + presentation logic for the Beaches screen (list ↔ detail,
     /// conditions/tide/moon rows, beach override selector). Plain C# —
     /// no UnityEngine — so it is fully unit-testable with fake services.
-    /// Formatting is ported from the legacy uGUI ConditionsCardView to keep
-    /// string-for-string parity during the strangler migration.
+    /// Row formatting lives in <see cref="ConditionsFormatter"/> — shared with
+    /// HomeViewModel, and string-for-string identical to the legacy uGUI
+    /// ConditionsCardView it was ported from.
     /// </summary>
     public sealed class BeachesViewModel : IDisposable
     {
         /// <summary>DHN "Nível Médio" (MSL→LAT offset) for the Noronha station — sparkline baseline.</summary>
-        public const float TideBaselineM = 1.28f;
+        public const float TideBaselineM = ConditionsFormatter.TideBaselineM;
 
         public const string AutoOptionLabel = "Automático (GPS)";
-
-        static readonly string[] CardinalDirections = { "N", "NE", "E", "SE", "S", "SW", "W", "NW" };
 
         readonly IConditionsService conditions;
         readonly ITideService tides;
         readonly IBeachOverride beachOverride;
         readonly Func<DateTime> utcNow;
         readonly Func<DateTime, DateTime> toLocalTime;
+        readonly List<string> overrideKeys;
         bool disposed;
 
         public IReadOnlyList<BeachInfo> Beaches { get; }
 
-        /// <summary>Dropdown choices: index 0 = automatic (GPS), then one entry per beach.</summary>
+        /// <summary>
+        /// Dropdown <b>labels</b>: index 0 = automatic (GPS), then one pt-BR beach
+        /// name per beach (<see cref="BeachInfo.DisplayName"/>). These are for the
+        /// user's eyes only — the override is applied with the matching
+        /// <see cref="BeachInfo.Name"/> key, which is what the spawner, the content
+        /// file and the backend agree on. Never pass a label to a lookup.
+        /// </summary>
         public IReadOnlyList<string> OverrideChoices { get; }
 
         /// <summary>Currently selected override choice; 0 = automatic (GPS).</summary>
@@ -61,7 +66,13 @@ namespace MergulhoVirtual.UI
             Beaches = catalog?.Beaches ?? Array.Empty<BeachInfo>();
 
             var choices = new List<string>(Beaches.Count + 1) { AutoOptionLabel };
-            foreach (var beach in Beaches) choices.Add(beach.Name);
+            // Parallel to `choices`: the key each label applies (null for "automatic").
+            overrideKeys = new List<string>(Beaches.Count + 1) { null };
+            foreach (var beach in Beaches)
+            {
+                choices.Add(beach.DisplayName);
+                overrideKeys.Add(beach.Name);
+            }
             OverrideChoices = choices;
 
             if (this.conditions != null) this.conditions.Changed += OnConditionsChanged;
@@ -109,7 +120,7 @@ namespace MergulhoVirtual.UI
             if (index < 0 || index >= OverrideChoices.Count || index == OverrideIndex) return;
             OverrideIndex = index;
             if (index == 0) beachOverride?.ClearOverride();
-            else beachOverride?.SetOverride(OverrideChoices[index]);
+            else beachOverride?.SetOverride(overrideKeys[index]);
         }
 
         // ---- Conditions rows ------------------------------------------------
@@ -128,132 +139,42 @@ namespace MergulhoVirtual.UI
                 var snap = conditions?.Current;
                 if (snap == null || string.IsNullOrEmpty(snap.BeachName)) return "Condições";
                 if (SelectedBeach != null && snap.BeachName == SelectedBeach.Name) return "Condições";
-                return "Condições · " + snap.BeachName;
-            }
-        }
-
-        public string WaveText
-        {
-            get
-            {
-                var s = conditions?.Current;
-                if (s == null) return "—";
-                var parts = new List<string>(3);
-                if (s.WaveHeightM.HasValue)
-                    parts.Add(string.Format(CultureInfo.InvariantCulture, "{0:0.0} m", s.WaveHeightM.Value));
-                if (s.WavePeriodS.HasValue)
-                    parts.Add(string.Format(CultureInfo.InvariantCulture, "{0:0} s", s.WavePeriodS.Value));
-                if (s.WaveDirectionDeg.HasValue)
-                    parts.Add(DegToCardinal(s.WaveDirectionDeg.Value));
-                return parts.Count == 0 ? "—" : string.Join(" · ", parts);
-            }
-        }
-
-        public string TideText
-        {
-            get
-            {
-                var t = CurrentTide;
-                if (!t.Valid) return "—";
-                if (t.Rising && t.NextHighAtUtc != DateTime.MinValue)
-                {
-                    return string.Format(CultureInfo.InvariantCulture,
-                        "subindo, próxima alta {0:HH:mm} ({1:0.0} m)",
-                        toLocalTime(t.NextHighAtUtc), t.NextHighM);
-                }
-                if (!t.Rising && t.NextLowAtUtc != DateTime.MinValue)
-                {
-                    return string.Format(CultureInfo.InvariantCulture,
-                        "descendo, próxima baixa {0:HH:mm} ({1:0.0} m)",
-                        toLocalTime(t.NextLowAtUtc), t.NextLowM);
-                }
-                return t.Rising ? "subindo" : "descendo";
-            }
-        }
-
-        public string MoonText
-        {
-            get
-            {
-                DateTime now = utcNow();
-                var name = MoonPhase.Name(MoonPhase.Phase(now));
-                int illumPct = (int)Math.Round(MoonPhase.Illumination(now) * 100f);
-                return $"{MoonPhaseLabelPtBr(name)} · {illumPct}% iluminada";
-            }
-        }
-
-        public string WindText
-        {
-            get
-            {
-                var s = conditions?.Current;
-                if (s == null) return "—";
-                var parts = new List<string>(2);
-                if (s.WindSpeedKmh.HasValue)
-                    parts.Add(string.Format(CultureInfo.InvariantCulture, "{0:0} km/h", s.WindSpeedKmh.Value));
-                if (s.WindDirectionDeg.HasValue)
-                    parts.Add(DegToCardinal(s.WindDirectionDeg.Value));
-                return parts.Count == 0 ? "—" : string.Join(" ", parts);
-            }
-        }
-
-        public string WaterText
-        {
-            get
-            {
-                var s = conditions?.Current;
-                if (s == null || !s.SeaTempC.HasValue) return "—";
-                return string.Format(CultureInfo.InvariantCulture, "{0:0} °C", s.SeaTempC.Value);
-            }
-        }
-
-        public string FreshnessText
-        {
-            get
-            {
-                var s = conditions?.Current;
-                if (s == null || s.FetchedAtUtc == DateTime.MinValue) return "Atualizado: —";
-                TimeSpan age = utcNow() - s.FetchedAtUtc;
-                if (age.TotalSeconds < 60) return "Atualizado: agora";
-                if (age.TotalMinutes < 60) return $"Atualizado: há {(int)age.TotalMinutes}m";
-                if (age.TotalHours < 24) return $"Atualizado: há {(int)age.TotalHours}h";
-                return $"Atualizado: há {(int)age.TotalDays}d";
+                return "Condições · " + DisplayNameForKey(snap.BeachName);
             }
         }
 
         /// <summary>
-        /// Local "HH:mm" label for a tide extremum at the given sparkline sample
-        /// index (hours after the tide window start). Shape matches
-        /// MdSparkline.ExtremumLabelFormatter.
+        /// pt-BR label for a beach key. The conditions snapshot carries the GPS
+        /// resolver's key ("Sueste Beach"), which must never reach a label; falls
+        /// back to the key itself for a beach that is not in the catalog.
         /// </summary>
-        public string FormatTideExtremumLabel(int sampleIndex, bool isHigh)
+        string DisplayNameForKey(string beachKey)
         {
-            var t = CurrentTide;
-            if (!t.Valid) return null;
-            return toLocalTime(t.WindowStartUtc.AddHours(sampleIndex)).ToString("HH:mm", CultureInfo.InvariantCulture);
-        }
-
-        static string DegToCardinal(float deg)
-        {
-            deg = ((deg % 360f) + 360f) % 360f;
-            int idx = (int)Math.Round(deg / 45f) % 8;
-            return CardinalDirections[idx];
-        }
-
-        static string MoonPhaseLabelPtBr(MoonPhaseName n)
-        {
-            switch (n)
+            foreach (var beach in Beaches)
             {
-                case MoonPhaseName.New:            return "Nova";
-                case MoonPhaseName.WaxingCrescent: return "Crescente";
-                case MoonPhaseName.FirstQuarter:   return "Quarto Crescente";
-                case MoonPhaseName.WaxingGibbous:  return "Gibosa Crescente";
-                case MoonPhaseName.Full:           return "Cheia";
-                case MoonPhaseName.WaningGibbous:  return "Gibosa Minguante";
-                case MoonPhaseName.LastQuarter:    return "Quarto Minguante";
-                case MoonPhaseName.WaningCrescent: return "Minguante";
-                default: return "—";
+                if (beach.Name == beachKey) return beach.DisplayName;
             }
+            return beachKey;
         }
+
+        public string WaveText => ConditionsFormatter.Wave(conditions?.Current);
+
+        public string TideText => ConditionsFormatter.Tide(CurrentTide, toLocalTime);
+
+        public string MoonText => ConditionsFormatter.Moon(utcNow());
+
+        public string WindText => ConditionsFormatter.Wind(conditions?.Current);
+
+        public string WaterText => ConditionsFormatter.Water(conditions?.Current);
+
+        public string FreshnessText => ConditionsFormatter.Freshness(conditions?.Current, utcNow());
+
+        /// <summary>
+        /// Local "▲ HH:mm" (high) / "▼ HH:mm" (low) label for a tide extremum at the
+        /// given sparkline sample index (hours after the tide window start). Shape
+        /// matches MdSparkline.ExtremumLabelFormatter.
+        /// </summary>
+        public string FormatTideExtremumLabel(int sampleIndex, bool isHigh) =>
+            ConditionsFormatter.TideExtremumLabel(CurrentTide, sampleIndex, isHigh, toLocalTime);
     }
 }

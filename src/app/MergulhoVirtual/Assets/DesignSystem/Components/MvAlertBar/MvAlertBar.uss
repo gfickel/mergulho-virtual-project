@@ -1,0 +1,79 @@
+/* MvAlertBar — inline icon + text notice.
+ * Spec: DESIGN_IMPLEMENTATION.md §6 row 3, §8.3 "Alert bar".
+ * Figma: `Alert Bar` 15:589 — 358x41, H, gap 12, pad 12/16, r16,
+ * warning-container fill, 1px warning border, label 14px 500.
+ *
+ * NOTE: no hex literals anywhere in this file, comments included —
+ * TokenDisciplineTests.ComponentUss_HasNoHardcodedColors scans the raw text.
+ *
+ * WIDTH IS THE CALLER'S
+ *   V2's 358dp is the screen's content width (390 minus the 16dp gutters), not a
+ *   property of the bar. The bar stretches (`align-self: stretch` is the flex
+ *   default in a column) and keeps its own height from its padding + content.
+ *
+ * THE TEXT WRAPS
+ *   V2 fits "Salva-vidas: Das 08h às 17h" on one 41dp line, but pt-BR notices grow
+ *   and UI Toolkit has no line-height (Appendix B), so the label is
+ *   `white-space: normal` + `flex-shrink: 1` and the bar grows instead of clipping.
+ *
+ * ICON SIZE
+ *   V2's glyph is a 16x16 Flaticon bitmap; Material Symbols render inside their em
+ *   box, so `font-size: 16px` puts slightly less ink on screen than V2's bitmap.
+ *   Kept at 16 because every other component here sizes icons 1:1 with the design's
+ *   dp (chip 18, nav bar 24) and a one-off would drift.
+ */
+
+.mv-alert-bar {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 12px 16px;
+    border-radius: var(--md-sys-shape-corner-large);
+    border-width: 1px;
+}
+
+.mv-alert-bar__icon {
+    font-size: 16px;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+/* body-large metrics (14px / ls 0) at V2's 500 face — the shared typescale class
+ * is 400, so the face is applied here rather than diluting the scale. */
+.mv-alert-bar__label {
+    margin: 0;
+    padding: 0;
+    flex-shrink: 1;
+    font-size: 14px;
+    letter-spacing: 0;
+    white-space: normal;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Medium.asset");
+}
+
+/* ---- Severities ----
+ * container fill + same-role border + on-container text. The icon inherits
+ * `color` from the root, so each severity is three declarations. */
+
+.mv-alert-bar--warning {
+    background-color: var(--md-sys-color-warning-container);
+    border-color: var(--md-sys-color-warning);
+    color: var(--md-sys-color-on-warning-container);
+}
+
+.mv-alert-bar--info {
+    background-color: var(--md-sys-color-secondary-container);
+    border-color: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary-container);
+}
+
+.mv-alert-bar--success {
+    background-color: var(--md-sys-color-success-container);
+    border-color: var(--md-sys-color-success);
+    color: var(--md-sys-color-on-success-container);
+}
+
+.mv-alert-bar--error {
+    background-color: var(--md-sys-color-error-container);
+    border-color: var(--md-sys-color-error);
+    color: var(--md-sys-color-on-error-container);
+}

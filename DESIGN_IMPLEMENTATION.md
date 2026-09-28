@@ -75,6 +75,16 @@ Figma frames are 390pt wide. `AppPanelSettings` uses Constant Physical Size @160
 **1 USS px = 1 dp = 1 Figma pt**. Every number in this document transcribes literally —
 no scaling.
 
+> **Label metrics are zeroed — do not re-discover this.** Unity's default runtime theme
+> gives every `Label` `padding: 4 2 4 1` and `margin: 4 4 2 2`: 14dp of invisible vertical
+> and 9dp of invisible horizontal space that no Figma text node has. Transcribing a Figma
+> gap on top of it doubles the gap, and the lost 9dp of measure costs whole wrapped LINES
+> (the Home feature-card body wrapped to 4 where Figma fits 3). It is reset once, app-wide,
+> in `Assets/DesignSystem/Tokens/_typography.uss` (`.unity-label { padding: 0; margin: 0 }`
+> — the "Label metric reset" block). Consequences: (a) every gap you see is one a component
+> or screen authored, so transcribe Figma gaps as-is; (b) **nothing may lean on the default
+> metrics for spacing** — a new stack of labels needs explicit margins.
+
 ---
 
 ## 2. Screen inventory — what is new vs. what is a restyle
@@ -654,6 +664,7 @@ do not keep the Roboto values.
 |---|---|---|
 | Drop shadows | no `box-shadow` | 1px border (already in the design) — §3.6 |
 | Fixed line heights | no `line-height` | font metrics; verify long pt-BR strings on device |
+| Text nodes with no inset | `Label` ships padding+margin | zeroed app-wide in `_typography.uss` — §1.2 |
 | Font weight as a property | one asset per weight | 4 Inter SDF assets — §3.4 |
 | `cubic-bezier()` easing | named easings only | nearest in `_motion.uss` |
 | Status bar / home indicator | OS-owned | **do not build** — safe-area padding, §1 |

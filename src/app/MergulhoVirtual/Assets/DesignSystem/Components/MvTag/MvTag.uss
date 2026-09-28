@@ -1,0 +1,128 @@
+/* MvTag — small non-interactive pill badge.
+ * Spec: DESIGN_IMPLEMENTATION.md §6 row 2; used by §8.2 (hero badges, risk pill)
+ * and §8.3 (hero badges, risk pill, "Área de berçário").
+ * Figma: `Tag Recifal` 9:113, `Risk Level Tag` 9:124 / 15:572, `Tag Nursery Area`
+ * 15:597, `Pendente` 109:1001.
+ *
+ * NOTE: no hex literals anywhere in this file, comments included —
+ * TokenDisciplineTests.ComponentUss_HasNoHardcodedColors scans the raw text.
+ *
+ * GEOMETRY (1 USS px = 1 dp = 1 Figma pt, §1.2)
+ *   radius   pill (corner-full)
+ *   small    padding 4/10, label 11px 600   — V2's "Pendente"
+ *   medium   padding 6/12, label 12px 600   — V2's hero badges and risk pills
+ *
+ * TWO RUNGS, FOUR FIGMA GEOMETRIES — the snapping, and why
+ *   V2 draws four slightly different tags: 4/10@11 (Pendente), 6/12@12 (Tela 4 risk
+ *   + both hero badge rows), 4/12@12 (Tela 1 risk) and 6/12@11 (species-card
+ *   nursery badge). §6 specifies the component as "padding 4–6 / 10–12", i.e. a
+ *   two-rung scale, so the two hybrids snap: Tela 1's risk pill takes `medium`
+ *   (matching Tela 4's risk pill — the same semantic element, drawn 2dp shorter on
+ *   the landing) and the nursery badge takes `small` (matching its 11px type).
+ *   Weights drift 500/600/700 across the same four tags; 600 is the mode and the
+ *   only weight here.
+ *
+ * WHY THE FILL IS ON A CHILD LAYER
+ *   `on-image` is a translucent navy over a photo. `opacity` on the root would
+ *   fade the label too, and a hand-written translucent color literal is banned
+ *   by TokenDisciplineTests (which scans comments too). So every variant
+ *   colors the absolutely-positioned `__surface` child instead, and `on-image`
+ *   additionally sets `opacity` on that layer only. Uniform across variants so a
+ *   re-theme is one background-color line each.
+ */
+
+.mv-tag {
+    flex-direction: row;
+    align-items: center;
+    align-self: flex-start;
+    flex-shrink: 0;
+    border-radius: var(--md-sys-shape-corner-full);
+    overflow: hidden;
+}
+
+/* Fill layer. Sits under the label, clipped to the pill by the root's
+ * overflow:hidden; the only element `on-image` fades. */
+.mv-tag__surface {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.mv-tag__label {
+    margin: 0;
+    padding: 0;
+    letter-spacing: 0;
+    white-space: nowrap;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-SemiBold.asset");
+}
+
+/* ---- Sizes ---- */
+
+.mv-tag--small {
+    padding: 4px 10px;
+}
+.mv-tag--small .mv-tag__label {
+    font-size: 11px;
+}
+
+.mv-tag--medium {
+    padding: 6px 12px;
+}
+.mv-tag--medium .mv-tag__label {
+    font-size: 12px;
+}
+
+/* ---- Variants ----
+ * Each is exactly one fill token + its paired on-color, so the designer can
+ * re-point a tag by editing tokens and never this file. */
+
+.mv-tag--neutral .mv-tag__surface {
+    background-color: var(--md-sys-color-surface-container-high);
+}
+.mv-tag--neutral .mv-tag__label {
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* V2 draws white text on the success green. `on-success` is the accessible
+ * pairing Slice 0 authored for that role (§3.2), and the component uses the
+ * token, not the swatch: if the designer insists on white the fix is one line in
+ * _brand-light.uss / _brand-dark.uss, not a fork here. */
+.mv-tag--success .mv-tag__surface {
+    background-color: var(--md-sys-color-success);
+}
+.mv-tag--success .mv-tag__label {
+    color: var(--md-sys-color-on-success);
+}
+
+.mv-tag--warning .mv-tag__surface {
+    background-color: var(--md-sys-color-warning);
+}
+.mv-tag--warning .mv-tag__label {
+    color: var(--md-sys-color-on-warning);
+}
+
+.mv-tag--error .mv-tag__surface {
+    background-color: var(--md-sys-color-error);
+}
+.mv-tag--error .mv-tag__label {
+    color: var(--md-sys-color-on-error);
+}
+
+.mv-tag--primary .mv-tag__surface {
+    background-color: var(--md-sys-color-primary);
+}
+.mv-tag--primary .mv-tag__label {
+    color: var(--md-sys-color-on-primary);
+}
+
+/* Over a photo: navy at 80% (V2 uses 0.80 on Tela 4's hero badges and the
+ * species-card nursery badge, 0.85 on Tela 1's hero badges — 0.80 wins on count). */
+.mv-tag--on-image .mv-tag__surface {
+    background-color: var(--md-sys-color-primary);
+    opacity: 0.8;
+}
+.mv-tag--on-image .mv-tag__label {
+    color: var(--md-sys-color-on-primary);
+}

@@ -40,8 +40,8 @@
     margin: 0;
     padding: 0;
     font-size: 14px;
-    letter-spacing: 0.1px;
-    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Roboto-Medium.asset");
+    letter-spacing: 0;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-SemiBold.asset");
 }
 
 .md-chip .md-state-layer {

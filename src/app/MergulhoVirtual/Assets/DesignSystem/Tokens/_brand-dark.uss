@@ -1,0 +1,32 @@
+/* Brand extension color tokens — DARK (DESIGN_IMPLEMENTATION.md §3.2).
+ * Identical variable set to _brand-light.uss; only the values differ.
+ * Read the header of _brand-light.uss for why this pair exists and what has to
+ * move with it. Keep the two sets in sync — a test compares them.
+ *
+ * Derivation: same M3 dark convention as _colors-dark.uss — the role color goes
+ * light so it reads on a dark surface, and the container/on-container pair swaps
+ * ends with the light theme.
+ *
+ *  token                    | value   | provenance
+ *  -------------------------|---------|---------------------------------------------
+ *  success                  | #4ADE80 | green tone 80 (8.6:1 on on-success)
+ *  on-success               | #052E16 | green tone 10 — same as light
+ *  success-container        | #14532D | green tone 30 (light's on-container)
+ *  on-success-container     | #DCFCE7 | green tone 95 (light's container)
+ *  warning                  | #FEDF89 | brand amber tone 90 — already light, reads
+ *                           |         | on dark unchanged, so the brand value stands
+ *  on-warning               | #152336 | brand navy — same as light
+ *  warning-container        | #574400 | amber hue tone 30 (7.2:1 on on-container)
+ *  on-warning-container     | #FEDF89 | brand amber tone 90
+ */
+:root {
+    --md-sys-color-success: #4ADE80;
+    --md-sys-color-on-success: #052E16;
+    --md-sys-color-success-container: #14532D;
+    --md-sys-color-on-success-container: #DCFCE7;
+
+    --md-sys-color-warning: #FEDF89;
+    --md-sys-color-on-warning: #152336;
+    --md-sys-color-warning-container: #574400;
+    --md-sys-color-on-warning-container: #FEDF89;
+}

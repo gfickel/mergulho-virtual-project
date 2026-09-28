@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8277b3cc71e9e73f2b7ba113e110e6b5, type: 3}
   m_Name: tiger_shark
   m_EditorClassIdentifier: Assembly-CSharp::AnimalDef
-  displayName: "Tubar\xE3o Tigre"
+  displayName: "Tubar\xE3o-tigre"
+  binomial: Galeocerdo cuvier
   imageName: tiger_shark
   description: "Possui um tamanho m\xE9dio de 4 a 5 metros de comprimento, com dimorfismo
     sexual aparente na diferen\xE7a de tamanho, com as f\xEAmeas sendo maiores que

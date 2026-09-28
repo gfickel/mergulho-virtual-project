@@ -29,7 +29,7 @@
     margin-right: 8px;
     font-size: 22px;
     color: var(--md-sys-color-on-surface);
-    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Roboto-Regular.asset");
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Regular.asset");
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -52,7 +52,7 @@
     margin-left: 12px;
     margin-right: 12px;
     color: var(--md-sys-color-on-surface);
-    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Roboto-Regular.asset");
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Regular.asset");
     -unity-text-align: lower-left;
     white-space: nowrap;
     overflow: hidden;

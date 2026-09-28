@@ -17,7 +17,9 @@ public class SplashScreen : MonoBehaviour
 
     void GoToMain()
     {
-        if (screenManager != null) screenManager.ShowMain();
+        // ScreenManager hides this panel and hands the screen to the UI Toolkit
+        // shell, which is already sitting on its initial route.
+        if (screenManager != null) screenManager.OnSplashFinished();
         else Debug.LogWarning("[SplashScreen] ScreenManager reference is not assigned.");
     }
 }

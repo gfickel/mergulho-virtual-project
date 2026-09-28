@@ -40,7 +40,7 @@
 
 .md-sparkline__label {
     font-size: 10px;
-    letter-spacing: 0.5px;
+    letter-spacing: 0;
     color: var(--md-sys-color-on-surface-variant);
     -unity-text-align: lower-center;
 }

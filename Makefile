@@ -17,8 +17,13 @@ UPROJ     := src/app/MergulhoVirtual
 ULOG      := $(UPROJ)/Logs
 DSPY      := tools/design_system/.venv/bin/python
 
+# ds-shots is the one Unity target that must NOT pass -nographics (it needs a
+# real graphics device to rasterise the UI Toolkit panels), so it needs an X
+# display. Your environment's DISPLAY wins; override with `make ds-shots DISPLAY=:0`.
+DISPLAY   ?= :1
+
 .PHONY: help ssh logs status restart deploy release health indexes backend-debug \
-        ds-tokens ds-icons ds-setup ds-test ds-test-play ds-compile ui-beaches-setup
+        ds-tokens ds-icons ds-setup ds-test ds-test-play ds-shots ds-compile ui-setup ui-beaches-setup
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -63,8 +68,9 @@ backend-debug: ## Run the backend locally in debug mode (needs Firestore emulato
 # The ds-setup/ds-test/ds-compile targets drive the Unity editor headlessly;
 # they fail with "project already open" if the editor has the project open.
 
-ds-tokens: ## Regenerate M3 color tokens from the seed (see tools/design_system/)
-	$(DSPY) tools/design_system/generate_md3_tokens.py
+ds-tokens: ## Regenerate M3 color tokens from tools/design_system/brand-theme.json
+	$(DSPY) tools/design_system/generate_md3_tokens.py \
+		--from-json tools/design_system/brand-theme.json
 
 ds-icons: ## Re-subset MaterialSymbols.ttf from material_symbols_icons.txt
 	$(DSPY) tools/design_system/subset_material_symbols.py
@@ -98,13 +104,26 @@ ds-test-play: ## Run design-system PlayMode interaction tests headlessly
 		|| { echo "FAILED — results: $(ULOG)/ds-test-playmode.xml"; exit 1; }
 	@echo "ds-test-play OK ($(ULOG)/ds-test-playmode.xml)"
 
-ui-beaches-setup: ## Build/wire the UI Toolkit Beaches screen into MainScene (headless)
+ui-setup: ## Build/wire the UI Toolkit app shell (router + nav bar + screens) into MainScene (headless)
 	@mkdir -p $(ULOG)
 	@$(UNITY) -batchmode -quit -nographics -projectPath $(UPROJ) \
-		-executeMethod BeachesUiScreenBuilder.BuildHeadless \
-		-logFile $(ULOG)/ui-beaches-setup.log \
-		|| { echo "FAILED — last 60 log lines:"; tail -60 $(ULOG)/ui-beaches-setup.log; exit 1; }
-	@echo "ui-beaches-setup OK (log: $(ULOG)/ui-beaches-setup.log)"
+		-executeMethod AppUiBuilder.BuildHeadless \
+		-logFile $(ULOG)/ui-setup.log \
+		|| { echo "FAILED — last 60 log lines:"; tail -60 $(ULOG)/ui-setup.log; exit 1; }
+	@echo "ui-setup OK (log: $(ULOG)/ui-setup.log)"
+
+# Superseded by ui-setup (the shell replaced the single-screen Beaches host in
+# Slice 1). Kept so existing muscle memory / docs keep working.
+ui-beaches-setup: ui-setup
+
+ds-shots: ## Render the UI Toolkit screens + DS gallery to PNGs in .shots/ (headless; filter with SHOT=home)
+	@mkdir -p $(ULOG)
+	@MV_SHOT_FILTER="$(SHOT)" DISPLAY=$(DISPLAY) $(UNITY) -batchmode -quit -projectPath $(UPROJ) \
+		-executeMethod MergulhoVirtual.UiShots.UiScreenshotHarness.CaptureAll \
+		-logFile $(ULOG)/ds-shots.log \
+		|| { echo "FAILED — last 60 log lines:"; tail -60 $(ULOG)/ds-shots.log; exit 1; }
+	@awk -F'[ =]' '/^UI-SHOTS-SUMMARY/ { printf "ds-shots OK — %s PNG(s) written, %s subject(s) skipped -> %s\n", $$3, $$5, $$7; ok=1 } \
+	     END { if (!ok) print "ds-shots OK (no summary line; see $(ULOG)/ds-shots.log)" }' $(ULOG)/ds-shots.log
 
 ds-compile: ## Headless compile check (imports + compiles, no side effects)
 	@mkdir -p $(ULOG)

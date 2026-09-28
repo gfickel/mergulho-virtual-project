@@ -44,7 +44,6 @@ public class RegisterScreenController : MonoBehaviour
     [SerializeField] private Button submitButton;
     [SerializeField] private TMP_Text statusText;
     [SerializeField] private ScrollRect scrollRect;
-    [SerializeField] private ScreenManager screenManager;
     [Tooltip("How long the 'Enviando avistamento…' overlay stays up before bouncing back to the AR screen.")]
     [SerializeField] private float postSubmitDelaySeconds = 2.0f;
     [Tooltip("RoundedRectCard.mat — gives the post-submit overlay card the same rounded corners as other cards. Optional.")]
@@ -302,7 +301,7 @@ public class RegisterScreenController : MonoBehaviour
         sendingCard.localScale = Vector3.one;
         sendingOverlay.SetActive(false);
         submitCoroutine = null;
-        if (screenManager != null) screenManager.ShowMain();
+        AppUiHost.NavigateTo(MergulhoVirtual.UI.Navigation.AppRoutes.Mergulho);
     }
 
     void EnsureSendingOverlay()

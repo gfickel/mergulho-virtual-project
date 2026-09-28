@@ -1,0 +1,72 @@
+/* MvNumberedList — numbered guidance rows ("Dicas de convivência").
+ * Spec: DESIGN_IMPLEMENTATION.md §6 row 7, §8.3 "Tips section".
+ * Figma: `Tips Container Card` 15:609 — rows H, gap 12, row gap 16;
+ * marker 24x24 primary circle with a 12px 700 on-primary number;
+ * body 14px 400 on-surface-variant.
+ *
+ * NOTE: no hex literals anywhere in this file, comments included —
+ * TokenDisciplineTests.ComponentUss_HasNoHardcodedColors scans the raw text.
+ *
+ * WHY THE MARKER IS A BOX WITH A LABEL IN IT, NOT A STYLED LABEL
+ *   A 24x24 Label with a centered glyph would be clipped: TextCore's line box for
+ *   a 12px face is taller than the glyph but shorter than 24dp, and vertical
+ *   centering inside a fixed-height text element is `-unity-text-align`, which
+ *   fights `overflow: hidden` on the circle. A flex box that centers a free-sized
+ *   Label is stable at any digit count (1, 10, 100 all stay centered).
+ *
+ * BODY COLOR
+ *   V2's tip text is the "body grey", which Appendix A.1 collapses onto
+ *   `on-surface-variant` (the same role as the caption grey). That collapse is the
+ *   documented decision, not an approximation made here.
+ */
+
+.mv-numbered-list {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.mv-numbered-list__item {
+    flex-direction: row;
+    align-items: flex-start;
+    margin-top: 16px;
+}
+
+.mv-numbered-list__item--first {
+    margin-top: 0;
+}
+
+.mv-numbered-list__marker {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    margin-right: 12px;
+    border-radius: var(--md-sys-shape-corner-full);
+    align-items: center;
+    justify-content: center;
+    background-color: var(--md-sys-color-primary);
+}
+
+.mv-numbered-list__number {
+    margin: 0;
+    padding: 0;
+    font-size: 12px;
+    letter-spacing: 0;
+    -unity-text-align: middle-center;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset");
+    color: var(--md-sys-color-on-primary);
+}
+
+/* body-large metrics (14px / ls 0), 400 face, wrapping. `flex-shrink: 1` plus
+ * `flex-grow: 1` is what makes a long tip wrap inside the card instead of
+ * pushing the marker off the row. */
+.mv-numbered-list__text {
+    margin: 0;
+    padding: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+    font-size: 14px;
+    letter-spacing: 0;
+    white-space: normal;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Regular.asset");
+    color: var(--md-sys-color-on-surface-variant);
+}

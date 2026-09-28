@@ -21,6 +21,7 @@ namespace MergulhoVirtual.DesignSystem.Gallery
         ThemeStyleSheet _originalTheme;
         MdIconButton _themeToggle;
         readonly System.Collections.Generic.List<TokenSwatch> _swatches = new();
+        readonly System.Collections.Generic.List<Texture2D> _demoTextures = new();
         bool _dark;
 
         void OnEnable()
@@ -29,6 +30,7 @@ namespace MergulhoVirtual.DesignSystem.Gallery
             var root = document.rootVisualElement;
             root.Clear();
             _swatches.Clear();
+            DestroyDemoTextures();
             root.style.flexGrow = 1;
             if (galleryStyles != null)
                 root.styleSheets.Add(galleryStyles);
@@ -60,11 +62,17 @@ namespace MergulhoVirtual.DesignSystem.Gallery
             BuildSnackbarSection(scroll);
             BuildBottomSheetSection(scroll);
             BuildSparklineSection(scroll);
+            BuildTagsSection(scroll);
+            BuildAlertBarSection(scroll);
+            BuildNumberedListSection(scroll);
+            BuildHeroHeaderSection(scroll);
+            BuildMediaCarouselSection(scroll);
             BuildIconsSection(scroll);
         }
 
         void OnDestroy()
         {
+            DestroyDemoTextures();
             // Don't leave the (persistent) PanelSettings asset pointing at the
             // toggled theme after leaving play mode in the editor.
             if (document != null && document.panelSettings != null && _originalTheme != null)
@@ -145,7 +153,7 @@ namespace MergulhoVirtual.DesignSystem.Gallery
 
         void BuildTypographySection(VisualElement parent)
         {
-            var row = Section(parent, "Typography", "M3 type scale (Roboto).");
+            var row = Section(parent, "Typography", "Type scale — Inter, retuned to the V2 design.");
             row.style.flexDirection = FlexDirection.Column;
             row.style.alignItems = Align.FlexStart;
             string[] styles =
@@ -315,13 +323,19 @@ namespace MergulhoVirtual.DesignSystem.Gallery
                 var card = new MdCard { Variant = variant };
                 card.style.width = 220;
 
+                // MdCard is a container only, so this demo content owns its own
+                // rhythm. Spelled out because Label metrics are zeroed app-wide in
+                // Tokens/_typography.uss — nothing may lean on Unity's default
+                // Label padding/margin for spacing any more.
                 var title = new Label(variant.ToString());
                 title.AddToClassList("md-typescale-title-medium");
+                title.style.marginBottom = 4;
                 card.Add(title);
 
                 var body = new Label("Tubarão-limão avistado na Praia do Sancho.");
                 body.AddToClassList("md-typescale-body-medium");
                 body.style.whiteSpace = WhiteSpace.Normal;
+                body.style.marginBottom = 8;
                 card.Add(body);
 
                 var action = new MdButton { Variant = MdButtonVariant.Text, Text = "Ver mais" };
@@ -512,31 +526,71 @@ namespace MergulhoVirtual.DesignSystem.Gallery
 
         void BuildNavigationBarSection(VisualElement parent)
         {
-            var row = Section(parent, "MdNavigationBar", "The app's future BottomNav — tap a destination to move the active indicator.");
+            var row = Section(parent, "MdNavigationBar",
+                "The V2 bottom bar (DESIGN_IMPLEMENTATION.md §4): inverse-surface container with a " +
+                "navy top border, amber active pill, inactive destinations at white 50%.");
             row.style.flexDirection = FlexDirection.Column;
             row.style.alignItems = Align.Stretch;
 
-            var status = new Label("Destino: AR");
+            var status = new Label("Destino: Início");
             status.AddToClassList("md-typescale-label-medium");
+
+            // V2's four destinations. Icons are the Material Symbols stand-ins agreed in
+            // DESIGN_IMPLEMENTATION.md §3.7 option (a):
+            //   fi-sr-home -> home · compass -> explore · fi-sr-map-marker -> location_on
+            //
+            // TODO(D7): "Avistamentos" is drawn with a CUSTOM SHARK-FIN glyph in the Figma
+            // (the node misleadingly named "heart"). Material Symbols has NO equivalent --
+            // see Decision D7 and the TODO at the end of
+            // tools/design_system/material_symbols_icons.txt. `help` below is a deliberate
+            // PLACEHOLDER: a question mark reads as "asset missing" instead of quietly
+            // shipping a wrong-but-plausible icon (waves / surfing / scuba_diving were all
+            // considered and rejected). Swap it the moment the designer exports the fin.
+            const string avistamentosIconPlaceholderD7 = "help";
 
             var destinations = new[]
             {
-                new MdNavDestination("view_in_ar", "AR"),
-                new MdNavDestination("beach_access", "Praias"),
-                new MdNavDestination("scuba_diving", "Animais"),
-                new MdNavDestination("add_a_photo", "Registrar"),
-                new MdNavDestination("info", "Sobre"),
+                new MdNavDestination("home", "Início"),
+                new MdNavDestination("explore", "Mergulho"),
+                new MdNavDestination("location_on", "Praias"),
+                new MdNavDestination(avistamentosIconPlaceholderD7, "Avistamentos"),
             };
             var bar = new MdNavigationBar();
             bar.SetDestinations(destinations);
             bar.SelectedIndex = 0;
             bar.SelectionChanged += i =>
                 status.text = "Destino: " + (i >= 0 ? destinations[i].Label : "—");
-            bar.style.width = 380;
+            bar.style.width = 390;   // V2 frame width; 1 USS px = 1 dp = 1 Figma pt
             bar.style.marginBottom = 12;
 
             row.Add(bar);
             row.Add(status);
+
+            // Layout check: V2 uses four destinations, but the component is specced for
+            // 3-5 and the USS must not overflow at either end (space-between + fixed 64dp
+            // tabs). Shown here so a regression is visible rather than theoretical.
+            var spread = new Label("3 e 5 destinos — verificação de layout (o design usa 4)");
+            spread.AddToClassList("md-typescale-label-medium");
+            spread.style.marginTop = 12;
+            spread.style.marginBottom = 8;
+            row.Add(spread);
+
+            var three = new MdNavigationBar();
+            three.SetDestinations(new[] { destinations[0], destinations[1], destinations[2] });
+            three.SelectedIndex = 1;
+            three.style.width = 390;
+            three.style.marginBottom = 12;
+            row.Add(three);
+
+            var five = new MdNavigationBar();
+            five.SetDestinations(new[]
+            {
+                destinations[0], destinations[1], destinations[2], destinations[3],
+                new MdNavDestination("info", "Sobre"),
+            });
+            five.SelectedIndex = 4;
+            five.style.width = 390;
+            row.Add(five);
         }
 
         void BuildDialogSection(VisualElement parent)
@@ -674,6 +728,263 @@ namespace MergulhoVirtual.DesignSystem.Gallery
             sparkline.style.height = 120;
             sparkline.style.maxWidth = 420;
             row.Add(sparkline);
+        }
+
+        // ---- Mv* components (DESIGN_IMPLEMENTATION.md §6) --------------------
+
+        void BuildTagsSection(VisualElement parent)
+        {
+            var row = Section(parent, "MvTag",
+                "Non-interactive pill badge · 6 variants × 2 size rungs. `on-image` is a translucent navy layer under its own label — check it over the photo strip.");
+            row.style.flexDirection = FlexDirection.Column;
+            row.style.alignItems = Align.FlexStart;
+
+            foreach (MvTagSize size in System.Enum.GetValues(typeof(MvTagSize)))
+            {
+                var sizeRow = new VisualElement();
+                sizeRow.AddToClassList("gallery-row");
+                var caption = new Label(size.ToString());
+                caption.AddToClassList("md-typescale-label-small");
+                sizeRow.Add(caption);
+                foreach (MvTagVariant variant in System.Enum.GetValues(typeof(MvTagVariant)))
+                    sizeRow.Add(new MvTag { Text = variant.ToString(), Variant = variant, Size = size });
+                row.Add(sizeRow);
+            }
+
+            // The four real V2 tags, at the rung each one snaps to.
+            var realRow = new VisualElement();
+            realRow.AddToClassList("gallery-row");
+            realRow.Add(new MvTag { Text = "Risco: Baixo", Variant = MvTagVariant.Success });
+            realRow.Add(new MvTag { Text = "Pendente", Variant = MvTagVariant.Neutral, Size = MvTagSize.Small });
+            realRow.Add(new MvTag { Text = "Área de berçário", Variant = MvTagVariant.OnImage, Size = MvTagSize.Small });
+            realRow.Add(new MvTag { Text = "Ambiente recifal", Variant = MvTagVariant.OnImage });
+            row.Add(realRow);
+
+            // on-image over an actual photo — the only way to see the 0.8 fill work.
+            var plate = new VisualElement();
+            plate.style.height = 88;
+            plate.style.width = 320;
+            plate.style.flexDirection = FlexDirection.Row;
+            plate.style.alignItems = Align.Center;
+            plate.style.paddingLeft = 12;
+            plate.style.borderTopLeftRadius = 16;
+            plate.style.borderTopRightRadius = 16;
+            plate.style.borderBottomLeftRadius = 16;
+            plate.style.borderBottomRightRadius = 16;
+            plate.style.overflow = Overflow.Hidden;
+            var plateImage = new Image { scaleMode = ScaleMode.ScaleAndCrop, pickingMode = PickingMode.Ignore };
+            plateImage.image = DemoPhoto(new Color(0.09f, 0.42f, 0.55f), new Color(0.85f, 0.88f, 0.62f));
+            plateImage.style.position = Position.Absolute;
+            plateImage.style.left = 0;
+            plateImage.style.top = 0;
+            plateImage.style.right = 0;
+            plateImage.style.bottom = 0;
+            plate.Add(plateImage);
+            var onImage = new MvTag { Text = "Mar de fora", Variant = MvTagVariant.OnImage };
+            var onImage2 = new MvTag { Text = "Área do parque", Variant = MvTagVariant.OnImage };
+            onImage2.style.marginLeft = 8;
+            plate.Add(onImage);
+            plate.Add(onImage2);
+            row.Add(plate);
+        }
+
+        void BuildAlertBarSection(VisualElement parent)
+        {
+            var row = Section(parent, "MvAlertBar",
+                "Icon + wrapping text on a tinted outlined bar · warning (V2's lifeguard notice) / info / success / error · icon optional.");
+            row.style.flexDirection = FlexDirection.Column;
+            row.style.alignItems = Align.Stretch;
+
+            row.Add(new MvAlertBar { Text = "Salva-vidas: Das 08h às 17h", Icon = "medical_services" });
+            row.Add(new MvAlertBar { Severity = MvAlertBarSeverity.Info, Icon = "info", Text = "Maré vazante até as 14h." });
+            row.Add(new MvAlertBar { Severity = MvAlertBarSeverity.Success, Icon = "check_circle", Text = "Avistamento enviado." });
+            row.Add(new MvAlertBar { Severity = MvAlertBarSeverity.Error, Icon = "wifi_off", Text = "Sem conexão — o envio ficará na fila." });
+            row.Add(new MvAlertBar { Icon = "", Text = "Sem ícone." });
+            row.Add(new MvAlertBar
+            {
+                Text = "Texto longo para provar a quebra de linha: mantenha distância de segurança " +
+                       "ao avistar animais marinhos na praia ou durante o nado, e respeite a sinalização.",
+            });
+        }
+
+        void BuildNumberedListSection(VisualElement parent)
+        {
+            var row = Section(parent, "MvNumberedList",
+                "Numbered primary circles + body rows ('Dicas de convivência') · items from code · start-number · empty list collapses.");
+            row.style.flexDirection = FlexDirection.Column;
+            row.style.alignItems = Align.Stretch;
+
+            var card = new MdCard { Variant = MdCardVariant.Outlined };
+            var tips = new MvNumberedList();
+            tips.SetItems(new[]
+            {
+                "Mantenha distância de segurança ao avistar animais marinhos na praia ou durante o nado.",
+                "Evite movimentos bruscos e não tente tocar nos tubarões ou tartarugas em alimentação.",
+                "Respeite as sinalizações de conservação e não descarte lixo de nenhuma espécie na praia.",
+            });
+            card.Add(tips);
+            row.Add(card);
+
+            var continued = new MvNumberedList { StartNumber = 8 };
+            continued.SetItems(new[] { "Continua a partir de 8.", "Nono item." });
+            continued.style.marginTop = 12;
+            row.Add(continued);
+
+            var empty = new MvNumberedList();
+            empty.SetItems(null);
+            row.Add(empty);
+            var emptyNote = new Label("(an empty MvNumberedList is above this line and contributes no height)");
+            emptyNote.AddToClassList("md-typescale-body-small");
+            row.Add(emptyNote);
+        }
+
+        void BuildHeroHeaderSection(VisualElement parent)
+        {
+            var row = Section(parent, "MvHeroHeader",
+                "Cover photo + scrim + optional back button / selector pill / badge row. Every overlay is independent; no image = no scrim (the AR case).");
+            row.style.flexDirection = FlexDirection.Column;
+            row.style.alignItems = Align.Stretch;
+
+            var status = new Label("—");
+            status.AddToClassList("md-typescale-label-medium");
+
+            // 1. Praia detalhe: everything on.
+            var full = new MvHeroHeader
+            {
+                ShowBackButton = true,
+                ShowSelector = true,
+                SelectorText = "Baía do Sueste",
+            };
+            full.SetImage(DemoPhoto(new Color(0.05f, 0.35f, 0.52f), new Color(0.62f, 0.85f, 0.83f)));
+            full.SetBadges(new[] { "Mar de fora", "Área do parque" });
+            full.BackClicked += () => status.text = "BackClicked";
+            full.SelectorClicked += () => status.text = "SelectorClicked";
+            row.Add(full);
+
+            var fullCaption = new Label("340dp · image + scrim 0.35 + back + selector + 2 badges");
+            fullCaption.AddToClassList("md-typescale-body-small");
+            row.Add(fullCaption);
+            row.Add(status);
+
+            // 2. Praias landing: compact, badges only.
+            var compact = new MvHeroHeader { Compact = true };
+            compact.SetImage(DemoPhoto(new Color(0.10f, 0.45f, 0.60f), new Color(0.95f, 0.90f, 0.70f)));
+            compact.SetBadges(new[] { "Ambiente recifal", "Área de berçário" });
+            compact.style.marginTop = 12;
+            row.Add(compact);
+            var compactCaption = new Label("240dp (--compact) · image + scrim 0.25 + badges, no controls");
+            compactCaption.AddToClassList("md-typescale-body-small");
+            row.Add(compactCaption);
+
+            // 3. AR: controls over a live camera — no image, so no scrim.
+            var arPlate = new VisualElement();
+            arPlate.style.marginTop = 12;
+            arPlate.style.backgroundColor = new Color(0.03f, 0.10f, 0.16f);
+            var overlay = new MvHeroHeader
+            {
+                Compact = true,
+                ShowBackButton = true,
+                ShowSelector = true,
+                SelectorText = "Praia do Sancho",
+            };
+            overlay.TopInset = 24;
+            arPlate.Add(overlay);
+            row.Add(arPlate);
+            var arCaption = new Label("no image -> no scrim · TopInset 24 pushes the controls down without moving the photo");
+            arCaption.AddToClassList("md-typescale-body-small");
+            row.Add(arCaption);
+
+            // 4. Selector alone, and back alone — each overlay is independent.
+            var selectorOnly = new MvHeroHeader { Compact = true, ShowSelector = true, SelectorText = "Só o seletor" };
+            selectorOnly.SetImage(DemoPhoto(new Color(0.20f, 0.30f, 0.45f), new Color(0.75f, 0.80f, 0.85f)));
+            selectorOnly.style.marginTop = 12;
+            row.Add(selectorOnly);
+
+            var backOnly = new MvHeroHeader { Compact = true, ShowBackButton = true };
+            backOnly.SetImage(DemoPhoto(new Color(0.35f, 0.25f, 0.20f), new Color(0.90f, 0.82f, 0.70f)));
+            backOnly.style.marginTop = 12;
+            row.Add(backOnly);
+            var soloCaption = new Label("selector without back · back without selector · neither would hide the whole top row");
+            soloCaption.AddToClassList("md-typescale-body-small");
+            row.Add(soloCaption);
+        }
+
+        void BuildMediaCarouselSection(VisualElement parent)
+        {
+            var row = Section(parent, "MvMediaCarousel",
+                "Horizontal 160x171 photo cards ('Galeria de avistamentos') · scrollers hidden in C# (USS cannot) · tap raises ItemClicked.");
+            row.style.flexDirection = FlexDirection.Column;
+            row.style.alignItems = Align.Stretch;
+
+            string[] species = { "Tubarão-limão", "Tartaruga-verde", "Raia Pintada", "Tubarão-tigre", "Barracuda", "Arraia-jamanta" };
+            string[] credits = { "Foto: Bianca Rangel", "Foto: Marcos Lima", "Foto: Ana Clara", "Foto: Pedro Sá", "", "Foto: Lu Menezes" };
+            var items = new System.Collections.Generic.List<MvMediaItem>();
+            for (int i = 0; i < species.Length; i++)
+            {
+                float t = i / (float)(species.Length - 1);
+                items.Add(new MvMediaItem(species[i], credits[i],
+                    DemoPhoto(Color.Lerp(new Color(0.05f, 0.30f, 0.50f), new Color(0.10f, 0.55f, 0.45f), t),
+                              Color.Lerp(new Color(0.75f, 0.90f, 0.85f), new Color(0.95f, 0.88f, 0.60f), t))));
+            }
+
+            var status = new Label("Tap a card…");
+            status.AddToClassList("md-typescale-label-medium");
+
+            var carousel = new MvMediaCarousel();
+            carousel.SetItems(items);
+            carousel.ItemClicked += i => status.text = $"ItemClicked({i}) = {species[i]}";
+            row.Add(carousel);
+            row.Add(status);
+
+            var oneItem = new MvMediaCarousel();
+            oneItem.SetItems(new[] { new MvMediaItem("Um só", "Foto: —", items[0].Texture) });
+            oneItem.style.marginTop = 12;
+            row.Add(oneItem);
+
+            var empty = new MvMediaCarousel();
+            empty.SetItems(null);
+            row.Add(empty);
+            var emptyNote = new Label("(an empty MvMediaCarousel is above this line — it hides itself and takes no height)");
+            emptyNote.AddToClassList("md-typescale-body-small");
+            row.Add(emptyNote);
+        }
+
+        /// <summary>
+        /// A throwaway 2-stop gradient texture, so the photo-bearing components
+        /// (MvHeroHeader, MvMediaCarousel, the on-image MvTag plate) can be seen
+        /// doing their job without shipping sample art in the design system.
+        /// Destroyed with the gallery.
+        /// </summary>
+        Texture2D DemoPhoto(Color top, Color bottom)
+        {
+            const int size = 64;
+            var texture = new Texture2D(size, size) { hideFlags = HideFlags.HideAndDontSave };
+            for (int y = 0; y < size; y++)
+            {
+                var line = Color.Lerp(bottom, top, y / (float)(size - 1));
+                for (int x = 0; x < size; x++)
+                {
+                    // A little cross-fade so ScaleAndCrop has something to crop.
+                    texture.SetPixel(x, y, Color.Lerp(line, top, x / (float)(size - 1) * 0.25f));
+                }
+            }
+            texture.Apply();
+            _demoTextures.Add(texture);
+            return texture;
+        }
+
+        void DestroyDemoTextures()
+        {
+            foreach (var texture in _demoTextures)
+            {
+                if (texture == null)
+                    continue;
+                if (Application.isPlaying)
+                    Destroy(texture);
+                else
+                    DestroyImmediate(texture);
+            }
+            _demoTextures.Clear();
         }
 
         void BuildIconsSection(VisualElement parent)

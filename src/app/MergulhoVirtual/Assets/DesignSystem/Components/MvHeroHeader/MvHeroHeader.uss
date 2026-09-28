@@ -1,0 +1,207 @@
+/* MvHeroHeader — full-bleed cover photo + scrim + optional floating controls.
+ * Spec: DESIGN_IMPLEMENTATION.md §6 row 8, §8.2 (240dp hero) and §8.3 (340dp hero).
+ * Figma: `Hero Cover Container` 15:560 (340dp) / 9:110 (240dp),
+ * `Back Icon Action` 31:2823, `Beach Selector` 30:2812, `Environmental Badges` 15:562.
+ *
+ * NOTE: no hex literals anywhere in this file, comments included —
+ * TokenDisciplineTests.ComponentUss_HasNoHardcodedColors scans the raw text.
+ *
+ * GEOMETRY (1 USS px = 1 dp = 1 Figma pt, §1.2)
+ *   hero      390x340 (default) / 390x240 (`--compact`), photo full-bleed
+ *   scrim     primary at 0.35 (default) / 0.25 (`--compact`)
+ *   controls  top row 32dp below the hero top, 16dp gutters
+ *   back      40dp circle, surface fill, 1px outline-variant, 20dp glyph
+ *   selector  42dp pill, surface fill, 1px outline-variant, 20dp pin + 16/600
+ *             ls 0.1 name + 24dp chevron, 16dp inner gutters
+ *   badges    pinned 23dp (21dp compact) above the hero bottom, 16dp gutters, gap 8
+ *
+ * THREE DELIBERATE DEVIATIONS FROM THE FIGMA COORDINATES
+ *  1. V2 puts the back circle at x=25 and the pill at x=76..371, i.e. a 346dp group
+ *     with 25/19 side margins that lines up with nothing. Here both hero gutters are
+ *     16dp — the same gutter as the badge row above them (x=16 in Figma) and as the
+ *     content body below — so the controls sit on the screen's grid. The pill's LEFT
+ *     edge still lands at 76 exactly (16 gutter + 48 touch target + 12 gap); its
+ *     right edge gains 3dp and the back circle moves 5dp left.
+ *  2. The pill and the back button are interactive, so their ROOTS are ≥48dp touch
+ *     targets with the 42dp / 40dp visuals centred inside (the MdChip / MdIconButton
+ *     pattern). That lowers the visual top edge by 3dp against V2's y=32.
+ *  3. V2's pill is a fixed 295dp; here it flexes into whatever the row leaves, so a
+ *     360dp phone shrinks the pill instead of overflowing the screen.
+ *
+ * THE SCRIM IS A LAYER, NOT A TRANSLUCENT COLOR LITERAL
+ *   `background-color: var(--md-sys-color-primary)` + `opacity` on a child that has
+ *   nothing but background. Writing the translucency into the color itself is
+ *   banned by TokenDisciplineTests (which scans comments too), and
+ *   fading the ROOT would fade the photo and the controls with it.
+ *
+ * WHY THE BADGE ROW IS ABSOLUTELY POSITIONED
+ *   It must hug the hero's bottom edge whether or not the top row exists. Flex
+ *   `space-between` only does that with two children present, and UI Toolkit has no
+ *   `margin: auto`. Absolute + `bottom` is unconditional and costs no extra element.
+ */
+
+.mv-hero-header {
+    height: 340px;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.mv-hero-header--compact {
+    height: 240px;
+}
+
+.mv-hero-header__image {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.mv-hero-header__scrim {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--md-sys-color-primary);
+    opacity: 0.35;
+}
+
+.mv-hero-header--compact .mv-hero-header__scrim {
+    opacity: 0.25;
+}
+
+/* Controls plane. Separate from the photo so the host's status-bar inset
+ * (MvHeroHeader.TopInset -> padding-top here) pushes the controls down without
+ * moving the image. */
+.mv-hero-header__foreground {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+/* ---- Top row: back button + selector pill ---- */
+
+.mv-hero-header__top-row {
+    flex-direction: row;
+    align-items: center;
+    margin-top: 32px;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+/* MdIconButton restyled to V2's white floating circle. The 48dp root and the
+ * 40dp container come from MdIconButton.uss; only the skin changes here.
+ * ORDER-DEPENDENT: these rules tie with MdIconButton.uss's `--standard` rules on
+ * specificity (both 0,2,0), so they win only because the theme files import
+ * MdIconButton.uss BEFORE MvHeroHeader.uss. Keep that order in both .tss files. */
+.mv-hero-header__back {
+    margin-right: 12px;
+}
+.mv-hero-header__back .md-icon-button__container {
+    background-color: var(--md-sys-color-surface);
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline-variant);
+    color: var(--md-sys-color-primary);
+}
+.mv-hero-header__back .md-state-layer {
+    background-color: var(--md-sys-color-primary);
+}
+.mv-hero-header__back .md-icon {
+    font-size: 20px;
+}
+
+/* Selector: root is the ≥48dp touch target, __selector-container the 42dp pill. */
+.mv-hero-header__selector {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-height: 48px;
+    justify-content: center;
+    align-items: stretch;
+}
+
+.mv-hero-header__selector-container {
+    flex-direction: row;
+    align-items: center;
+    height: 42px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: var(--md-sys-shape-corner-full);
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-surface);
+    overflow: hidden;
+    color: var(--md-sys-color-primary);
+}
+
+.mv-hero-header__selector .md-state-layer {
+    background-color: var(--md-sys-color-primary);
+}
+
+.mv-hero-header__selector-icon {
+    font-size: 20px;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+/* title-small metrics bumped to V2's 16px, 600 face, ls 0.1 (one of the three
+ * strings in the whole design with non-zero tracking — see _typography.uss). */
+.mv-hero-header__selector-label {
+    margin: 0;
+    padding: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+    font-size: 16px;
+    letter-spacing: 0.1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-SemiBold.asset");
+}
+
+.mv-hero-header__selector-chevron {
+    font-size: 24px;
+    margin-left: 12px;
+    flex-shrink: 0;
+}
+
+.mv-hero-header__selector:hover .md-state-layer {
+    opacity: var(--md-sys-state-hover-opacity);
+}
+.mv-hero-header__selector:focus .md-state-layer {
+    opacity: var(--md-sys-state-focus-opacity);
+}
+.mv-hero-header__selector:active .md-state-layer {
+    opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* ---- Badge row ---- */
+
+.mv-hero-header__badges {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 23px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.mv-hero-header--compact .mv-hero-header__badges {
+    bottom: 21px;
+}
+
+.mv-hero-header__badge {
+    margin-left: 8px;
+}
+
+.mv-hero-header__badge--first {
+    margin-left: 0;
+}

@@ -520,5 +520,76 @@ namespace MergulhoVirtual.DesignSystem.Tests
             Assert.That(clicked, Is.EqualTo(1));
             Assert.That(chip.Selected, Is.False);
         }
+
+        // ---- Mv* components (DESIGN_IMPLEMENTATION.md §6) --------------------
+
+        [UnityTest]
+        public IEnumerator MvHeroHeader_BackAndSelector_RaiseSeparateEvents()
+        {
+            var hero = new MvHeroHeader
+            {
+                ShowBackButton = true,
+                ShowSelector = true,
+                SelectorText = "Baía do Sueste",
+            };
+            int back = 0, selector = 0;
+            hero.BackClicked += () => back++;
+            hero.SelectorClicked += () => selector++;
+            yield return Mount(hero);
+
+            // Themeless panel: no component USS, so nothing has an intrinsic size
+            // and picking would find an empty worldBound. Size the two controls
+            // (and the row that lays them out) explicitly.
+            hero.style.height = 240;
+            var topRow = hero.Q<VisualElement>(className: MvHeroHeader.TopRowClassName);
+            topRow.style.height = 48;
+            var backButton = hero.Q<MdIconButton>(className: MvHeroHeader.BackClassName);
+            backButton.style.width = 48;
+            backButton.style.height = 48;
+            hero.Selector.style.width = 120;
+            hero.Selector.style.height = 48;
+            yield return null;
+
+            TestPointer.Click(backButton);
+            Assert.That(back, Is.EqualTo(1));
+            Assert.That(selector, Is.Zero, "the back button must not raise SelectorClicked");
+
+            TestPointer.Click(hero.Selector);
+            Assert.That(selector, Is.EqualTo(1));
+            Assert.That(back, Is.EqualTo(1), "the selector must not raise BackClicked");
+        }
+
+        [UnityTest]
+        public IEnumerator MvMediaCarousel_TapCard_RaisesItsIndex()
+        {
+            var carousel = new MvMediaCarousel();
+            carousel.SetItems(new[]
+            {
+                new MvMediaItem("Tubarão-limão", "Foto: Bianca Rangel"),
+                new MvMediaItem("Tartaruga-verde", "Foto: Marcos Lima"),
+            });
+            int last = -1, raised = 0;
+            carousel.ItemClicked += i => { last = i; raised++; };
+            yield return Mount(carousel);
+
+            // Themeless panel again: size the scroll chain and the cards, and keep
+            // the tap inside the 200dp-wide mounted viewport (a horizontal
+            // ScrollView clips what hangs past it, so card 1 is not clickable here).
+            carousel.style.height = 171;
+            var scroll = carousel.Q<ScrollView>();
+            scroll.style.flexGrow = 1;
+            scroll.style.height = 171;
+            var cards = carousel.Query<VisualElement>(className: MvMediaCarousel.CardClassName).ToList();
+            foreach (var card in cards)
+            {
+                card.style.width = 90;
+                card.style.height = 120;
+            }
+            yield return null;
+
+            TestPointer.Click(cards[0]);
+            Assert.That(raised, Is.EqualTo(1));
+            Assert.That(last, Is.Zero);
+        }
     }
 }
