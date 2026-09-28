@@ -3523,11 +3523,11 @@ MonoBehaviour:
   - {fileID: 7433441132597879392, guid: 389d0528f775be07085c7bf73341726c, type: 3}
   - {fileID: 7433441132597879392, guid: 5ee7b8ad45361e41497bff340daefb8a, type: 3}
   - {fileID: 7433441132597879392, guid: 4dead55c5253ee2cc8b898cd0a8c1c0e, type: 3}
+  - {fileID: 7433441132597879392, guid: 3be077dedbffa7a5b97810cc8389a4ab, type: 3}
   conditionsService: {fileID: 1630220509}
   tideService: {fileID: 110639301}
   gpsHandler: {fileID: 146972434}
   legacyArScreen: {fileID: 21059090}
-  legacyRegisterScreen: {fileID: 1178858434}
   legacyAboutScreen: {fileID: 752868788}
   screenManager: {fileID: 1941010042}
   initialRoute: home

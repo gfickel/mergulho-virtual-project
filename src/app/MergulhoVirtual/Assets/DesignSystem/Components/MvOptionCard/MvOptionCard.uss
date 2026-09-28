@@ -1,0 +1,132 @@
+/* MvOptionCard — large selectable icon-over-label card ("Selecione seu perfil").
+ * Spec: DESIGN_IMPLEMENTATION.md §6 row 4, §8.5 "Selecione seu perfil".
+ * Figma: `Turista Option` / `Guia Option` 109:1035 (Tela 11, both unselected)
+ * and 109:4210 (Tela 12, Turista selected) — 174x93, V, gap 12, pad 16,
+ * xCENTER, surface fill, r16; unselected 1px outline-variant, selected 2px primary.
+ *
+ * NOTE: no hex literals anywhere in this file, comments included —
+ * TokenDisciplineTests.ComponentUss_HasNoHardcodedColors scans the raw text.
+ *
+ * GEOMETRY (1 USS px = 1 dp = 1 Figma pt, §1.2)
+ *   card    height 93, r16, padding 16, column, cross-axis centered
+ *   icon    32dp slot holding a 24dp glyph (V2 nests a 24x24 icon frame inside a
+ *           32x32 box; Material Symbols draw inside their em box, so font-size 24
+ *           in a 32dp-tall slot reproduces both numbers)
+ *   label   14px, 600 unselected / 700 selected, 12dp below the icon
+ *
+ * WIDTH IS THE CALLER'S — same rule as MvAlertBar
+ *   V2's "174" is one half of the 358dp content column minus the 12dp gap
+ *   ((358 - 12) / 2 = 173), and the four frames disagree with themselves about it
+ *   (173/173 on Tela 11, 174/172 on Tela 12) — rounding noise from a flex row, not
+ *   a property of the card. So the card grows into whatever its row leaves and
+ *   shrinks below 173 on a 360dp phone instead of overflowing, the same choice
+ *   MvHeroHeader made for its selector pill. A caller wanting a fixed 174 sets it.
+ *
+ * SELECTED BORDER GROWS INWARD
+ *   1px -> 2px would push the content 1dp up and in. The padding drops to 15 on
+ *   the selected card so the icon and label do not move — MdChip.uss pulls the
+ *   same trick when its selected variant drops its border.
+ *
+ * LABEL WEIGHT CHANGES WITH SELECTION — and that is from the design
+ *   Every V2 frame draws the SELECTED profile label at 700 and the unselected one
+ *   at 600 (Tela 3, 5 and 12 all show exactly that pair; Tela 11 has neither
+ *   selected and draws both at 600). §8.5 flattens this to "Inter 700 14" — the
+ *   frames win, and the weight swap is a second, color-blind selection cue on top
+ *   of the border. The card is fixed-width and centers its label, so the extra
+ *   stroke width reflows nothing.
+ */
+
+.mv-option-card {
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0;
+    /* Let it shrink below its content on a narrow phone rather than overflow. */
+    min-width: 0;
+    height: 93px;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    border-radius: var(--md-sys-shape-corner-large);
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-surface);
+    /* V2 paints icon and label in the brand navy — the same ink it uses for every
+     * form section label, i.e. the swatch Appendix A.1 maps to `primary`. As ink on
+     * a white card that collapses onto `on-surface`, the same collapse A.1 makes for
+     * the mid-grey body color; `primary` itself would be an M3 role violation for
+     * body text and would go pale blue in the dark theme. Set on the card so the
+     * icon and the label move together — including when disabled. */
+    color: var(--md-sys-color-on-surface);
+    /* Required by the state-layer contract: the layer must follow the corners. */
+    overflow: hidden;
+}
+
+.mv-option-card:disabled {
+    opacity: 1;
+}
+
+/* 32dp slot, 24dp glyph. `color` is inherited from the card so a disabled or
+ * selected card tints icon and label together. */
+.mv-option-card__icon {
+    height: 32px;
+    font-size: 24px;
+    flex-shrink: 0;
+    -unity-text-align: middle-center;
+}
+
+/* label-large metrics (14px / ls 0) at V2's 600 face. */
+.mv-option-card__label {
+    margin: 0;
+    padding: 0;
+    margin-top: 12px;
+    font-size: 14px;
+    letter-spacing: 0;
+    /* One line: the card is a fixed 93dp and a second line would not fit inside
+     * it. A label too long for a narrow phone ellipsizes rather than clipping
+     * mid-glyph — the MdListItem / MvMediaCarousel treatment. */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    -unity-text-align: middle-center;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-SemiBold.asset");
+}
+
+/* ---- Selected ---- */
+
+.mv-option-card--selected {
+    border-width: 2px;
+    border-color: var(--md-sys-color-primary);
+    /* 16 - 1 = 15: compensates the extra border so nothing shifts. */
+    padding: 15px;
+}
+
+.mv-option-card--selected .mv-option-card__label {
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset");
+}
+
+/* ---- Interaction states ---- */
+
+.mv-option-card .md-state-layer {
+    background-color: var(--md-sys-color-on-surface-variant);
+}
+.mv-option-card--selected .md-state-layer {
+    background-color: var(--md-sys-color-primary);
+}
+
+.mv-option-card:hover .md-state-layer {
+    opacity: var(--md-sys-state-hover-opacity);
+}
+.mv-option-card:focus .md-state-layer {
+    opacity: var(--md-sys-state-focus-opacity);
+}
+.mv-option-card:active .md-state-layer {
+    opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* ---- Disabled ---- */
+
+.mv-option-card:disabled {
+    border-color: var(--md-sys-color-on-surface-disabled-container);
+    color: var(--md-sys-color-on-surface-disabled-content);
+}

@@ -35,11 +35,13 @@ public class AppUiHost : MonoBehaviour
     [SerializeField] TideService tideService;
     [SerializeField] GPSHandler gpsHandler;
 
-    [Header("Legacy uGUI screens (strangler — replaced in Slices 3/4)")]
+    // ScreenUI/RegisterScreen is NOT here any more: Slice 3 replaced it with the
+    // UI Toolkit ReportScreen, so nothing routes to it. The GameObject stays in
+    // the scene until Slice 6 (the strangler rule) — AppUiBuilder just leaves it
+    // deactivated with the other unrouted legacy screens.
+    [Header("Legacy uGUI screens (strangler — replaced in Slice 4 / 6)")]
     [Tooltip("ScreenUI/MainScreen — the AR HUD, routed as AppRoutes.Mergulho.")]
     [SerializeField] GameObject legacyArScreen;
-    [Tooltip("ScreenUI/RegisterScreen — the uGUI report form, routed as AppRoutes.Avistamentos.")]
-    [SerializeField] GameObject legacyRegisterScreen;
     [Tooltip("ScreenUI/AboutScreen — Sobre + the Instagram widget. No tab in V2 (Decision D2); pushed from the Início grid as AppRoutes.Sobre.")]
     [SerializeField] GameObject legacyAboutScreen;
 
@@ -58,9 +60,11 @@ public class AppUiHost : MonoBehaviour
     BeachDetailViewModel beachDetailViewModel;
     PraiasViewModel praiasViewModel;
     HomeViewModel homeViewModel;
+    ReportViewModel reportViewModel;
     UiServiceAdapters.ConditionsServiceAdapter conditionsAdapter;
     UiServiceAdapters.TideServiceAdapter tideAdapter;
     UiServiceAdapters.ActiveBeachAdapter activeBeachAdapter;
+    UiServiceAdapters.SightingReportsAdapter sightingReportsAdapter;
     MdRouter router;
     float freshnessTimer;
 
@@ -130,6 +134,19 @@ public class AppUiHost : MonoBehaviour
         // and its key mapping are not.
         activeBeachAdapter = new UiServiceAdapters.ActiveBeachAdapter(gpsHandler);
         praiasViewModel = new PraiasViewModel(beachDetailViewModel, beachesViewModel, activeBeachAdapter);
+        // Reportar (Slice 3). Constructing the reports adapter is what spins up the
+        // JobQueue and loads what is on disk, so a sighting left queued by a previous
+        // run resumes AND shows up in the feed — it must happen here, in Awake, not on
+        // the first visit to the tab. It shares the active-beach adapter with Praias:
+        // the report is filed under the beach the app says you are at, and a second
+        // subscription would be a second copy of the same state, not a second source.
+        sightingReportsAdapter = new UiServiceAdapters.SightingReportsAdapter();
+        reportViewModel = new ReportViewModel(
+            new UiServiceAdapters.SpeciesCatalogAdapter(),
+            sightingReportsAdapter,
+            new UiServiceAdapters.GalleryPhotoPickerAdapter(),
+            activeBeachAdapter,
+            new UiServiceAdapters.BeachCatalogAdapter());
     }
 
     void OnEnable()
@@ -181,9 +198,12 @@ public class AppUiHost : MonoBehaviour
         beachesViewModel?.Dispose();
         beachDetailViewModel?.Dispose();
         homeViewModel?.Dispose();
+        // Before the adapter it subscribes to.
+        reportViewModel?.Dispose();
         conditionsAdapter?.Dispose();
         tideAdapter?.Dispose();
         activeBeachAdapter?.Dispose();
+        sightingReportsAdapter?.Dispose();
     }
 
     void Update()
@@ -236,9 +256,15 @@ public class AppUiHost : MonoBehaviour
         praiaDetalhe.BackRequested += () => router?.Back();
         r.Register(praiaDetalhe);
 
-        // Avistamentos — the legacy uGUI report form (Slice 3 replaces it).
-        if (legacyRegisterScreen != null)
-            r.Register(new LegacyUguiScreen(AppRoutes.Avistamentos, legacyRegisterScreen));
+        // Avistamentos (Tela 11 + Tela 12) — the tab root, replacing the uGUI
+        // RegisterScreen. It leaves for Início after a submit the queue took, which
+        // arrives here as an ordinary route key; BackRequested is wired for the day
+        // the same screen is pushed rather than tabbed to (its back button is hidden
+        // on a tab root — see ReportScreen.ShowBackButton).
+        var report = new ReportScreen(reportViewModel);
+        report.NavigationRequested += OnScreenNavigationRequested;
+        report.BackRequested += () => router?.Back();
+        r.Register(report);
 
         // Sobre — no bottom-bar destination in V2 (Decision D2), so it is a
         // sub-screen pushed from the Início grid. Still the legacy uGUI About

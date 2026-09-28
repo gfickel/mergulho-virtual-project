@@ -1,0 +1,328 @@
+/* Reportar avistamento — DESIGN_IMPLEMENTATION.md §8.5 (Tela 11 empty / Tela 12 filled).
+ *
+ * TOKENS ONLY: TokenDisciplineTests scans every .uss under Assets/UI exactly like the
+ * design-system components — a hex literal, an undefined var, or any colour literal
+ * other than fully transparent fails the suite, comments included. Sizes are
+ * transcribed literally from the frames (§1.2: 1 USS px = 1 dp = 1 Figma pt).
+ *
+ * Accepted fidelity losses, all pre-agreed:
+ *  - No box-shadow (§3.6): the header's back disc, the submit button and every card
+ *    carry a shadow in V2 and a 1px outline-variant border underneath it. The border
+ *    is what separates them from the page; it is rendered and the shadow dropped.
+ *  - No `gap` in USS: Figma gaps become margins, and the "skip the first child" cases
+ *    are modifier classes added in code (USS has no :first-child / :last-child).
+ *  - Touch targets beat transcription: MdChip, MdCheckbox, MdButton and MdIconButton
+ *    all wrap their visible 32/18/40dp box in a 48dp target. So the chip rows and the
+ *    checklist rows measure taller than the frame's 32 and 52; the VISIBLE geometry
+ *    still matches, and shrinking the targets would break the design system's own
+ *    accessibility contract for one screen.
+ *  - Section gaps are 10dp everywhere. The frames use 10 on five sections and 12 on
+ *    "Comportamento observado" only, which is rounding noise, not a rule.
+ *
+ * Unity's default Label padding/margin is zeroed app-wide in Tokens/_typography.uss,
+ * so every gap below is one this file authored.
+ */
+
+.mv-report {
+    flex-grow: 1;
+}
+
+/* The opaque page surface. The root above it stays transparent so the strip reserved
+ * for the navigation bar never paints over it or blocks its taps. */
+.mv-report__content {
+    flex-grow: 1;
+    background-color: var(--md-sys-color-background);
+}
+
+/* ---- Header (390x72: back disc + title, 1px bottom rule) ---- */
+
+/* Sits OUTSIDE the ScrollView — V2 scrolls only the form beneath it.
+ * 12dp side padding + MdIconButton's own 4dp inset = the frame's 16dp edge distance,
+ * and the bar's default 8dp title margin then lands the title at the frame's 68dp. */
+.mv-report__header {
+    flex-shrink: 0;
+    padding-left: 12px;
+    padding-right: 12px;
+    background-color: var(--md-sys-color-background);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--md-sys-color-outline-variant);
+}
+
+.mv-report__header .md-top-app-bar__row {
+    height: 72px;
+}
+
+/* title-large metrics (20 / 700), against the bar's own M3 22 / regular. */
+.mv-report__header .md-top-app-bar__title {
+    font-size: 20px;
+    color: var(--md-sys-color-primary);
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset");
+}
+
+/* V2's back button is a white 40dp disc on the page, not a bare glyph. Hidden on this
+ * screen (it is a tab root — see ReportScreen.ShowBackButton); styled because §8.6
+ * reuses this header for SOS, which does show it. */
+.mv-report__header .md-top-app-bar__nav .md-icon-button__container {
+    background-color: var(--md-sys-color-surface);
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline-variant);
+}
+
+/* ---- Form body (V, gap 24, padding 20/16/100/16) ---- */
+
+.mv-report__scroll {
+    flex-grow: 1;
+}
+
+.mv-report__body {
+    /* Scroll content sizes to its children: without this the body is a shrinkable flex
+     * child of the ScrollView's content container and a short viewport compresses the
+     * form instead of scrolling it. */
+    flex-shrink: 0;
+    padding-top: 20px;
+    padding-left: 16px;
+    padding-right: 16px;
+    /* The frame's 100dp bottom is clearance for the pinned navigation bar, which the
+     * shell reserves below this screen — only a scroll tail is kept here. */
+    padding-bottom: 24px;
+}
+
+.mv-report__body > * {
+    margin-bottom: 24px;
+}
+
+.mv-report__section {
+    flex-shrink: 0;
+}
+
+.mv-report__section-title {
+    margin-bottom: 10px;
+    white-space: normal;
+    color: var(--md-sys-color-primary);
+}
+
+/* Shared card language: white surface, 1px border, radius 16. */
+.mv-report__card {
+    background-color: var(--md-sys-color-surface);
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-large);
+}
+
+/* ---- Beach context line (not in the frames — see the screen's remarks) ---- */
+
+.mv-report__beach {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.mv-report__beach-icon {
+    font-size: 16px;
+    margin-right: 6px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-report__beach-label {
+    flex-shrink: 1;
+    white-space: normal;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ---- Chip rows (species wraps to two lines, size fits one) ---- */
+
+.mv-report__chip-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+/* The 8dp Figma gap, horizontally. Vertically the chips' 48dp targets already leave
+ * 8dp above and below the visible 32dp chip, so a wrapped row needs no extra margin. */
+.mv-report__chip {
+    margin-right: 8px;
+}
+
+/* ---- Behaviour checklist (4 rows, 52dp, 1px dividers) ---- */
+
+.mv-report__behaviour-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 52px;
+    padding-left: 14px;
+    /* 14 in the frame, minus the checkbox's own 4dp target inset on this side. */
+    padding-right: 10px;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--md-sys-color-outline-variant);
+}
+
+.mv-report__behaviour-row--last {
+    border-bottom-width: 0;
+}
+
+.mv-report__behaviour-label {
+    flex-shrink: 1;
+    margin-right: 8px;
+    white-space: normal;
+    color: var(--md-sys-color-on-surface);
+}
+
+/* ---- Photo ---- */
+
+/* The picker draws its own empty/filled states (dashed box -> 104dp thumb grid);
+ * nothing here overrides them. */
+.mv-report__error {
+    margin-top: 8px;
+    white-space: normal;
+    color: var(--md-sys-color-error);
+}
+
+/* ---- Identity fields (two 44dp boxes, trailing 20dp glyph) ---- */
+
+.mv-report__field {
+    flex-shrink: 0;
+}
+
+.mv-report__field--gutter {
+    margin-top: 10px;
+}
+
+.mv-report__field .md-text-field__container {
+    height: 44px;
+    background-color: var(--md-sys-color-surface);
+    border-color: var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-medium);
+}
+
+/* The frame's placeholder metrics (14 / 400). The label floats onto the border when
+ * the field is focused or filled — the M3 behaviour the design system ships, kept in
+ * preference to a placeholder that vanishes and takes the field's meaning with it. */
+.mv-report__field .md-text-field__label {
+    font-size: 14px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-report__field.md-text-field--floating .md-text-field__label {
+    font-size: 11px;
+}
+
+.mv-report__field .unity-base-text-field__input {
+    font-size: 14px;
+    /* Clears the trailing glyph. */
+    padding-right: 44px;
+}
+
+/* Absolutely positioned over the field's own box: MdTextField has no trailing slot,
+ * and the glyph is decoration — picking is off so taps still open the keyboard. */
+.mv-report__field-icon {
+    position: absolute;
+    right: 16px;
+    top: 12px;
+    font-size: 20px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ---- Profile cards (two, 12dp apart; the card itself is MvOptionCard) ---- */
+
+.mv-report__profile-row {
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.mv-report__profile-card--gutter {
+    margin-left: 12px;
+}
+
+/* ---- Submit ---- */
+
+/* The frame adds 8dp on top of the 24dp section gap before the button. */
+.mv-report__submit-section {
+    margin-top: 8px;
+}
+
+/* MdButton is a pill that hugs its label by default; V2's submit is a full-width
+ * 47dp bar at radius 14 with a 16 / 700 label. */
+.mv-report__submit {
+    align-self: stretch;
+}
+
+.mv-report__submit .md-button__container {
+    height: 47px;
+    border-radius: var(--md-sys-shape-corner-medium-increased);
+}
+
+.mv-report__submit .md-button__label {
+    font-size: 16px;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset");
+}
+
+/* The line under the button: "Enviando avistamento…" on the way out, or — in the
+ * error tone — the missing-photo message and the "could not take it" refusal. */
+.mv-report__status {
+    margin-top: 10px;
+    white-space: normal;
+    -unity-text-align: middle-center;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-report__status--error {
+    color: var(--md-sys-color-error);
+}
+
+/* ---- Pending feed ---- */
+
+.mv-report__pending-section {
+    margin-top: 8px;
+}
+
+/* Tela 11's inset rule between the button and the feed (Tela 12 omits it). */
+.mv-report__divider {
+    height: 1px;
+    flex-shrink: 0;
+    margin-left: 16px;
+    margin-right: 16px;
+    margin-bottom: 20px;
+    background-color: var(--md-sys-color-outline-variant);
+}
+
+.mv-report__pending-card {
+    padding: 16px;
+}
+
+/* A report the backend rejected outright will never be delivered — the error pill
+ * says so, and the card's edge repeats it so the row reads as wrong at a glance. */
+.mv-report__pending-card--failed {
+    border-color: var(--md-sys-color-error);
+}
+
+.mv-report__pending-card--gutter {
+    margin-top: 12px;
+}
+
+.mv-report__pending-title-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.mv-report__pending-title {
+    flex-shrink: 1;
+    margin-right: 8px;
+    font-size: 16px;
+    letter-spacing: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--md-sys-color-primary);
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset");
+}
+
+.mv-report__pending-pill {
+    flex-shrink: 0;
+}
+
+.mv-report__pending-caption {
+    white-space: normal;
+    color: var(--md-sys-color-on-surface-variant);
+}

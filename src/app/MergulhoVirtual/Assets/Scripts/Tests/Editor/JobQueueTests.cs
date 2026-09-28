@@ -276,6 +276,171 @@ public class JobQueueTests
         Assert.AreEqual(JobStatus.Pending, queue.GetStatus("status-pending"));
     }
 
+    // ---------- ListPending / ListFailed ----------
+    //
+    // These are the unambiguous half of the status API: unlike GetStatus, which
+    // answers NotFound both for "already succeeded" and "never enqueued", a record
+    // exists only for a job that really is in that state.
+
+    [Test]
+    public void ListPending_IsEmptyWhenNothingIsQueued()
+    {
+        Assert.AreEqual(0, queue.ListPending().Count);
+    }
+
+    [Test]
+    public void ListPending_ReturnsEveryQueuedJobInQueueOrder()
+    {
+        queue.Enqueue(new TestJob { Id = "first" });
+        queue.Enqueue(new TestJob { Id = "second" });
+
+        var records = queue.ListPending();
+
+        Assert.AreEqual(2, records.Count);
+        Assert.AreEqual("first", records[0].Id);
+        Assert.AreEqual("second", records[1].Id);
+        Assert.AreEqual("TestJob", records[0].Type);
+        Assert.AreEqual(0, records[0].AttemptCount);
+        Assert.AreEqual(JobRecordState.Queued, records[0].State);
+    }
+
+    [Test]
+    public void ListPending_FiltersByType()
+    {
+        queue.RegisterType<OtherTestJob>();
+        queue.Enqueue(new TestJob { Id = "a-test-job" });
+        queue.Enqueue(new OtherTestJob { Id = "an-other-job" });
+
+        Assert.AreEqual(2, queue.ListPending().Count);
+
+        var filtered = queue.ListPending("TestJob");
+        Assert.AreEqual(1, filtered.Count);
+        Assert.AreEqual("a-test-job", filtered[0].Id);
+    }
+
+    [Test]
+    public void ListPending_ReportsWaitingForNetworkWhileOffline()
+    {
+        queue.Enqueue(new TestJob { Id = "net" });
+        queue.IsOnlineOverride = () => false;
+
+        Assert.AreEqual(JobRecordState.WaitingForNetwork, queue.ListPending()[0].State);
+
+        queue.IsOnlineOverride = () => true;
+        Assert.AreEqual(JobRecordState.Queued, queue.ListPending()[0].State);
+    }
+
+    [Test]
+    public void ListPending_ANonNetworkJobIsNeverWaitingForNetwork()
+    {
+        queue.Enqueue(new TestJob { Id = "local", RequiresNetworkOverride = false });
+        queue.IsOnlineOverride = () => false;
+
+        Assert.AreEqual(JobRecordState.Queued, queue.ListPending()[0].State);
+    }
+
+    [UnityTest]
+    public IEnumerator ListPending_ReportsRetryingAfterATransientFailure()
+    {
+        var job = new TestJob { Id = "retry-me", NextResult = JobResult.TransientFailure };
+        queue.Enqueue(job);
+
+        yield return queue.RunOnceForTests();
+
+        var record = queue.ListPending()[0];
+        Assert.AreEqual(JobRecordState.Retrying, record.State);
+        Assert.AreEqual(1, record.AttemptCount);
+        Assert.IsTrue(record.NextAttemptAtUtc > DateTime.UtcNow, "backoff should still be pending");
+    }
+
+    [UnityTest]
+    public IEnumerator ListPending_DropsAJobThatSucceeded()
+    {
+        var job = new TestJob { Id = "done", NextResult = JobResult.Success };
+        queue.Enqueue(job);
+        Assert.AreEqual(1, queue.ListPending().Count);
+
+        yield return queue.RunOnceForTests();
+
+        Assert.AreEqual(0, queue.ListPending().Count);
+        Assert.AreEqual(0, queue.ListFailed().Count, "a success is not a failure");
+        // GetStatus cannot tell this apart from an id that never existed; the
+        // enumerations do not reproduce that ambiguity — they simply have no row.
+        Assert.AreEqual(JobStatus.NotFound, queue.GetStatus("done"));
+    }
+
+    [Test]
+    public void ListPending_SnapshotIsADetachedCopyOfTheJob()
+    {
+        var job = new TestJob { Id = "snap", NextResult = JobResult.PermanentFailure, ThrowOnExecute = true };
+        queue.Enqueue(job);
+
+        var snapshot = queue.ListPending()[0].Snapshot<TestJob>();
+
+        Assert.IsNotNull(snapshot);
+        Assert.AreNotSame(job, snapshot, "handing out the live job would let a caller mutate what is about to run");
+        Assert.AreEqual("snap", snapshot.Id);
+        Assert.AreEqual(JobResult.PermanentFailure, snapshot.NextResult);
+        Assert.IsTrue(snapshot.ThrowOnExecute);
+
+        snapshot.NextResult = JobResult.Success;
+        Assert.AreEqual(JobResult.PermanentFailure, ((TestJob)queue.PendingForTests[0]).NextResult);
+    }
+
+    [Test]
+    public void ListPending_SnapshotOfTheWrongTypeIsNull()
+    {
+        queue.Enqueue(new TestJob { Id = "typed" });
+
+        var record = queue.ListPending()[0];
+        Assert.IsNull(record.Snapshot<UnregisteredTestJob>(),
+            "a caller that forgot to filter by Type must get nothing, not a half-populated job");
+    }
+
+    [Test]
+    public void ListFailed_IsEmptyByDefault()
+    {
+        queue.Enqueue(new TestJob { Id = "fine" });
+        Assert.AreEqual(0, queue.ListFailed().Count);
+    }
+
+    [UnityTest]
+    public IEnumerator ListFailed_ContainsPermanentlyFailedJobs()
+    {
+        var job = new TestJob { Id = "dead", NextResult = JobResult.PermanentFailure };
+        queue.Enqueue(job);
+
+        LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex(".*permanently failed.*"));
+        yield return queue.RunOnceForTests();
+
+        Assert.AreEqual(0, queue.ListPending().Count);
+
+        var failed = queue.ListFailed();
+        Assert.AreEqual(1, failed.Count);
+        Assert.AreEqual("dead", failed[0].Id);
+        Assert.AreEqual(JobRecordState.Failed, failed[0].State);
+        Assert.AreEqual(1, failed[0].AttemptCount);
+        Assert.IsNotNull(failed[0].Snapshot<TestJob>());
+
+        Assert.AreEqual(0, queue.ListFailed("Unregistered").Count, "type filter applies to failed rows too");
+    }
+
+    [UnityTest]
+    public IEnumerator ListPending_SurvivesARestart()
+    {
+        queue.Enqueue(new TestJob { Id = "persisted", NextResult = JobResult.TransientFailure });
+        yield return queue.RunOnceForTests();
+
+        RecreateQueue();
+
+        var records = queue.ListPending();
+        Assert.AreEqual(1, records.Count);
+        Assert.AreEqual("persisted", records[0].Id);
+        Assert.AreEqual(1, records[0].AttemptCount);
+        Assert.AreEqual(JobRecordState.Retrying, records[0].State);
+        Assert.AreEqual(DateTimeKind.Utc, records[0].CreatedAtUtc.Kind);
+    }
+
     // ---------- Persistence: survives queue destruction + recreation ----------
 
     [UnityTest]
@@ -408,6 +573,18 @@ public class JobQueueTests
             ThrowOnExecute = d.throwOnExecute;
             RequiresNetworkOverride = d.hasNetworkOverride ? d.networkOverrideValue : (bool?)null;
         }
+    }
+
+    public class OtherTestJob : Job
+    {
+        public override string Type => "OtherTestJob";
+        public override IEnumerator Execute(Action<JobResult> setResult)
+        {
+            setResult(JobResult.Success);
+            yield break;
+        }
+        protected internal override string SerializeData() => "{}";
+        protected internal override void DeserializeData(string data) { }
     }
 
     public class UnregisteredTestJob : Job

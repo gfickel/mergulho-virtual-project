@@ -144,6 +144,76 @@ public class JobQueue : MonoBehaviour
 
     public int PendingCount => pending.Count;
 
+    /// <summary>
+    /// Read-only view of everything still queued, in the order the loop will run
+    /// it (FIFO). Each <see cref="JobRecord"/> carries the envelope fields plus a
+    /// detachable copy of the job's payload, so a feed can render "which sighting,
+    /// when, what state" without touching the live job — see
+    /// <see cref="JobRecord.Snapshot{T}"/>.
+    ///
+    /// <para><paramref name="type"/> filters by <see cref="Job.Type"/> (pass
+    /// <c>ReportSightingJob.JobType</c> for the sightings feed); null returns
+    /// every type.</para>
+    ///
+    /// <para><b>Absence is not success.</b> A job that is not in this list has
+    /// either succeeded, permanently failed (see <see cref="ListFailed"/>) or was
+    /// never enqueued. That is deliberately NOT answered here: unlike
+    /// <see cref="GetStatus"/>, which collapses "succeeded" and "never existed"
+    /// into one <see cref="JobStatus.NotFound"/>, this API only ever reports
+    /// states a job is actually in.</para>
+    /// </summary>
+    public IReadOnlyList<JobRecord> ListPending(string type = null)
+    {
+        EnsureInitialized();
+        bool online = IsOnline();
+        var records = new List<JobRecord>(pending.Count);
+        foreach (var job in pending)
+        {
+            if (type != null && job.Type != type) continue;
+            records.Add(new JobRecord(job, PendingStateOf(job, online)));
+        }
+        return records;
+    }
+
+    /// <summary>
+    /// Read-only view of the permanently failed jobs kept in <c>jobs/failed/</c>.
+    /// Same row shape as <see cref="ListPending"/>, always
+    /// <see cref="JobRecordState.Failed"/> — so a feed can show a submission that
+    /// will never go through instead of silently dropping it.
+    ///
+    /// <para>Reads the directory on every call (the queue holds no in-memory copy
+    /// of failed jobs). Files whose type is not registered are skipped with the
+    /// same error <see cref="LoadPendingFromDisk"/> logs.</para>
+    /// </summary>
+    public IReadOnlyList<JobRecord> ListFailed(string type = null)
+    {
+        EnsureInitialized();
+        var records = new List<JobRecord>();
+        foreach (var path in Directory.GetFiles(failedDir, "*.json"))
+        {
+            try
+            {
+                Job job = ReadJob(path);
+                if (job == null) continue;
+                if (type != null && job.Type != type) continue;
+                records.Add(new JobRecord(job, JobRecordState.Failed));
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"JobQueue: failed to read {path}: {e.Message}");
+            }
+        }
+        return records;
+    }
+
+    private static JobRecordState PendingStateOf(Job job, bool online)
+    {
+        // Offline wins over backoff: it is the actionable thing to tell the user,
+        // and NextDueJob skips these jobs regardless of how due they are.
+        if (job.RequiresNetwork && !online) return JobRecordState.WaitingForNetwork;
+        return job.AttemptCount > 0 ? JobRecordState.Retrying : JobRecordState.Queued;
+    }
+
     private IEnumerator RunLoop()
     {
         var wait = new WaitForSeconds(tickIntervalSeconds);

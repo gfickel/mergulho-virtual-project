@@ -1,0 +1,119 @@
+/* MdCheckbox — https://m3.material.io/components/checkbox/specs
+ * Spec: DESIGN_IMPLEMENTATION.md §6 row 1, §8.5 "Comportamento observado".
+ * Figma: `checkbox / android / deselected` inside `Row Calmo` 109:952 et al —
+ * a 24x24 instance with 3dp padding around an 18x18 box, r2, 2px stroke.
+ *
+ * NOTE: no hex literals anywhere in this file, comments included —
+ * TokenDisciplineTests.ComponentUss_HasNoHardcodedColors scans the raw text.
+ *
+ * GEOMETRY (1 USS px = 1 dp = 1 Figma pt, §1.2)
+ *   root       48x48   touch target (V2's 24dp instance is well under the 48dp
+ *                      minimum every other interactive component here honors)
+ *   container  40x40   pill-radius state-layer disc, M3's ripple size
+ *   box        18x18   r2, 2px `outline` border when unchecked,
+ *                      0 border + `primary` fill when checked
+ *   check      16px    Material Symbols `check`, `on-primary`
+ *
+ * WHY r2 IS A LITERAL AND NOT A SHAPE TOKEN
+ *   The shape scale (§3.5) is the BRAND radius ladder: 8/10/12/14/16/20/24/pill.
+ *   2dp is an M3 component constant for this one control and appears nowhere in
+ *   V2's ladder, so adding a rung for it would pollute the vocabulary the
+ *   designer retunes. TokenDisciplineTests only governs colors; sizes are
+ *   literals throughout the library (MdChip's 32dp, MdIconButton's 40dp).
+ *
+ * WHY THE CHECK IS `display` -TOGGLED, NOT COLOR-TOGGLED
+ *   An always-present glyph tinted to transparent would need a literal color.
+ *   Toggling `display` costs nothing (the box is fixed-size, so nothing reflows)
+ *   and keeps every color in this file a token.
+ *
+ * THE BOX IS A FLEX CENTERER, NOT A SIZED TEXT ELEMENT
+ *   Same reason MvNumberedList's marker is: TextCore's line box for a 16px face
+ *   is taller than the glyph, so a fixed-height text element fights its own
+ *   vertical alignment. A flex box centering a free-sized MdIcon is stable.
+ */
+
+.md-checkbox {
+    width: 48px;
+    height: 48px;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Unity's default theme dims disabled elements to 0.5; every interactive
+ * component here opts out and paints its own disabled colors instead. */
+.md-checkbox:disabled {
+    opacity: 1;
+}
+
+.md-checkbox__container {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--md-sys-shape-corner-full);
+    align-items: center;
+    justify-content: center;
+    /* Required by the state-layer contract: the layer must follow the disc. */
+    overflow: hidden;
+}
+
+.md-checkbox__box {
+    width: 18px;
+    height: 18px;
+    border-radius: 2px;
+    align-items: center;
+    justify-content: center;
+    border-width: 2px;
+    border-color: var(--md-sys-color-outline);
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.md-checkbox__check {
+    font-size: 16px;
+    display: none;
+    color: var(--md-sys-color-on-primary);
+}
+
+/* ---- Checked ---- */
+
+.md-checkbox--checked .md-checkbox__box {
+    border-width: 0;
+    background-color: var(--md-sys-color-primary);
+}
+
+.md-checkbox--checked .md-checkbox__check {
+    display: flex;
+}
+
+/* ---- Interaction states ----
+ * The ripple takes the color of whatever the control currently IS: neutral while
+ * unchecked, `primary` once checked — M3's own rule. */
+
+.md-checkbox .md-state-layer {
+    background-color: var(--md-sys-color-on-surface-variant);
+}
+.md-checkbox--checked .md-state-layer {
+    background-color: var(--md-sys-color-primary);
+}
+
+.md-checkbox:hover .md-state-layer {
+    opacity: var(--md-sys-state-hover-opacity);
+}
+.md-checkbox:focus .md-state-layer {
+    opacity: var(--md-sys-state-focus-opacity);
+}
+.md-checkbox:active .md-state-layer {
+    opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* ---- Disabled ---- */
+
+.md-checkbox:disabled .md-checkbox__box {
+    border-color: var(--md-sys-color-on-surface-disabled-content);
+}
+.md-checkbox--checked:disabled .md-checkbox__box {
+    border-width: 0;
+    background-color: var(--md-sys-color-on-surface-disabled-container);
+}
+.md-checkbox:disabled .md-checkbox__check {
+    color: var(--md-sys-color-on-surface-disabled-content);
+}

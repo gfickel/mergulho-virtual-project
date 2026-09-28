@@ -50,6 +50,7 @@ namespace MergulhoVirtual.DesignSystem.Gallery
             BuildButtonsSection(scroll);
             BuildIconButtonsSection(scroll);
             BuildChipsSection(scroll);
+            BuildCheckboxSection(scroll);
             BuildFabSection(scroll);
             BuildProgressSection(scroll);
             BuildCardsSection(scroll);
@@ -67,6 +68,8 @@ namespace MergulhoVirtual.DesignSystem.Gallery
             BuildNumberedListSection(scroll);
             BuildHeroHeaderSection(scroll);
             BuildMediaCarouselSection(scroll);
+            BuildOptionCardSection(scroll);
+            BuildMediaPickerSection(scroll);
             BuildIconsSection(scroll);
         }
 
@@ -947,6 +950,192 @@ namespace MergulhoVirtual.DesignSystem.Gallery
             var emptyNote = new Label("(an empty MvMediaCarousel is above this line — it hides itself and takes no height)");
             emptyNote.AddToClassList("md-typescale-body-small");
             row.Add(emptyNote);
+        }
+
+        void BuildCheckboxSection(VisualElement parent)
+        {
+            var row = Section(parent, "MdCheckbox",
+                "18dp box in a 48dp touch target - unchecked / checked / disabled x both - plus the four V2 'Comportamento observado' rows.");
+            row.style.flexDirection = FlexDirection.Column;
+            row.style.alignItems = Align.Stretch;
+
+            var status = new Label("-");
+            status.AddToClassList("md-typescale-label-medium");
+
+            // Every state, side by side.
+            var states = new VisualElement();
+            states.AddToClassList("gallery-row");
+            foreach (var (caption, isChecked, enabled) in new[]
+            {
+                ("unchecked", false, true),
+                ("checked", true, true),
+                ("disabled", false, false),
+                ("disabled+checked", true, false),
+            })
+            {
+                var cell = new VisualElement();
+                cell.style.flexDirection = FlexDirection.Column;
+                cell.style.alignItems = Align.Center;
+                var box = new MdCheckbox { Checked = isChecked };
+                box.SetEnabled(enabled);
+                box.ValueChanged += v => status.text = $"ValueChanged({v})";
+                cell.Add(box);
+                var label = new Label(caption);
+                label.AddToClassList("md-typescale-label-small");
+                cell.Add(label);
+                states.Add(cell);
+            }
+            row.Add(states);
+            row.Add(status);
+
+            // The real usage: label at one end of a 52dp row, box at the other.
+            // The row is the SCREEN's - the checkbox ships no label (see its docs).
+            var card = new MdCard { Variant = MdCardVariant.Outlined };
+            card.style.paddingTop = 0;
+            card.style.paddingBottom = 0;
+            card.style.marginTop = 12;
+            string[] behaviours =
+            {
+                "Calmo e inofensivo",
+                "Nadando perto da praia",
+                "Em processo de alimentação",
+                "Comportamento arredio/agressivo",
+            };
+            for (int i = 0; i < behaviours.Length; i++)
+            {
+                var behaviourRow = new VisualElement();
+                behaviourRow.style.flexDirection = FlexDirection.Row;
+                behaviourRow.style.alignItems = Align.Center;
+                behaviourRow.style.justifyContent = Justify.SpaceBetween;
+                behaviourRow.style.minHeight = 52;
+
+                var label = new Label(behaviours[i]);
+                label.AddToClassList("md-typescale-body-large");
+                var box = new MdCheckbox { Checked = i < 3 };
+                string captured = behaviours[i];
+                box.ValueChanged += v => status.text = $"{captured} = {v}";
+                behaviourRow.Add(label);
+                behaviourRow.Add(box);
+                card.Add(behaviourRow);
+            }
+            row.Add(card);
+        }
+
+        void BuildOptionCardSection(VisualElement parent)
+        {
+            var row = Section(parent, "MvOptionCard",
+                "32dp icon over a label, selected = 2dp primary border + 700 label. The GROUP lives in the caller: the card raises Clicked and never toggles itself.");
+            row.style.flexDirection = FlexDirection.Column;
+            row.style.alignItems = Align.Stretch;
+
+            var status = new Label("Nenhum perfil selecionado");
+            status.AddToClassList("md-typescale-label-medium");
+
+            // V2's pair, wired the way a screen wires it (the three-line recipe
+            // from the class docs).
+            var pair = new VisualElement();
+            pair.style.flexDirection = FlexDirection.Row;
+            var tourist = new MvOptionCard { Icon = "person", Text = "Turista / Visitante", Selected = true };
+            var guide = new MvOptionCard { Icon = "explore", Text = "Condutor / Guia" };
+            guide.style.marginLeft = 12;
+            var group = new[] { tourist, guide };
+            foreach (var card in group)
+            {
+                var captured = card;
+                card.Clicked += () =>
+                {
+                    foreach (var other in group)
+                        other.Selected = other == captured;
+                    status.text = $"Clicked: {captured.Text}";
+                };
+            }
+            pair.Add(tourist);
+            pair.Add(guide);
+            row.Add(pair);
+            row.Add(status);
+
+            // Disabled, and a card with no icon (the slot collapses).
+            var extras = new VisualElement();
+            extras.style.flexDirection = FlexDirection.Row;
+            extras.style.marginTop = 12;
+            var disabled = new MvOptionCard { Icon = "person", Text = "Desabilitado" };
+            disabled.SetEnabled(false);
+            var disabledSelected = new MvOptionCard { Icon = "explore", Text = "Desabilitado +", Selected = true };
+            disabledSelected.SetEnabled(false);
+            disabledSelected.style.marginLeft = 12;
+            var iconless = new MvOptionCard { Text = "Sem ícone" };
+            iconless.style.marginLeft = 12;
+            extras.Add(disabled);
+            extras.Add(disabledSelected);
+            extras.Add(iconless);
+            row.Add(extras);
+
+            var note = new Label("Width is the caller's (flex) - V2's '174' is half of the 358dp form column.");
+            note.AddToClassList("md-typescale-body-small");
+            row.Add(note);
+        }
+
+        void BuildMediaPickerSection(VisualElement parent)
+        {
+            var row = Section(parent, "MvMediaPicker",
+                "Dashed empty state -> 104dp thumb grid with remove buttons + an 'add more' tile. Events only: it never opens a gallery or touches disk.");
+            row.style.flexDirection = FlexDirection.Column;
+            row.style.alignItems = Align.Stretch;
+
+            var status = new Label("-");
+            status.AddToClassList("md-typescale-label-medium");
+
+            MvMediaPickerItem Photo(float t) => new MvMediaPickerItem(DemoPhoto(
+                Color.Lerp(new Color(0.05f, 0.30f, 0.50f), new Color(0.10f, 0.55f, 0.45f), t),
+                Color.Lerp(new Color(0.75f, 0.90f, 0.85f), new Color(0.95f, 0.88f, 0.60f), t)));
+
+            VisualElement Case(string caption, MvMediaPicker picker)
+            {
+                picker.style.marginTop = 12;
+                picker.AddRequested += () => status.text = $"AddRequested from '{caption}'";
+                picker.RemoveRequested += i => status.text = $"RemoveRequested({i}) from '{caption}'";
+                row.Add(picker);
+                var label = new Label(caption);
+                label.AddToClassList("md-typescale-body-small");
+                row.Add(label);
+                return picker;
+            }
+
+            // 1. Empty (Tela 11) - the dashed call to action. Cap 1: the state a
+            //    Slice 3 screen starts in.
+            Case("empty, MaxItems = 1 (Slice 3's starting state)", new MvMediaPicker { MaxItems = 1 });
+
+            // 2. At cap: one photo, no 'add more' tile. Remove is the only way back.
+            var atCap = new MvMediaPicker { MaxItems = 1 };
+            atCap.SetItems(new[] { Photo(0f) });
+            Case("AT CAP (MaxItems = 1, 1 item) - no 'add more' tile; remove returns to the empty box", atCap);
+
+            // 3. Under cap: thumbs + the add tile, wrapping.
+            var underCap = new MvMediaPicker { MaxItems = 6 };
+            underCap.SetItems(new[] { Photo(0f), Photo(0.4f), Photo(0.8f) });
+            Case("under cap (MaxItems = 6, 3 items) - 104dp tiles wrap; the add tile follows them", underCap);
+
+            // 4. Unlimited (the default) - the add tile never disappears.
+            var unlimited = new MvMediaPicker();
+            unlimited.SetItems(new[] { Photo(0.2f), Photo(0.9f) });
+            Case("MaxItems = 0 (default, unlimited) - the add tile is always offered", unlimited);
+
+            // 5. OVER cap - renders everything and warns; the component never
+            //    drops data the caller owns.
+            var overCap = new MvMediaPicker { MaxItems = 2 };
+            overCap.SetItems(new[] { Photo(0f), Photo(0.3f), Photo(0.6f), Photo(1f) });
+            Case("OVER CAP (MaxItems = 2, 4 items) - all rendered, add tile hidden, editor warning", overCap);
+
+            // 6. Custom copy.
+            var custom = new MvMediaPicker
+            {
+                MaxItems = 1,
+                EmptyTitle = "Toque para escolher uma foto",
+                HintText = "JPEG ou PNG, até 20MB",
+            };
+            Case("custom EmptyTitle / HintText", custom);
+
+            row.Add(status);
         }
 
         /// <summary>

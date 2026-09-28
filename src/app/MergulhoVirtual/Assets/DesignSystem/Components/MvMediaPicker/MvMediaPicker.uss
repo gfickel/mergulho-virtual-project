@@ -1,0 +1,261 @@
+/* MvMediaPicker — "Adicionar foto ou vídeo": dashed empty state -> thumbnail grid.
+ * Spec: DESIGN_IMPLEMENTATION.md §6 row 5, §8.5 "Adicionar foto ou vídeo".
+ * Figma: `Dashed Upload Box` 109:970 (Tela 11) — 358x112, V, gap 8, pad 20,
+ * centered, surface fill, r16, 1px outline-variant dashed [6,6];
+ * `Populated Upload Box` 109:1117 (Tela 12) — 358x274, V, gap 12, pad 16, r16,
+ * 1px outline-variant; `Image Grid` 109:4184 — H, wrap, gap 8;
+ * `User Upload n` — 104x104 r12 with `Delete Button` 28x28 r14 at top/right 4,
+ * scrim @ 25%, 14dp close glyph; `Add More` 109:4197 — 104x104 r12, surface-dim
+ * fill, 1px outline-variant dashed [4,4], 24dp add_circle.
+ *
+ * NOTE: no hex literals anywhere in this file, comments included —
+ * TokenDisciplineTests.ComponentUss_HasNoHardcodedColors scans the raw text.
+ *
+ * THE DASHED BORDERS ARE PAINTED, NOT DECLARED
+ *   USS exposes border width, color and radius — there is no `border-style`, so a
+ *   dashed edge is impossible to declare. MvDashedOutline (in the .cs) paints one
+ *   with Painter2D from its own resolved `color` and `border-radius`, which is why
+ *   `.mv-media-picker__dash` below carries a color and a radius but no width: the
+ *   width is the painter's, the rest stays the designer's. The struct dumps under
+ *   .figma-sync/struct/ do NOT record strokeDashes — both dashed edges are only
+ *   visible in file.json and in the PNG renders. Do not "correct" them to solid.
+ *
+ * WIDTH IS THE CALLER'S — V2's 358 is the form column, not a property of the
+ * picker (same rule as MvAlertBar / MvOptionCard). Heights are ours.
+ *
+ * THREE TILES DO NOT FIT ON A ROW, AND THAT IS THE DESIGN'S ARITHMETIC
+ *   The grid's content width is 326 (358 form column - 2x16 card padding) and V2
+ *   asks for 104dp tiles with 8dp gaps: 3*104 + 2*8 = 328 > 326. Figma only fits
+ *   three by silently shrinking the first tile to 102 (see `User Upload 1`'s
+ *   absoluteBoundingBox). Flexbox has no such move — `flex-wrap` breaks a line
+ *   before it shrinks anything — so the literal 104dp tile from §8.5 is kept and
+ *   the third tile wraps. Two ways out when multi-photo actually ships (Decision
+ *   D6; the cap is 1 for now, so at most one tile ever renders here): drop the
+ *   gap to 7dp, which makes 3*104 + 2*7 = 326 exactly, or make the tile size a
+ *   property and compute it from the measured width. Neither is worth doing blind.
+ *
+ * NEGATIVE MARGINS ARE THE ROW/COLUMN GUTTER
+ *   USS has no `gap`, and the margin-on-every-item-except-the-first trick
+ *   (MvNumberedList, MvHeroHeader's badges) breaks under `flex-wrap`: "first" is
+ *   the first of the whole grid, so every later ROW would start with an indent.
+ *   Uniform trailing margins plus a matching negative margin on the grid is the
+ *   only variant that survives wrapping.
+ *
+ * INK COLOR
+ *   V2 paints the call-to-action line in the brand navy, the same ink as every
+ *   form section label — the swatch Appendix A.1 maps to `primary`. As ink on a
+ *   white card that collapses onto `on-surface`, the same collapse A.1 makes for
+ *   the mid-grey body color, and what MdCard/MdChip already use. `primary` itself
+ *   would be an M3 role violation for body text and would turn the label pale
+ *   blue in the dark theme.
+ *
+ * THE REMOVE BUTTON IS 28dp, NOT A 48dp TOUCH TARGET
+ *   Deliberate, and the one place this library breaks its own minimum. The button
+ *   lives INSIDE a 104dp tile with `overflow: hidden`, so a larger root would
+ *   either cover a quarter of the photo it annotates or be clipped back to 28dp
+ *   for picking as well as for painting. V2 draws 28.
+ */
+
+.mv-media-picker {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+/* ---- Empty state ---- */
+
+.mv-media-picker__empty {
+    min-height: 112px;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    border-radius: var(--md-sys-shape-corner-large);
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    /* Required by the state-layer contract, and it also trims the outer half of
+     * the painted dash stroke — MvDashedOutline insets by half a line width. */
+    overflow: hidden;
+}
+
+.mv-media-picker__empty:disabled {
+    opacity: 1;
+}
+
+/* Both dashed edges. Radius is read back by the painter, so it must be declared
+ * here even though nothing draws a real border. */
+.mv-media-picker__dash {
+    color: var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-large);
+}
+
+.mv-media-picker__empty-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+    -unity-text-align: middle-center;
+}
+
+/* label-large metrics (14px / ls 0) at V2's 600 face. §8.5 says 700; all four
+ * Reportar frames (Tela 3, 5, 11, 12) draw this string at Inter 600 — the frames win. */
+.mv-media-picker__empty-title {
+    margin: 0;
+    padding: 0;
+    margin-top: 8px;
+    font-size: 14px;
+    letter-spacing: 0;
+    white-space: normal;
+    -unity-text-align: middle-center;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-SemiBold.asset");
+}
+
+/* body-small metrics (12px / ls 0). Shown in BOTH states — 12dp under the grid,
+ * 8dp under the call to action. */
+.mv-media-picker__hint {
+    margin: 0;
+    padding: 0;
+    margin-top: 12px;
+    font-size: 12px;
+    letter-spacing: 0;
+    white-space: normal;
+    -unity-text-align: middle-center;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Regular.asset");
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-media-picker__empty .mv-media-picker__hint {
+    margin-top: 8px;
+}
+
+/* ---- Filled state ---- */
+
+.mv-media-picker__card {
+    padding: 16px;
+    border-radius: var(--md-sys-shape-corner-large);
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+}
+
+.mv-media-picker__grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    /* Reclaims the trailing gutter the tiles' uniform margins add. */
+    margin-right: -8px;
+    margin-bottom: -8px;
+}
+
+.mv-media-picker__tile {
+    width: 104px;
+    height: 104px;
+    flex-shrink: 0;
+    margin-right: 8px;
+    margin-bottom: 8px;
+    border-radius: var(--md-sys-shape-corner-medium);
+    overflow: hidden;
+}
+
+.mv-media-picker__thumb {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.mv-media-picker__remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--md-sys-shape-corner-full);
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.mv-media-picker__remove:disabled {
+    opacity: 1;
+}
+
+/* V2's pure black at 25%. `scrim` is the only pure-black role and is identical in both
+ * themes; the alpha is an `opacity` on this layer alone, so the glyph above it
+ * stays opaque (a literal rgba would fail TokenDisciplineTests anyway). */
+.mv-media-picker__remove-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--md-sys-color-scrim);
+}
+
+/* `primary-fixed` is the near-white end of M3's *-fixed family, whose defining
+ * property is that it does NOT flip between light and dark — exactly what a glyph
+ * painted over user photos and a black scrim needs. `on-primary` would be the
+ * literal white V2 draws in light theme but turns dark navy in the dark one, and
+ * would vanish against the scrim. */
+.mv-media-picker__remove-icon {
+    font-size: 14px;
+    color: var(--md-sys-color-primary-fixed);
+}
+
+.mv-media-picker__add {
+    align-items: center;
+    justify-content: center;
+    background-color: var(--md-sys-color-surface-dim);
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-media-picker__add:disabled {
+    opacity: 1;
+}
+
+.mv-media-picker__add .mv-media-picker__dash {
+    border-radius: var(--md-sys-shape-corner-medium);
+}
+
+.mv-media-picker__add-icon {
+    font-size: 24px;
+    -unity-text-align: middle-center;
+}
+
+/* ---- Interaction states ----
+ * Three independent tap targets: the empty box, the add tile, each remove button. */
+
+.mv-media-picker__empty .md-state-layer,
+.mv-media-picker__add .md-state-layer {
+    background-color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-media-picker__remove .md-state-layer {
+    background-color: var(--md-sys-color-primary-fixed);
+}
+
+.mv-media-picker__empty:hover .md-state-layer,
+.mv-media-picker__add:hover .md-state-layer,
+.mv-media-picker__remove:hover .md-state-layer {
+    opacity: var(--md-sys-state-hover-opacity);
+}
+.mv-media-picker__empty:focus .md-state-layer,
+.mv-media-picker__add:focus .md-state-layer,
+.mv-media-picker__remove:focus .md-state-layer {
+    opacity: var(--md-sys-state-focus-opacity);
+}
+.mv-media-picker__empty:active .md-state-layer,
+.mv-media-picker__add:active .md-state-layer,
+.mv-media-picker__remove:active .md-state-layer {
+    opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* ---- Disabled ---- */
+
+.mv-media-picker__empty:disabled {
+    color: var(--md-sys-color-on-surface-disabled-content);
+}
+.mv-media-picker__empty:disabled .mv-media-picker__dash,
+.mv-media-picker__add:disabled .mv-media-picker__dash {
+    color: var(--md-sys-color-on-surface-disabled-container);
+}
+.mv-media-picker__add:disabled {
+    color: var(--md-sys-color-on-surface-disabled-content);
+}

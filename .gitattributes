@@ -15,3 +15,8 @@ src/app/MergulhoVirtual/Assets/Models/**/*.png filter=lfs diff=lfs merge=lfs -te
 # Sea-detector MobileCLIP encoder (45 MB). Scoped to the file so the pre-existing
 # non-LFS mobilenet_v2.onnx keeps its history/state.
 src/app/MergulhoVirtual/Assets/Resources/mobileclip_image_encoder.onnx filter=lfs diff=lfs merge=lfs -text
+
+# TextCore SDF font assets. Plain-text YAML, but the baked glyph atlas grows to
+# tens of MB and churns on every `make ds-shots` run, so they go to LFS rather
+# than the object store. Regenerable with `make ds-setup` (editor closed).
+src/app/MergulhoVirtual/Assets/DesignSystem/Fonts/*.asset filter=lfs diff=lfs merge=lfs -text

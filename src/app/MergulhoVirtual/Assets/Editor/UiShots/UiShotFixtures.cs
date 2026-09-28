@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using MergulhoVirtual.UI;
 using UnityEngine;
 
@@ -57,6 +58,8 @@ namespace MergulhoVirtual.UiShots
                 [typeof(IBeachContent)] = new FileBeachContent(),
                 [typeof(ISpeciesCatalog)] = new ResourcesSpeciesCatalog(),
                 [typeof(IActiveBeach)] = new FixedActiveBeach(),
+                [typeof(ISightingReports)] = new FixedSightingReports(),
+                [typeof(IPhotoPicker)] = new FixedPhotoPicker(),
             };
 
         /// <summary>Beach photos really do come from Resources — they are committed assets, so still deterministic.</summary>
@@ -243,6 +246,75 @@ namespace MergulhoVirtual.UiShots
 #pragma warning disable 67
             public event Action<string> ActiveBeachChanged;
 #pragma warning restore 67
+        }
+
+        // ------------------------------------------------------------------
+        // Sighting reports (Reportar) — a frozen feed, not a queue. Two rows so
+        // the shot shows BOTH pill treatments: one report still waiting (the grey
+        // "Pendente" of Tela 11/12) and one the backend rejected, which must not
+        // look like the first. Submit is never called from a shot — the subjects
+        // only fill the form — so it just says yes.
+        // ------------------------------------------------------------------
+        sealed class FixedSightingReports : ISightingReports
+        {
+            // 11:32Z = 9:32 local, i.e. Figma's "Hoje, 9:32 · Baía do Sueste"
+            // against the frozen clock.
+            readonly List<SightingRecord> pending = new List<SightingRecord>
+            {
+                new SightingRecord
+                {
+                    Id = "shot-pending-1",
+                    SpeciesKey = "lemon_shark",
+                    SpeciesLabel = "Tubarão-limão",
+                    BeachKey = "Sueste Beach",
+                    WhenUtc = FixedNowUtc.AddHours(-5).AddMinutes(-58),
+                    State = SightingState.Queued,
+                },
+            };
+
+            readonly List<SightingRecord> failed = new List<SightingRecord>
+            {
+                new SightingRecord
+                {
+                    Id = "shot-failed-1",
+                    // No species: the row falls back to ReportFormatter's
+                    // "Avistamento", which is a real submission, not a gap.
+                    BeachKey = "Praia do Sancho",
+                    WhenUtc = FixedNowUtc.AddDays(-1),
+                    State = SightingState.Failed,
+                    AttemptCount = 3,
+                },
+            };
+
+            public bool Submit(SightingDraft draft) => true;
+            public IReadOnlyList<SightingRecord> ListPending() => pending;
+            public IReadOnlyList<SightingRecord> ListFailed() => failed;
+
+#pragma warning disable 67 // Never raised: the fixture is frozen by design.
+            public event Action Changed;
+#pragma warning restore 67
+        }
+
+        /// <summary>
+        /// Hands back a committed photo synchronously, so a subject that calls
+        /// <c>PickPhoto</c> gets a real thumbnail in the same frame. The file is
+        /// Resources/Animals/lemon_shark.jpg — a shark, in the repo, so the shot
+        /// stays deterministic and nothing reaches the OS gallery.
+        /// </summary>
+        sealed class FixedPhotoPicker : IPhotoPicker
+        {
+            public void PickPhoto(Action<PhotoPickResult> onResult)
+            {
+                if (onResult == null) return;
+                string path = Path.Combine(Application.dataPath, "Resources/Animals/lemon_shark.jpg");
+                if (!File.Exists(path))
+                {
+                    Debug.LogWarning($"[ui-shots] no sample photo at {path}; the picker stays empty.");
+                    onResult(PhotoPickResult.Cancelled());
+                    return;
+                }
+                onResult(PhotoPickResult.Picked(path, new FileInfo(path).Length));
+            }
         }
 
         /// <summary>First run: the Início welcome card is showing (Tela 6).</summary>

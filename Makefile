@@ -87,7 +87,7 @@ ds-test: ## Run design-system EditMode tests headlessly
 	@mkdir -p $(ULOG)
 	@$(UNITY) -batchmode -nographics -projectPath $(UPROJ) \
 		-runTests -testPlatform EditMode \
-		-assemblyNames "MergulhoVirtual.DesignSystem.Tests.Editor;MergulhoVirtual.UI.Tests.Editor" \
+		-assemblyNames "MergulhoVirtual.DesignSystem.Tests.Editor;MergulhoVirtual.UI.Tests.Editor;Assembly-CSharp-Editor" \
 		-testResults $(abspath $(ULOG))/ds-test-editmode.xml \
 		-logFile $(ULOG)/ds-test-editmode.log \
 		|| { echo "FAILED — results: $(ULOG)/ds-test-editmode.xml"; \

@@ -77,12 +77,36 @@ namespace MergulhoVirtual.UiShots
             new Subject("praia-detalhe-empty", ShotKind.Screen, "PraiaDetalheScreen")
                 { VmMethod = "ShowBeach", VmArgs = new object[] { "Praia da Conceição" } },
 
+            // Reportar (Tela 11 / Tela 12). The empty subject IS Tela 11 — an
+            // untouched form over the pending feed, which the "empty state" frame
+            // also draws. The filled one is the review shot: it drives the
+            // ViewModel through exactly what a user would tap, in order, so what
+            // lands in the PNG is the real bound state and not a posed tree.
+            new Subject("report",         ShotKind.Screen, "ReportScreen") { HeightDp = 1650 },
+            new Subject("report-filled",  ShotKind.Screen, "ReportScreen")
+            {
+                HeightDp = 1850,
+                VmCalls = new[]
+                {
+                    new VmCall("SelectSpecies", 0),
+                    new VmCall("SelectSize", 1),
+                    new VmCall("ToggleBehaviour", 0),
+                    new VmCall("ToggleBehaviour", 1),
+                    new VmCall("ToggleBehaviour", 2),
+                    // The fixture picker answers synchronously with a committed
+                    // JPEG, so this lands a real thumbnail in the grid.
+                    new VmCall("PickPhoto"),
+                    new VmCall("SelectProfile", 0),
+                },
+            },
+
             // --- The app shell: router + MdNavigationBar + a screen ----------
             // This is the one that is directly comparable to a whole V2 frame,
             // because it includes the bottom bar the standalone shots omit.
             new Subject("shell-home",    ShotKind.Shell, "HomeScreen")    { Route = AppRoutes.Home },
             new Subject("shell-praias",  ShotKind.Shell, "PraiasScreen") { Route = AppRoutes.Praias },
             new Subject("shell-praia-detalhe", ShotKind.Shell, "PraiaDetalheScreen") { Route = AppRoutes.PraiaDetalhe },
+            new Subject("shell-report",  ShotKind.Shell, "ReportScreen") { Route = AppRoutes.Avistamentos },
 
             // --- Design-system gallery --------------------------------------
             // "gallery" is the device-frame view; "gallery-sections" additionally
@@ -241,9 +265,10 @@ namespace MergulhoVirtual.UiShots
                     screen.SetEdgeInsets(options.TopInsetDp, 0f, 0f, options.BottomInsetDp);
                 }
 
-                // Post-build navigation (e.g. open a beach detail). Applied after
-                // OnEnter, which is what resets the screen to its landing state.
-                InvokeVmMethod(built.ViewModel, subject);
+                // Post-build navigation / form filling (open a beach detail, tap
+                // through the report form). Applied after OnEnter, which is what
+                // resets the screen to its landing state.
+                InvokeVmCalls(built.ViewModel, subject);
 
                 return panel.Render(options, PngPath(options, subject.Id, theme), subject.Id, theme);
             }
@@ -446,17 +471,30 @@ namespace MergulhoVirtual.UiShots
                 "register a fake for it in UiShotFixtures.Services");
         }
 
-        static void InvokeVmMethod(object viewModel, Subject subject)
+        /// <summary>
+        /// Drives the ViewModel into the state a subject wants, in declaration
+        /// order: the single <see cref="Subject.VmMethod"/> first (one call is the
+        /// common case — "open this beach"), then <see cref="Subject.VmCalls"/> for
+        /// the states no single call can reach, like a filled-in form.
+        /// </summary>
+        static void InvokeVmCalls(object viewModel, Subject subject)
         {
-            if (string.IsNullOrEmpty(subject.VmMethod)) return;
-            if (viewModel == null) throw new Exception($"'{subject.VmMethod}' requested but no ViewModel was constructed");
+            if (!string.IsNullOrEmpty(subject.VmMethod))
+                Invoke(viewModel, new VmCall(subject.VmMethod, subject.VmArgs ?? Array.Empty<object>()));
+            if (subject.VmCalls == null) return;
+            foreach (var call in subject.VmCalls)
+                Invoke(viewModel, call);
+        }
 
-            var args = subject.VmArgs ?? Array.Empty<object>();
+        static void Invoke(object viewModel, VmCall call)
+        {
+            if (viewModel == null) throw new Exception($"'{call.Method}' requested but no ViewModel was constructed");
+
             var method = viewModel.GetType().GetMethod(
-                subject.VmMethod, BindingFlags.Instance | BindingFlags.Public, null,
-                args.Select(a => a?.GetType() ?? typeof(object)).ToArray(), null)
-                ?? throw new Exception($"{viewModel.GetType().Name}.{subject.VmMethod} not found");
-            method.Invoke(viewModel, args);
+                call.Method, BindingFlags.Instance | BindingFlags.Public, null,
+                call.Args.Select(a => a?.GetType() ?? typeof(object)).ToArray(), null)
+                ?? throw new Exception($"{viewModel.GetType().Name}.{call.Method} not found");
+            method.Invoke(viewModel, call.Args);
         }
 
         static Assembly UiAssembly => typeof(IAppScreen).Assembly;
@@ -769,11 +807,32 @@ namespace MergulhoVirtual.UiShots
             public string VmMethod;
             public object[] VmArgs;
 
+            /// <summary>
+            /// Several ViewModel calls, applied in order after
+            /// <see cref="VmMethod"/>. A form-shaped screen has no single "show
+            /// this" entry point — its interesting state is six taps deep — and
+            /// replaying the taps is what keeps the shot honest.
+            /// </summary>
+            public VmCall[] VmCalls;
+
             public Subject(string id, ShotKind kind, string screenTypeName = null)
             {
                 Id = id;
                 Kind = kind;
                 ScreenTypeName = screenTypeName;
+            }
+        }
+
+        /// <summary>One ViewModel method call, as a subject declares it.</summary>
+        sealed class VmCall
+        {
+            public readonly string Method;
+            public readonly object[] Args;
+
+            public VmCall(string method, params object[] args)
+            {
+                Method = method;
+                Args = args ?? Array.Empty<object>();
             }
         }
 

@@ -356,6 +356,23 @@ idempotency semantics. Treat it as its own task. See Decision D6.
 `JobQueue` needs a new read-only `IEnumerable<PendingJob> ListPending()` for the pending
 feed. That is additive and safe (one file-per-job on disk already).
 
+> ⚠️ **What Slice 3 actually shipped (2026-09-28): the client half only.** The paragraph
+> above reads as one change spanning app and backend; it was split, deliberately. The
+> `ReportSightingJob` round-trip, the multipart parts and `JobQueue.ListPending()` are done;
+> **the backend was not touched.** `POST /api/v1/avistamentos` still declares only
+> `photo`, `beach`, `timestamp`, `species_guess`, `notes`, so FastAPI silently discards the
+> six new parts the app now sends — `species_key`, `size_bucket`, `behaviours` (repeated),
+> `reporter_name`, `reporter_email`, `reporter_profile`. Nothing errors; the data simply
+> never reaches Firestore. Finishing the round trip means adding those `Form()` parameters,
+> extending the Firestore document shape, and regenerating the composite indexes for any
+> field that becomes a list filter (the `2^N` budget in CLAUDE.md applies).
+>
+> Two consequences worth carrying forward: **`notes` is now dead on the client side** — the
+> backend accepts it, but the V2 form has no free-text field, so `ReportViewModel.Submit()`
+> never sets it; and **`reporter_email` is personal data in flight to a service that does not
+> want it**, so it exists only in request logs. A privacy notice and a retention decision are
+> owed *before* the backend starts persisting it.
+
 ### 5.3 SOS content
 
 Phone numbers (Bombeiros, Hospital, ICMBio) and the first-aid articles are placeholders in
@@ -398,7 +415,20 @@ Each slice is independently shippable and independently revertable, following th
 rule already in force: **the legacy uGUI screen stays live until the new one reaches parity**,
 selectable by a `ScreenManager` toggle. Do not batch slices.
 
-### Slice 0 — Foundations *(blocks everything)*
+> **Status, 2026-09-28 — Slices 0, 1, 2 and 3 are done and green. Slices 4, 5 and 6 have not
+> started.** Headless verification at that date: `make ds-test` **402/402**, `make ds-test-play`
+> **21/21**, `make ds-shots` **78 PNGs, 0 skipped**. **Nothing has been run on a device**, so
+> every claim below is an editor claim. See [docs/handover-v2-redesign.md](docs/handover-v2-redesign.md)
+> for the working state, the known gaps and the device-verification checklist.
+>
+> The strangler *mechanism* changed shape in Slice 1 and no longer matches the paragraph
+> above: there is no per-screen `ScreenManager` toggle any more. `ScreenManager` is only the
+> AR performance gate; `MdRouter` owns navigation; the superseded uGUI screens (`BottomNav`,
+> `BeachesScreen`, `AnimalsScreen`, `RegisterScreen`) stay in `MainScene` **deactivated and
+> unrouted** until Slice 6 (`AppUiBuilder.UnroutedLegacyScreens`), while `MainScreen` (AR) and
+> `AboutScreen` are still routed through `LegacyUguiScreen`.
+
+### Slice 0 — Foundations *(blocks everything)* — ✅ **done**
 - `brand-theme.json` + regenerate `_colors-*.uss`; add `_brand-*.uss` extension tokens.
 - Update both `.tss` import lists and `TokenDisciplineTests.TokenFiles`.
 - Inter TTFs + 4 SDF assets; retune `_typography.uss` (Appendix A.2) and `_shape.uss`.
@@ -407,31 +437,58 @@ selectable by a `ScreenManager` toggle. Do not batch slices.
   component in the brand palette in both themes.
 - ⚠️ This restyles the **existing** UITK Beaches screen on the way through. Expected.
 
-### Slice 1 — Shell + Início
+### Slice 1 — Shell + Início — ✅ **done**
 - `MdNavigationBar` restyled to the dark bar; `MdRouter`; `ScreenManager` reduced to the
   AR-session performance gate.
 - `HomeScreen` (Tela 7) + welcome card (Tela 6): conditions card reusing the existing
   `BeachesViewModel` row formatting + `MdSparkline`; 2×2 feature grid.
 - **Done when:** all four tabs route, Home shows live conditions, AR still runs on Mergulho.
+- **As built:** the shell is `AppUiHost` + `MdRouter` + `IAppScreen`/`AppRoutes`, scaffolded
+  by `AppUiBuilder` (`make ui-setup`). Two of the four tabs are UI Toolkit screens, Mergulho
+  is still the uGUI AR HUD behind `LegacyUguiScreen`. "AR still runs on Mergulho" is verified
+  only in the editor — the UITK panel sits at `sortingOrder = 100` over the uGUI canvas and
+  that stacking has never been checked on hardware. Home also carries a fifth, full-width
+  card for **Sobre** (Decision D2) that is not in the Figma frame, and its
+  "Baixar a tábua de maré do mês" link is deliberately inert — there is no published DHN PDF
+  to open (`AppUiHost.OnTideTableRequested`).
 
-### Slice 2 — Praias
+### Slice 2 — Praias — ✅ **done (code); ⚠️ content is empty**
 - `beaches_content.json` + loader + `IBeachContent` in `Assets/UI/Interfaces/`.
 - Praias landing (Tela 1) — replaces the current Beaches list as the tab root.
 - Praia detalhe (Tela 4 + dropdown Tela 9) — restyle + the six new content blocks.
 - Components 2, 3, 7, 8, 9 from §6.
 - **Done when:** every beach in `places.json` renders with content, no placeholder strings;
   `useUiToolkitBeaches` legacy path deleted.
+- **As built:** the legacy path is gone (`ScreenManager` no longer has screen fields at all)
+  and every §6 component landed. The screens render **no placeholder strings** — they hide
+  any block whose data is missing — but that is the opposite half of "every beach renders
+  with content": `beaches_content.json` has **0/17** `riskLevel`, `bestSeason`,
+  `sightingPeak`, `lifeguardHours` and `tips`, and **3/17** `species`. What is filled
+  (`environmentTags` 11/17, `advisories` 7/17, `idealTide` 4/17) was *derived* from
+  `places.json` descriptions and the AR spawner list, not authored by anyone with the
+  knowledge. **This slice's "done when" is not met and cannot be met by code** — see
+  Decision D8 and [docs/beaches-content-todo.md](docs/beaches-content-todo.md).
 
-### Slice 3 — Avistamentos
+### Slice 3 — Avistamentos — ✅ **done (front end); ⚠️ backend unchanged**
 - `MdCheckbox`, `MvOptionCard`, `MvMediaPicker`.
-- `JobQueue.ListPending()`; `ReportSightingJob` field expansion; backend form fields +
-  Firestore shape + **index regeneration** (`tools/generate_firestore_indexes.py` →
+- `JobQueue.ListPending()`; `ReportSightingJob` field expansion; ~~backend form fields +
+  Firestore shape + **index regeneration**~~ (`tools/generate_firestore_indexes.py` →
   `firebase deploy --only firestore:indexes` **before** the UI ships — see CLAUDE.md, and
   mind the 2^N index budget).
 - Reportar (Tela 11 + 12).
 - **Done when:** a multi-field sighting round-trips to the admin UI; retries stay idempotent.
+- **As built:** deliberately front-end only. The struck-through line above was **not done** —
+  no backend change, no Firestore shape change, no index regeneration. The app sends six new
+  multipart parts that the endpoint does not declare and FastAPI drops on the floor (§5.2),
+  so **"round-trips to the admin UI" is false today**: a sighting reaches Firestore with the
+  same five fields it always had. Idempotency is unchanged and still holds. Multi-photo is
+  out per D6 (`ReportViewModel.MaxPhotos = 1`). A separate fix in the same slice made the
+  `JobQueue` load from disk at launch (`AppUiHost.Awake` → `SightingReportsAdapter`), so a
+  sighting queued before an app kill now resumes — previously nothing instantiated the queue
+  until the user submitted another report. That fix has EditMode coverage but has never run
+  on a device.
 
-### Slice 4 — Mergulho (AR HUD)
+### Slice 4 — Mergulho (AR HUD) — ⬜ **not started**
 - Hero top bar (back + beach pill + dropdown) and the species info card (Tela 8) as a UITK
   overlay on the AR camera.
 - Keep `ObjectInteraction` as the hit source; only the presentation moves.
@@ -439,14 +496,27 @@ selectable by a `ScreenManager` toggle. Do not batch slices.
   against the existing uGUI canvas — the same constraint `BeachesScreen` already solves with
   a transparent, `PickingMode.Ignore` root.
 - **Done when:** tapping a shark opens the card on device; AR tracking unaffected.
+- ⚠️ The constraint above is **still unverified**: the shell panel is already drawing over the
+  AR HUD today (`AppUiBuilder.PanelSortingOrder = 100`, transparent `PickingMode.Ignore` root),
+  but no one has confirmed on hardware that the nav bar draws above the AR camera and stays
+  tappable. **Do that device check before starting this slice** — it is the assumption the
+  whole slice is built on.
 
-### Slice 5 — SOS + states
+### Slice 5 — SOS + states — ⛔ **not started; blocked by D3**
 - `MvStateView`; SOS screen with real numbers (`Application.OpenURL("tel:…")`).
 - Wire error/offline states into the Instagram widget, conditions fetch, and sighting upload.
+- `AppRoutes.Sos` already exists and is raised by the Início SOS tile and the floating SOS pill
+  on Praia detalhe; with no screen registered, `MdRouter` logs one warning and does nothing.
+  `MvStateView` is the one §6 component not built.
 
-### Slice 6 — Retire uGUI
+### Slice 6 — Retire uGUI — ⬜ **not started**
 - Delete legacy screens; resolve Animais/Sobre per D1/D2; drop `ScreenManager`'s screen
   fields; remove the now-dead uGUI builders.
+- Partially pre-empted by Slice 1: `ScreenManager`'s screen fields are already gone, and
+  `BottomNav` / `BeachesScreen` / `AnimalsScreen` / `RegisterScreen` are already deactivated
+  and unrouted. What remains is deleting them (and their builders) and giving Animais a home
+  — D1 says "sub-screen from the species cards", and the "Saiba mais sobre a espécie" link
+  that would push it already exists as an unregistered no-op.
 
 ---
 
@@ -602,18 +672,20 @@ Then, by hand:
 
 ## 10. Open decisions
 
-These change what gets built and are not mine to make.
+These change what gets built and were not mine to make. **All but D3 were resolved by the
+maintainer and are reflected in the code as of 2026-09-28**; the column below records the
+decision that was actually taken, not the recommendation that was offered.
 
-| # | Decision | Why it matters | My recommendation |
+| # | Decision | Why it matters | Resolved (2026-09-28) |
 |---|---|---|---|
-| **D1** | Where do **Animais** + the 3D viewer + inline videos go? | Lose their tab in V2, but the subsystem works and is shipped. | Keep as a **sub-screen**: "Saiba mais sobre a espécie" on the beach species card and the AR info card both push the existing Animals detail. Drop the standalone list. |
-| **D2** | Where does **Sobre** + the Instagram widget go? | Lost its tab; the widget shipped 2026-07-17. | An overflow action on the Home header, or a fifth card in the Home grid. |
-| **D3** | Are the **SOS** numbers and first-aid content real? | Wrong emergency numbers are actively dangerous. | Block Slice 5 until vetted by the project/ICMBio. |
-| **D4** | Normalize beach names to Portuguese, or add `displayName`? | `places.json` mixes "Sueste Beach" / "Praia do Sancho"; V2 shows "Baía do Sueste". Keys must match exactly across content, spawner, seed data and the backend `local` field. | Add `displayName` to `places.json`; leave the machine-generated `name` as the key. |
-| **D5** | Light-only, or keep a dark theme? | V2 specifies light only; the DS requires both token sets to exist. | Generate both, ship light, keep dark for the gallery. |
-| **D6** | **Multi-photo** upload — in scope? | Changes the blob layout, idempotency, and the Firestore shape. Not additive. | Ship Slice 3 single-photo with the grid UI capped at 1; do multi-photo as its own slice. |
-| **D7** | Can the designer export the **icon set** (esp. the shark fin)? | Flaticon glyphs; the fin has no Material Symbols equivalent. | Ask now — it is the long-pole asset. |
-| **D8** | Who authors `beaches_content.json` for **17 beaches**? | Risk, season, tips, species, lifeguard hours × 17. Blocks Slice 2's "done". | Land the schema + 2–3 beaches first; the rest is content work in parallel. |
+| ✅ **D1** | Where do **Animais** + the 3D viewer + inline videos go? | Lose their tab in V2, but the subsystem works and is shipped. | **Sub-screen from the species cards; the standalone list is dropped.** Not built yet: `AppRoutes.Especie` has no screen, and the "Saiba mais sobre a espécie" link on the beach species card raises it as an **unregistered no-op**. `AnimalsScreen` is deactivated and unrouted in `MainScene`. |
+| ✅ **D2** | Where does **Sobre** + the Instagram widget go? | Lost its tab; the widget shipped 2026-07-17. | **A Home entry** — a full-width card below the 2×2 grid (not in the Figma frame), pushing `AppRoutes.Sobre`, which routes to the **legacy uGUI AboutScreen** via `LegacyUguiScreen`. That keeps the shipped Instagram widget reachable with no rebuild. ⚠️ It has no back button and the nav bar cannot return to the tab it was pushed from in one tap — see the handover doc. |
+| ⛔ **D3** | Are the **SOS** numbers and first-aid content real? | Wrong emergency numbers are actively dangerous. | **STILL OPEN. This blocks Slice 5 entirely** — nothing SOS-shaped may ship until the project/ICMBio vets the numbers and the first-aid copy. The SOS entry points exist and are deliberately inert. |
+| ✅ **D4** | Normalize beach names to Portuguese, or add `displayName`? | `places.json` mixes "Sueste Beach" / "Praia do Sancho"; V2 shows "Baía do Sueste". Keys must match exactly across content, spawner, seed data and the backend `local` field. | **`displayName` added to `places.json`; the machine `name` stays the key** (spawner list, `beaches_content.json` keys, the backend `local` field). All 17 places carry one; 5 differ from the key. `BeachInfo.DisplayName` falls back to `Name` when blank. Never look anything up by `displayName`. |
+| ✅ **D5** | Light-only, or keep a dark theme? | V2 specifies light only; the DS requires both token sets to exist. | **Ship light.** `AppPanelSettings.themeStyleSheet = Theme-Light`. Dark exists (both token sets are required and parity-tested) and the gallery keeps its toggle, but no screen was designed for it — `make ds-shots` renders dark shots only as a token-discipline canary. |
+| ✅ **D6** | **Multi-photo** upload — in scope? | Changes the blob layout, idempotency, and the Firestore shape. Not additive. | **Single photo this slice; the grid UI is capped at 1** (`ReportViewModel.MaxPhotos = 1` → `MvMediaPicker.MaxItems`). Multi-photo is its own future slice. Replacing a photo is remove-then-add. |
+| ✅ **D7** | Can the designer export the **icon set** (esp. the shark fin)? | Flaticon glyphs; the fin has no Material Symbols equivalent. | **Option (a) now: Material Symbols everywhere. The shark fin is still outstanding.** It is stood in for by `AppIcons.AvistamentosPlaceholder = "visibility"`, rendered by both the bottom-bar Avistamentos tab and the Início Avistamentos tile; a third stand-in (`"help"`) sits in the gallery's nav-bar demo. All three must move together when the SVG arrives. Plausible-looking marine glyphs (`waves`, `surfing`, `scuba_diving`, `pool`) are deliberately excluded from the icon subset so none of them can quietly become the shipped icon. |
+| ✅ **D8** | Who authors `beaches_content.json` for **17 beaches**? | Risk, season, tips, species, lifeguard hours × 17. Blocks Slice 2's "done". | **The biologists / project team, via [docs/beaches-content-todo.md](docs/beaches-content-todo.md).** The schema shipped with the content left blank: a research-and-cite pass was offered and **declined** — an invented risk level or lifeguard hour is worse than a blank, and the screens are built to hide a missing block rather than print a placeholder. Slice 2 is code-complete and content-empty until that file is filled. |
 
 ---
 

@@ -28,6 +28,7 @@
 @import url("Components/MdSnackbar/MdSnackbar.uss");
 @import url("Components/MdBottomSheet/MdBottomSheet.uss");
 @import url("Components/MdSparkline/MdSparkline.uss");
+@import url("Components/MdCheckbox/MdCheckbox.uss");
 
 /* Mv* — project components with no M3 counterpart (DESIGN_IMPLEMENTATION.md §6). */
 @import url("Components/MvTag/MvTag.uss");
@@ -35,3 +36,5 @@
 @import url("Components/MvNumberedList/MvNumberedList.uss");
 @import url("Components/MvHeroHeader/MvHeroHeader.uss");
 @import url("Components/MvMediaCarousel/MvMediaCarousel.uss");
+@import url("Components/MvOptionCard/MvOptionCard.uss");
+@import url("Components/MvMediaPicker/MvMediaPicker.uss");

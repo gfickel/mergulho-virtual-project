@@ -591,5 +591,152 @@ namespace MergulhoVirtual.DesignSystem.Tests
             Assert.That(raised, Is.EqualTo(1));
             Assert.That(last, Is.Zero);
         }
+
+        [UnityTest]
+        public IEnumerator MdCheckbox_Click_TogglesAndRaises()
+        {
+            var box = new MdCheckbox();
+            int raised = 0;
+            bool? last = null;
+            box.ValueChanged += v => { raised++; last = v; };
+            yield return Mount(box);
+
+            TestPointer.Click(box);
+            Assert.That(box.Checked, Is.True);
+            Assert.That(last, Is.True);
+            Assert.That(box.ClassListContains(MdCheckbox.CheckedClassName));
+
+            TestPointer.Click(box);
+            Assert.That(box.Checked, Is.False);
+            Assert.That(last, Is.False);
+            Assert.That(raised, Is.EqualTo(2));
+
+            box.SetEnabled(false);
+            TestPointer.Click(box);
+            Assert.That(raised, Is.EqualTo(2), "a disabled checkbox ignores clicks");
+        }
+
+        [UnityTest]
+        public IEnumerator MvOptionCard_ClickRaisesWithoutSelfSelecting_AndTheCallerKeepsTheGroupExclusive()
+        {
+            var tourist = new MvOptionCard { Icon = "person", Text = "Turista / Visitante" };
+            var guide = new MvOptionCard { Icon = "explore", Text = "Condutor / Guia" };
+            var group = new[] { tourist, guide };
+            string lastClicked = null;
+            foreach (var card in group)
+            {
+                var captured = card;
+                card.Clicked += () =>
+                {
+                    lastClicked = captured.Text;
+                    foreach (var other in group)
+                        other.Selected = other == captured;
+                };
+            }
+
+            var row = new VisualElement();
+            row.style.flexDirection = FlexDirection.Row;
+            row.Add(tourist);
+            row.Add(guide);
+            yield return Mount(row);
+
+            // Themeless panel: no component USS, so the cards have no intrinsic
+            // size — give each an explicit rect and stop the shrink cascade.
+            foreach (var card in group)
+            {
+                card.style.width = 90;
+                card.style.height = 48;
+                card.style.flexShrink = 0;
+            }
+            yield return null;
+
+            TestPointer.Click(tourist);
+            Assert.That(lastClicked, Is.EqualTo("Turista / Visitante"));
+            Assert.That(tourist.Selected, Is.True, "the CALLER selected it — the card never selects itself");
+            Assert.That(guide.Selected, Is.False);
+
+            TestPointer.Click(guide);
+            Assert.That(guide.Selected, Is.True);
+            Assert.That(tourist.Selected, Is.False, "exactly one stays selected");
+
+            // Re-tapping the selected card raises again but cannot deselect it:
+            // an option card is one arm of a radio group, not a toggle.
+            TestPointer.Click(guide);
+            Assert.That(guide.Selected, Is.True);
+
+            guide.SetEnabled(false);
+            lastClicked = null;
+            TestPointer.Click(guide);
+            Assert.That(lastClicked, Is.Null, "a disabled option card ignores clicks");
+        }
+
+        [UnityTest]
+        public IEnumerator MvMediaPicker_EmptyBoxAddTileAndRemoveButtonsRaiseTheRightEvents()
+        {
+            var picker = new MvMediaPicker { MaxItems = 3 };
+            int adds = 0, lastRemoved = -1, removes = 0;
+            picker.AddRequested += () => adds++;
+            picker.RemoveRequested += i => { lastRemoved = i; removes++; };
+            yield return Mount(picker);
+
+            // 1. The empty dashed box is itself the add button.
+            var empty = picker.Q<VisualElement>(className: MvMediaPicker.EmptyClassName);
+            empty.style.width = 200;
+            empty.style.height = 48;
+            empty.style.flexShrink = 0;
+            yield return null;
+
+            TestPointer.Click(empty);
+            Assert.That(adds, Is.EqualTo(1));
+
+            // 2. With items, the add tile and each remove button are separate targets.
+            var textures = new[] { new Texture2D(2, 2), new Texture2D(2, 2) };
+            picker.SetItems(new[]
+            {
+                new MvMediaPickerItem(textures[0]),
+                new MvMediaPickerItem(textures[1]),
+            });
+
+            // Themeless panel again: size the card chain and every tap target.
+            var card = picker.Q<VisualElement>(className: MvMediaPicker.CardClassName);
+            card.style.flexShrink = 0;
+            var grid = picker.Q<VisualElement>(className: MvMediaPicker.GridClassName);
+            grid.style.flexShrink = 0;
+            var add = picker.Q<VisualElement>(className: MvMediaPicker.AddClassName);
+            var removeButtons = picker.Query<VisualElement>(className: MvMediaPicker.RemoveClassName).ToList();
+            Assert.That(removeButtons.Count, Is.EqualTo(2));
+            foreach (var target in new[] { add, removeButtons[0], removeButtons[1] })
+            {
+                // The remove buttons are absolutely positioned inside their tile;
+                // pin them to explicit, non-overlapping rects so picking can tell
+                // them apart in a panel with no USS geometry.
+                target.style.position = Position.Absolute;
+                target.style.width = 28;
+                target.style.height = 28;
+                target.style.flexShrink = 0;
+            }
+            add.style.left = 0;
+            add.style.top = 0;
+            removeButtons[0].style.left = 40;
+            removeButtons[0].style.top = 0;
+            removeButtons[1].style.left = 80;
+            removeButtons[1].style.top = 0;
+            yield return null;
+
+            TestPointer.Click(removeButtons[1]);
+            Assert.That(removes, Is.EqualTo(1));
+            Assert.That(lastRemoved, Is.EqualTo(1), "each tile reports its own index");
+            Assert.That(adds, Is.EqualTo(1), "a remove tap does not leak into AddRequested");
+
+            TestPointer.Click(removeButtons[0]);
+            Assert.That(lastRemoved, Is.Zero);
+
+            TestPointer.Click(add);
+            Assert.That(adds, Is.EqualTo(2));
+            Assert.That(removes, Is.EqualTo(2), "an add tap does not leak into RemoveRequested");
+
+            foreach (var texture in textures)
+                Object.Destroy(texture);
+        }
     }
 }

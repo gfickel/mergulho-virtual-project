@@ -46,6 +46,7 @@ public static class AppUiBuilder
         "Assets/UI/Screens/HomeScreen.uss",
         "Assets/UI/Screens/PraiasScreen.uss",
         "Assets/UI/Screens/PraiaDetalheScreen.uss",
+        "Assets/UI/Screens/ReportScreen.uss",
     };
 
     /// <summary>
@@ -61,11 +62,17 @@ public static class AppUiBuilder
     /// <summary>
     /// Legacy uGUI objects the router does not drive at all: the BottomNav that
     /// MdNavigationBar replaced, the uGUI Beaches screen the UITK one superseded,
-    /// and Animais, which lost its destination with no home yet (Decision D1).
+    /// RegisterScreen (superseded by the UITK ReportScreen in Slice 3), and
+    /// Animais, which lost its destination with no home yet (Decision D1).
     /// AboutScreen is NOT here — it lost its tab too, but Decision D2 makes it a
     /// sub-screen pushed from Início, so the router owns its activation.
+    ///
+    /// <para>They all STAY in the scene (the strangler rule — Slice 6 deletes
+    /// them); this list only guarantees they start, and stay, deactivated, since
+    /// nothing will ever activate them again.</para>
     /// </summary>
-    static readonly string[] UnroutedLegacyScreens = { "BottomNav", "BeachesScreen", "AnimalsScreen" };
+    static readonly string[] UnroutedLegacyScreens =
+        { "BottomNav", "BeachesScreen", "AnimalsScreen", "RegisterScreen" };
 
     [MenuItem("Tools/Mergulho Virtual/Create App UI Shell (UI Toolkit)", priority = 120)]
     public static void Build()
@@ -122,7 +129,6 @@ public static class AppUiBuilder
         var gps = Object.FindFirstObjectByType<GPSHandler>(FindObjectsInactive.Include);
         var screenManager = Object.FindFirstObjectByType<ScreenManager>(FindObjectsInactive.Include);
         var mainScreen = FindScreenUiChild("MainScreen");
-        var registerScreen = FindScreenUiChild("RegisterScreen");
         var aboutScreen = FindScreenUiChild("AboutScreen");
         var splashScreen = FindScreenUiChild("SplashScreen");
 
@@ -130,7 +136,6 @@ public static class AppUiBuilder
         if (tides == null) Debug.LogWarning("[AppUiBuilder] No TideService in scene — tide row/sparkline will stay empty.");
         if (gps == null) Debug.LogWarning("[AppUiBuilder] No GPSHandler in scene — beach override dropdown will be inert.");
         if (mainScreen == null) Debug.LogWarning("[AppUiBuilder] ScreenUI/MainScreen not found — the Mergulho (AR) destination will be unroutable.");
-        if (registerScreen == null) Debug.LogWarning("[AppUiBuilder] ScreenUI/RegisterScreen not found — the Avistamentos destination will be unroutable.");
         if (aboutScreen == null) Debug.LogWarning("[AppUiBuilder] ScreenUI/AboutScreen not found — the Início \"Sobre o projeto\" entry will be unroutable.");
 
         var hostSo = new SerializedObject(host);
@@ -140,7 +145,6 @@ public static class AppUiBuilder
         hostSo.FindProperty("tideService").objectReferenceValue = tides;
         hostSo.FindProperty("gpsHandler").objectReferenceValue = gps;
         hostSo.FindProperty("legacyArScreen").objectReferenceValue = mainScreen;
-        hostSo.FindProperty("legacyRegisterScreen").objectReferenceValue = registerScreen;
         hostSo.FindProperty("legacyAboutScreen").objectReferenceValue = aboutScreen;
         hostSo.FindProperty("screenManager").objectReferenceValue = screenManager;
         hostSo.ApplyModifiedPropertiesWithoutUndo();
@@ -163,8 +167,9 @@ public static class AppUiBuilder
         }
 
         // The uGUI BottomNav is replaced by MdNavigationBar; Animais/Sobre lost
-        // their tab (Decisions D1/D2) and the legacy uGUI Beaches screen is
-        // superseded. All stay in the scene for the strangler, just inactive.
+        // their tab (Decisions D1/D2); the legacy uGUI Beaches screen and the uGUI
+        // RegisterScreen are superseded by their UI Toolkit replacements. All stay
+        // in the scene for the strangler, just inactive.
         foreach (var name in UnroutedLegacyScreens)
         {
             var go = FindScreenUiChild(name);
@@ -175,9 +180,9 @@ public static class AppUiBuilder
             }
         }
 
-        // MainScreen/RegisterScreen/AboutScreen are activated by LegacyUguiScreen
-        // via the router; start them hidden so the first frame shows only one screen.
-        foreach (var go in new[] { mainScreen, registerScreen, aboutScreen })
+        // MainScreen/AboutScreen are activated by LegacyUguiScreen via the router;
+        // start them hidden so the first frame shows only one screen.
+        foreach (var go in new[] { mainScreen, aboutScreen })
         {
             if (go != null && go.activeSelf)
             {

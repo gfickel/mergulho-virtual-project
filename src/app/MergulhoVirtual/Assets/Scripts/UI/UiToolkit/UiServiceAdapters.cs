@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using MergulhoVirtual.UI;
 using UnityEngine;
 
@@ -271,6 +273,238 @@ public static class UiServiceAdapters
         {
             PlayerPrefs.SetInt(OnboardingPrefKeys.WelcomeDismissed, 1);
             PlayerPrefs.Save();
+        }
+    }
+
+    /// <summary>
+    /// The user's own sighting reports, over the Assembly-CSharp
+    /// <see cref="JobQueue"/> — submit one, and read back the ones still in
+    /// flight for the "Seus avistamentos pendentes" feed.
+    ///
+    /// <para><b>It owns the photo file.</b> The picker hands back a path in the
+    /// app's cache (Android may evict it; iOS exported a temporary) and the user
+    /// can delete the original from their gallery at any moment, so
+    /// <see cref="Submit"/> copies the bytes into
+    /// <c>persistentDataPath/sightings/&lt;guid&gt;.&lt;ext&gt;</c> before
+    /// queueing and the job deletes that copy on success. The copy is
+    /// <see cref="File.Copy"/> — raw bytes, never decode/re-encode — because EXIF
+    /// (GPS, DateTimeOriginal, camera) is the point of the photo path.</para>
+    ///
+    /// <para><b>The guid is the idempotency key</b>, baked into both the file name
+    /// and the job, so a retry after a TCP timeout the server already honoured
+    /// collapses server-side instead of creating a second document.</para>
+    ///
+    /// <para>Constructing this also spins up the queue
+    /// (<see cref="JobQueue.GetOrCreate"/>) and loads what is on disk. That is
+    /// load-bearing, not incidental: nothing else in the scene instantiates the
+    /// queue, so without it a sighting left queued by a previous run would never
+    /// resume <i>and</i> would be missing from the feed.</para>
+    /// </summary>
+    public sealed class SightingReportsAdapter : ISightingReports, IDisposable
+    {
+        /// <summary>Prod endpoint (CLAUDE.md, "Updating Unity URLs for prod").
+        /// Point the constructor at a LAN <c>BACKEND_DEBUG=1</c> backend for
+        /// editor testing — that mode ignores the missing App Check header.</summary>
+        public const string DefaultUploadUrl = "https://mergulhovirtual.dev/api/v1/avistamentos";
+
+        readonly string uploadUrl;
+        readonly JobQueue queue;
+
+        public event Action Changed;
+
+        public SightingReportsAdapter(string uploadUrl = null)
+        {
+            this.uploadUrl = string.IsNullOrWhiteSpace(uploadUrl) ? DefaultUploadUrl : uploadUrl;
+            queue = JobQueue.GetOrCreate();
+            // GetOrCreate's Start() loads from disk a frame later; do it now so the
+            // very first render of the feed is right.
+            queue.LoadPendingFromDisk();
+            queue.JobCompleted += OnJobCompleted;
+        }
+
+        public void Dispose()
+        {
+            if (queue != null) queue.JobCompleted -= OnJobCompleted;
+        }
+
+        void OnJobCompleted(string jobId, JobResult result) => Changed?.Invoke();
+
+        public bool Submit(SightingDraft draft)
+        {
+            if (draft == null) return false;
+            if (string.IsNullOrEmpty(draft.PhotoPath) || !File.Exists(draft.PhotoPath))
+            {
+                Debug.LogWarning("[SightingReports] Submit called with no readable photo — dropping.");
+                return false;
+            }
+
+            string ext = Path.GetExtension(draft.PhotoPath);
+            if (string.IsNullOrEmpty(ext)) ext = ".jpg";
+
+            string sightingId = Guid.NewGuid().ToString("N");
+            string destDir = Path.Combine(Application.persistentDataPath, "sightings");
+            string destPath = Path.Combine(destDir, sightingId + ext);
+
+            try
+            {
+                Directory.CreateDirectory(destDir);
+                File.Copy(draft.PhotoPath, destPath, overwrite: true);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[SightingReports] Could not copy the photo: {e.Message}");
+                return false;
+            }
+
+            var job = new ReportSightingJob
+            {
+                Url = uploadUrl,
+                ImagePath = destPath,
+                MimeType = GuessMime(ext),
+                BeachName = draft.BeachKey,
+                IsoTimestamp = ToIsoUtc(draft.WhenUtc),
+                SpeciesGuess = draft.SpeciesLabel,
+                Notes = draft.Notes,
+                IdempotencyKey = sightingId,
+                SpeciesKey = draft.SpeciesKey,
+                SizeBucket = draft.SizeBucket,
+                Behaviours = ToArray(draft.BehaviourKeys),
+                ReporterName = draft.ReporterName,
+                ReporterEmail = draft.ReporterEmail,
+                ReporterProfile = draft.ProfileKey,
+            };
+
+            if (!queue.Enqueue(job))
+            {
+                Debug.LogWarning("[SightingReports] Job queue full — sighting not taken.");
+                try { File.Delete(destPath); } catch { /* best effort */ }
+                return false;
+            }
+
+            Changed?.Invoke();
+            return true;
+        }
+
+        public IReadOnlyList<SightingRecord> ListPending() => Map(queue?.ListPending(ReportSightingJob.JobType));
+
+        public IReadOnlyList<SightingRecord> ListFailed() => Map(queue?.ListFailed(ReportSightingJob.JobType));
+
+        static IReadOnlyList<SightingRecord> Map(IReadOnlyList<JobRecord> records)
+        {
+            var list = new List<SightingRecord>();
+            if (records == null) return list;
+            foreach (var record in records)
+            {
+                var job = record.Snapshot<ReportSightingJob>();
+                if (job == null) continue;
+                list.Add(new SightingRecord
+                {
+                    // The idempotency key IS the job id today; fall back to the
+                    // envelope id so a row always has a stable identity.
+                    Id = string.IsNullOrEmpty(job.IdempotencyKey) ? record.Id : job.IdempotencyKey,
+                    SpeciesKey = job.SpeciesKey,
+                    SpeciesLabel = job.SpeciesGuess,
+                    BeachKey = string.IsNullOrEmpty(job.BeachName) ? null : job.BeachName,
+                    WhenUtc = ParseIsoUtc(job.IsoTimestamp, record.CreatedAtUtc),
+                    PhotoPath = job.ImagePath,
+                    State = MapState(record.State),
+                    AttemptCount = record.AttemptCount,
+                });
+            }
+            return list;
+        }
+
+        static SightingState MapState(JobRecordState state)
+        {
+            switch (state)
+            {
+                case JobRecordState.Retrying: return SightingState.Retrying;
+                case JobRecordState.WaitingForNetwork: return SightingState.WaitingForNetwork;
+                case JobRecordState.Failed: return SightingState.Failed;
+                default: return SightingState.Queued;
+            }
+        }
+
+        static string[] ToArray(IReadOnlyList<string> values)
+        {
+            if (values == null || values.Count == 0) return Array.Empty<string>();
+            var array = new string[values.Count];
+            for (int i = 0; i < values.Count; i++) array[i] = values[i];
+            return array;
+        }
+
+        /// <summary>RFC3339 in UTC. An Unspecified kind is taken as already-UTC
+        /// rather than converted from local — the draft field is named WhenUtc and
+        /// a test clock that hands back an unspecified DateTime must not shift.</summary>
+        static string ToIsoUtc(DateTime when)
+        {
+            DateTime utc = when.Kind == DateTimeKind.Unspecified
+                ? DateTime.SpecifyKind(when, DateTimeKind.Utc)
+                : when.ToUniversalTime();
+            return utc.ToString("o", CultureInfo.InvariantCulture);
+        }
+
+        static DateTime ParseIsoUtc(string iso, DateTime fallbackUtc)
+        {
+            if (!string.IsNullOrEmpty(iso) &&
+                DateTime.TryParse(iso, CultureInfo.InvariantCulture,
+                    DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var parsed))
+            {
+                return DateTime.SpecifyKind(parsed, DateTimeKind.Utc);
+            }
+            return fallbackUtc;
+        }
+
+        static string GuessMime(string ext)
+        {
+            switch ((ext ?? string.Empty).ToLowerInvariant())
+            {
+                case ".jpg":
+                case ".jpeg": return "image/jpeg";
+                case ".png": return "image/png";
+                case ".heic": return "image/heic";
+                case ".heif": return "image/heif";
+                case ".webp": return "image/webp";
+                default: return "application/octet-stream";
+            }
+        }
+    }
+
+    /// <summary>
+    /// The device photo gallery, over <see cref="GalleryPicker"/> (yasirkula's
+    /// NativeGallery on device, a file dialog in the Editor).
+    ///
+    /// <para>The picker reports a user cancel and an OS permission denial
+    /// identically — both arrive as a null path — so both map to
+    /// <see cref="PhotoPickOutcome.Cancelled"/>. That is the honest mapping: the
+    /// app cannot tell them apart without a separate permission query, and
+    /// showing "acesso negado" after a plain cancel would be a lie.</para>
+    /// </summary>
+    public sealed class GalleryPhotoPickerAdapter : IPhotoPicker
+    {
+        public void PickPhoto(Action<PhotoPickResult> onResult)
+        {
+            if (onResult == null) return;
+            GalleryPicker.PickImage((path, error) =>
+            {
+                if (!string.IsNullOrEmpty(error))
+                {
+                    onResult(error == "cancelled"
+                        ? PhotoPickResult.Cancelled()
+                        : PhotoPickResult.Failed(error));
+                    return;
+                }
+
+                long size = 0;
+                try { size = new FileInfo(path).Length; }
+                catch (Exception e)
+                {
+                    // Unknown size: 0 passes the limit check rather than blocking a
+                    // pick over a stat failure. The backend still bounds the upload.
+                    Debug.LogWarning($"[PhotoPicker] Could not stat {path}: {e.Message}");
+                }
+                onResult(PhotoPickResult.Picked(path, size));
+            });
         }
     }
 }
