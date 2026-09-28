@@ -1,0 +1,33 @@
+/* M3 interaction-state opacities — https://m3.material.io/foundations/interaction/states
+ * Applied by components to their .md-state-layer child (see MdButton for the
+ * reference implementation of the state-layer pattern).
+ *
+ * Elevation note: UI Toolkit has no box-shadow, so M3 elevation is expressed
+ * through surface-container-* colors (tone-based elevation, the same strategy
+ * M3 itself uses in dark theme) — there is no _elevation.uss.
+ */
+:root {
+    --md-sys-state-hover-opacity: 0.08;
+    --md-sys-state-focus-opacity: 0.10;
+    --md-sys-state-pressed-opacity: 0.10;
+    --md-sys-state-dragged-opacity: 0.16;
+    --md-sys-state-disabled-content-opacity: 0.38;
+    --md-sys-state-disabled-container-opacity: 0.12;
+}
+
+/* Shared state-layer base. Components add a .md-state-layer child as the FIRST
+ * child of their visual container (which must have overflow: hidden so the
+ * layer follows the rounded corners), then set its background-color and hook
+ * the :hover/:active/:focus opacities in their own USS.
+ * Reference implementation: MdButton.uss.
+ */
+.md-state-layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: var(--md-sys-motion-duration-short2);
+}

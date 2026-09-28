@@ -14,6 +14,12 @@ from config import (
     ROUTER_MODE,
 )
 
+# Without this, app loggers have no handler and INFO lines (e.g. the Instagram
+# fetch job's "cached latest post") never reach journald — only WARNING+ leak
+# out via Python's last-resort handler. Uvicorn's own loggers don't propagate,
+# so this adds no duplicate access/error lines.
+logging.basicConfig(level=logging.INFO)
+
 logger = logging.getLogger("backend.startup")
 
 

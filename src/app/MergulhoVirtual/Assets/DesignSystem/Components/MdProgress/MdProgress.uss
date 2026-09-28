@@ -1,0 +1,45 @@
+/* M3 progress indicators — https://m3.material.io/components/progress-indicators/specs
+ * Linear: root = the 4dp track, __indicator = the fill (left/width set in C#).
+ * Circular: 48dp, arcs stroked via each child's `color` (read back in C#
+ * through resolvedStyle.color at draw time — keep colors here, not in code).
+ */
+
+.md-linear-progress {
+    height: 4px;
+    align-self: stretch;
+    flex-shrink: 0;
+    border-radius: var(--md-sys-shape-corner-full);
+    overflow: hidden;
+    background-color: var(--md-sys-color-secondary-container);
+}
+
+.md-linear-progress__indicator {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background-color: var(--md-sys-color-primary);
+}
+
+.md-circular-progress {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+}
+
+.md-circular-progress__track,
+.md-circular-progress__indicator {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.md-circular-progress__track {
+    color: var(--md-sys-color-secondary-container);
+}
+
+.md-circular-progress__indicator {
+    color: var(--md-sys-color-primary);
+}

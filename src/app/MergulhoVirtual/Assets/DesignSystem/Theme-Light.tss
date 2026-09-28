@@ -1,0 +1,29 @@
+/* Light theme = Unity defaults + M3 tokens + component styles.
+ * Theme switching at runtime: swap PanelSettings.themeStyleSheet between
+ * Theme-Light.tss and Theme-Dark.tss (see GalleryController).
+ * Component USS files are imported HERE (one line per component) — components
+ * do not load their own stylesheets at runtime.
+ */
+@import url("unity-theme://default");
+@import url("Tokens/_colors-light.uss");
+@import url("Tokens/_typography.uss");
+@import url("Tokens/_shape.uss");
+@import url("Tokens/_state.uss");
+@import url("Tokens/_motion.uss");
+@import url("Components/MdIcon/MdIcon.uss");
+@import url("Components/MdButton/MdButton.uss");
+@import url("Components/MdIconButton/MdIconButton.uss");
+@import url("Components/MdChip/MdChip.uss");
+@import url("Components/MdFab/MdFab.uss");
+@import url("Components/MdProgress/MdProgress.uss");
+@import url("Components/MdCard/MdCard.uss");
+@import url("Components/MdListItem/MdListItem.uss");
+@import url("Components/MdTextField/MdTextField.uss");
+@import url("Components/MdMenu/MdMenu.uss");
+@import url("Components/MdDropdown/MdDropdown.uss");
+@import url("Components/MdTopAppBar/MdTopAppBar.uss");
+@import url("Components/MdNavigationBar/MdNavigationBar.uss");
+@import url("Components/MdDialog/MdDialog.uss");
+@import url("Components/MdSnackbar/MdSnackbar.uss");
+@import url("Components/MdBottomSheet/MdBottomSheet.uss");
+@import url("Components/MdSparkline/MdSparkline.uss");

@@ -1,0 +1,16 @@
+{
+    "name": "MergulhoVirtual.UI",
+    "rootNamespace": "MergulhoVirtual.UI",
+    "references": [
+        "MergulhoVirtual.DesignSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

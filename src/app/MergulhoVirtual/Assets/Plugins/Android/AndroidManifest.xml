@@ -1,7 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.unity3d.player" xmlns:tools="http://schemas.android.com/tools">
   <application android:usesCleartextTraffic="false" android:allowBackup="false">
-    <activity android:name="com.unity3d.player.appui.AppUIGameActivity" android:theme="@style/BaseUnityGameActivityTheme" android:configChanges="fontScale|keyboard|keyboardHidden|locale|mnc|mcc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|touchscreen">
+    <!-- UnityPlayerGameActivity = Unity's stock GameActivity entry point (Player
+         Settings > Application Entry Point = GameActivity). The previous value,
+         com.unity3d.player.appui.AppUIGameActivity, was a leftover from an old
+         App UI 1.x install that no longer ships that class (App UI 2.x doesn't
+         override the manifest) and crashed every device build with
+         ClassNotFoundException at launch. -->
+    <activity android:name="com.unity3d.player.UnityPlayerGameActivity" android:theme="@style/BaseUnityGameActivityTheme" android:configChanges="fontScale|keyboard|keyboardHidden|locale|mnc|mcc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|touchscreen">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />

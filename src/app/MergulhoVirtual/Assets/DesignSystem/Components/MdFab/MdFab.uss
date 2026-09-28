@@ -1,0 +1,103 @@
+/* M3 FAB — https://m3.material.io/components/floating-action-button/specs
+ * Root = transparent ≥48dp touch target; __container = the visible FAB.
+ * Sizes: small 40dp (corner 12), regular 56dp (corner 16), large 96dp (corner 28).
+ */
+
+.md-fab {
+    min-width: 48px;
+    min-height: 48px;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    flex-shrink: 0;
+}
+
+.md-fab:disabled {
+    opacity: 1; /* take over from Unity's default 0.5 dimming; colors below handle it */
+}
+
+.md-fab__container {
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.md-fab__icon {
+    font-size: 24px;
+}
+
+/* ---- Sizes ---- */
+
+.md-fab--regular .md-fab__container {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--md-sys-shape-corner-large);
+}
+
+.md-fab--small .md-fab__container {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--md-sys-shape-corner-medium);
+}
+
+.md-fab--large .md-fab__container {
+    width: 96px;
+    height: 96px;
+    border-radius: var(--md-sys-shape-corner-extra-large);
+}
+.md-fab--large .md-fab__icon {
+    font-size: 36px;
+}
+
+/* ---- Colors ---- */
+
+.md-fab--primary .md-fab__container {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+}
+.md-fab--primary .md-state-layer {
+    background-color: var(--md-sys-color-on-primary-container);
+}
+
+.md-fab--secondary .md-fab__container {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+}
+.md-fab--secondary .md-state-layer {
+    background-color: var(--md-sys-color-on-secondary-container);
+}
+
+.md-fab--tertiary .md-fab__container {
+    background-color: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+}
+.md-fab--tertiary .md-state-layer {
+    background-color: var(--md-sys-color-on-tertiary-container);
+}
+
+.md-fab--surface .md-fab__container {
+    background-color: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-primary);
+}
+.md-fab--surface .md-state-layer {
+    background-color: var(--md-sys-color-primary);
+}
+
+/* ---- Interaction states ---- */
+
+.md-fab:hover .md-state-layer {
+    opacity: var(--md-sys-state-hover-opacity);
+}
+.md-fab:focus .md-state-layer {
+    opacity: var(--md-sys-state-focus-opacity);
+}
+.md-fab:active .md-state-layer {
+    opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* ---- Disabled ---- */
+
+.md-fab:disabled .md-fab__container {
+    background-color: var(--md-sys-color-on-surface-disabled-container);
+    color: var(--md-sys-color-on-surface-disabled-content);
+}

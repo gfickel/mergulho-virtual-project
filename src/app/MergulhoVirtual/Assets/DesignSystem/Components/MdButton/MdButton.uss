@@ -1,0 +1,108 @@
+/* M3 common button — https://m3.material.io/components/buttons/specs
+ * Root = transparent ≥48dp touch target; __container = the visible 40dp pill.
+ */
+
+.md-button {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    align-self: flex-start;
+}
+
+.md-button:disabled {
+    opacity: 1; /* take over from Unity's default 0.5 dimming; colors below handle it */
+}
+
+.md-button__container {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    border-radius: var(--md-sys-shape-corner-full);
+    padding-left: 24px;
+    padding-right: 24px;
+    overflow: hidden;
+}
+
+/* Label: M3 label-large */
+.md-button__label {
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    letter-spacing: 0.1px;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Roboto-Medium.asset");
+}
+
+.md-button__icon {
+    font-size: 18px;
+    margin-right: 8px;
+}
+
+.md-button--with-icon .md-button__container {
+    padding-left: 16px;
+}
+
+/* ---- Variants ---- */
+
+.md-button--filled .md-button__container {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+.md-button--filled .md-state-layer {
+    background-color: var(--md-sys-color-on-primary);
+}
+
+.md-button--tonal .md-button__container {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+}
+.md-button--tonal .md-state-layer {
+    background-color: var(--md-sys-color-on-secondary-container);
+}
+
+.md-button--outlined .md-button__container {
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline);
+    color: var(--md-sys-color-primary);
+}
+.md-button--outlined .md-state-layer {
+    background-color: var(--md-sys-color-primary);
+}
+
+.md-button--text .md-button__container {
+    background-color: rgba(0, 0, 0, 0);
+    padding-left: 12px;
+    padding-right: 12px;
+    color: var(--md-sys-color-primary);
+}
+.md-button--text .md-state-layer {
+    background-color: var(--md-sys-color-primary);
+}
+
+/* ---- Interaction states ---- */
+
+.md-button:hover .md-state-layer {
+    opacity: var(--md-sys-state-hover-opacity);
+}
+.md-button:focus .md-state-layer {
+    opacity: var(--md-sys-state-focus-opacity);
+}
+.md-button:active .md-state-layer {
+    opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* ---- Disabled ---- */
+
+.md-button:disabled .md-button__container {
+    background-color: var(--md-sys-color-on-surface-disabled-container);
+    color: var(--md-sys-color-on-surface-disabled-content);
+}
+.md-button--outlined:disabled .md-button__container,
+.md-button--text:disabled .md-button__container {
+    background-color: rgba(0, 0, 0, 0);
+}
+.md-button--outlined:disabled .md-button__container {
+    border-color: var(--md-sys-color-on-surface-disabled-container);
+}

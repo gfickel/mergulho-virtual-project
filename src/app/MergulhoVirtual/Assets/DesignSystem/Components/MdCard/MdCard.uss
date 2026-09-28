@@ -1,0 +1,25 @@
+/* M3 card — https://m3.material.io/components/cards/specs
+ * Elevation is tone-based (surface-container colors), not shadow-based —
+ * see the note in _state.uss.
+ */
+
+.md-card {
+    border-radius: var(--md-sys-shape-corner-medium);
+    padding: 16px;
+    overflow: hidden;
+    color: var(--md-sys-color-on-surface);
+}
+
+.md-card--elevated {
+    background-color: var(--md-sys-color-surface-container-low);
+}
+
+.md-card--filled {
+    background-color: var(--md-sys-color-surface-container-highest);
+}
+
+.md-card--outlined {
+    background-color: var(--md-sys-color-surface);
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline-variant);
+}

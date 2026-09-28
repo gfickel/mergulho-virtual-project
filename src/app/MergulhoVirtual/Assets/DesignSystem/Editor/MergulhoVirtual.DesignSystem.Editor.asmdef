@@ -1,0 +1,19 @@
+{
+    "name": "MergulhoVirtual.DesignSystem.Editor",
+    "rootNamespace": "MergulhoVirtual.DesignSystem.Editor",
+    "references": [
+        "MergulhoVirtual.DesignSystem",
+        "MergulhoVirtual.DesignSystem.Gallery"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

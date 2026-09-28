@@ -1,0 +1,79 @@
+/* Type scale — Inter, retuned to the V2 design (DESIGN_IMPLEMENTATION.md §3.4 + Appendix A.2).
+ *
+ * Hand-maintained (unlike _colors-*.uss which are generated).
+ *
+ * WHY THIS DEVIATES FROM THE STOCK M3 SCALE
+ *  - The brand face is **Inter** (400/500/600/700), not Roboto. Roboto TTFs/assets are
+ *    still in Fonts/ as the stock-M3 reference face but nothing here points at them.
+ *  - V2 is set on an 11/12/13/14/15/16/18/20/24/26 px ladder; the M3 scale is
+ *    11/12/14/16/22/24/28/32/36/45/57. The `.md-typescale-*` class NAMES are kept
+ *    deliberately (one vocabulary, so every Md* component inherits the brand
+ *    automatically) and only their VALUES are retuned — see §3.4.
+ *  - Letter-spacing is 0 everywhere. M3's Roboto tracking is wrong for Inter and V2
+ *    specifies ls 0 on all but three strings. Those three are screen-level, not scale
+ *    level, and belong in the owning screen's USS:
+ *      · 0.5 on "Você está em" (Início location card) and the AR spec labels;
+ *      · 0.1 on the beach-selector name (Tela 9 header).
+ *
+ * UI Toolkit limitations, accepted deliberately:
+ *  - No `line-height` in USS. TextCore uses the font's own metrics; V2's fixed line
+ *    heights are approximated by Inter, not enforced (Appendix B).
+ *  - Font weight is a font asset, not a style property, so every weight is a separate
+ *    `-unity-font-definition`. It is declared on EVERY class (even the 400 ones) because
+ *    `-unity-font-definition` INHERITS — without it a body label nested inside a bold
+ *    title would silently render bold.
+ *
+ * V2 sizes with no class of their own (screen USS overrides the nearest class):
+ *   24/700 hero beach name (Tela 9) · 16/700 primary button · 16/600 SOS rows and the
+ *   beach-selector name · 13/700 small pill buttons · 10/600 micro tags.
+ */
+
+:root {
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Regular.asset");
+    font-size: 14px;
+    letter-spacing: 0;
+    color: var(--md-sys-color-on-surface);
+}
+
+/* Display — no V2 usage; kept at the M3 sizes so the scale stays complete. */
+.md-typescale-display-large  { font-size: 57px; letter-spacing: 0;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Regular.asset"); }
+.md-typescale-display-medium { font-size: 45px; letter-spacing: 0;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Regular.asset"); }
+.md-typescale-display-small  { font-size: 36px; letter-spacing: 0;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Regular.asset"); }
+
+/* Headline — headline-small is V2's hero beach name (26/700). The two above it have no
+ * V2 usage and keep the M3 steps so the ladder stays monotone. */
+.md-typescale-headline-large  { font-size: 32px; letter-spacing: 0;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset"); }
+.md-typescale-headline-medium { font-size: 28px; letter-spacing: 0;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset"); }
+.md-typescale-headline-small  { font-size: 26px; letter-spacing: 0;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset"); }
+
+/* Title — screen titles (20/700), section headers (18/700), card + form-section
+ * labels (15/700, V2's workhorse heading). */
+.md-typescale-title-large  { font-size: 20px; letter-spacing: 0;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset"); }
+.md-typescale-title-medium { font-size: 18px; letter-spacing: 0;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset"); }
+.md-typescale-title-small  { font-size: 15px; letter-spacing: 0;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset"); }
+
+/* Body — body copy, list rows and inputs (14/400) down to the smallest supporting copy. */
+.md-typescale-body-large  { font-size: 14px; letter-spacing: 0;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Regular.asset"); }
+.md-typescale-body-medium { font-size: 13px; letter-spacing: 0;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Regular.asset"); }
+.md-typescale-body-small  { font-size: 12px; letter-spacing: 0;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Regular.asset"); }
+
+/* Label — buttons and option cards (14/600), captions/stat labels/tags (12/600),
+ * bottom-nav labels and photo credits (11/600). */
+.md-typescale-label-large  { font-size: 14px; letter-spacing: 0;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-SemiBold.asset"); }
+.md-typescale-label-medium { font-size: 12px; letter-spacing: 0;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-SemiBold.asset"); }
+.md-typescale-label-small  { font-size: 11px; letter-spacing: 0;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-SemiBold.asset"); }

@@ -27,3 +27,8 @@ Thumbs.db
 
 # sea_detector tooling: exported ONNX (canonical copy lives in Assets/Resources/; .venv/ is ignored above)
 tools/sea_detector/mobileclip_image_encoder.onnx
+
+# Design-system tooling: downloaded source fonts + venv (re-downloadable, see tools/design_system/README.md)
+tools/design_system/.venv/
+tools/design_system/fonts_src/
+.figma-sync/

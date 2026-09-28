@@ -1,0 +1,24 @@
+/* M3 motion tokens — https://m3.material.io/styles/motion/easing-and-duration
+ * Durations consume as: transition-duration: var(--md-sys-motion-duration-short4);
+ *
+ * Easing caveat: USS supports only named easing keywords, not cubic-bezier().
+ * Nearest keywords to the M3 curves:
+ *   standard    ≈ ease-in-out-cubic
+ *   decelerate  ≈ ease-out-cubic
+ *   accelerate  ≈ ease-in-cubic
+ * Use the keyword directly in transition-timing-function.
+ */
+:root {
+    --md-sys-motion-duration-short1: 0.05s;
+    --md-sys-motion-duration-short2: 0.1s;
+    --md-sys-motion-duration-short3: 0.15s;
+    --md-sys-motion-duration-short4: 0.2s;
+    --md-sys-motion-duration-medium1: 0.25s;
+    --md-sys-motion-duration-medium2: 0.3s;
+    --md-sys-motion-duration-medium3: 0.35s;
+    --md-sys-motion-duration-medium4: 0.4s;
+    --md-sys-motion-duration-long1: 0.45s;
+    --md-sys-motion-duration-long2: 0.5s;
+    --md-sys-motion-duration-long3: 0.55s;
+    --md-sys-motion-duration-long4: 0.6s;
+}

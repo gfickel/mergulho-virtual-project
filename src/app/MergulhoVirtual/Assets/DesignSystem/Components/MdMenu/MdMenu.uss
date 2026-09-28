@@ -1,0 +1,54 @@
+/* M3 menu — https://m3.material.io/components/menus/specs
+ * Geometry of the overlay layer / scrim / popup position is inline C# (works
+ * on themeless panels); everything visual lives here, token-only as always.
+ */
+
+.md-menu {
+    background-color: var(--md-sys-color-surface-container);
+    border-radius: var(--md-sys-shape-corner-extra-small);
+    padding-top: 8px;
+    padding-bottom: 8px;
+    max-height: 240px;
+}
+
+.md-menu__scroll {
+    flex-grow: 1;
+}
+
+.md-menu__item {
+    height: 48px;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 12px;
+    padding-right: 12px;
+    overflow: hidden;
+}
+
+.md-menu__item .md-state-layer {
+    background-color: var(--md-sys-color-on-surface);
+}
+.md-menu__item:hover .md-state-layer {
+    opacity: var(--md-sys-state-hover-opacity);
+}
+.md-menu__item:active .md-state-layer {
+    opacity: var(--md-sys-state-pressed-opacity);
+}
+
+.md-menu__item--selected {
+    background-color: var(--md-sys-color-secondary-container);
+}
+
+.md-menu__item-label {
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+    color: var(--md-sys-color-on-surface);
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Roboto-Regular.asset");
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.md-menu__item--selected .md-menu__item-label {
+    color: var(--md-sys-color-on-secondary-container);
+}

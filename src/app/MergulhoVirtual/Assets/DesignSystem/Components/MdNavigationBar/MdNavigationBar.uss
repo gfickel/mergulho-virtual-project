@@ -1,0 +1,77 @@
+/* M3 navigation bar — https://m3.material.io/components/navigation-bar/specs
+ * Container 80dp on surface-container; each destination = 64x32 active
+ * indicator pill (state-layer host) + label-medium label.
+ * Each __item is its own ≥48dp touch target (full column width x 80dp).
+ */
+
+.md-nav-bar {
+    flex-direction: row;
+    min-height: 80px;
+    background-color: var(--md-sys-color-surface-container);
+}
+
+.md-nav-bar__item {
+    flex-grow: 1;
+    flex-basis: 0;
+    align-items: center;
+    justify-content: center;
+    padding-top: 12px;
+    padding-bottom: 16px;
+}
+
+.md-nav-bar__indicator {
+    width: 64px;
+    height: 32px;
+    border-radius: var(--md-sys-shape-corner-full);
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition-property: background-color;
+    transition-duration: var(--md-sys-motion-duration-short2);
+}
+
+.md-nav-bar__indicator .md-state-layer {
+    background-color: var(--md-sys-color-on-surface);
+}
+
+.md-nav-bar__icon {
+    font-size: 24px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Label: M3 label-medium */
+.md-nav-bar__label {
+    margin-top: 4px;
+    padding: 0;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    color: var(--md-sys-color-on-surface-variant);
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Roboto-Medium.asset");
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ---- Active destination ---- */
+
+.md-nav-bar__item--active .md-nav-bar__indicator {
+    background-color: var(--md-sys-color-secondary-container);
+}
+.md-nav-bar__item--active .md-nav-bar__icon {
+    color: var(--md-sys-color-on-secondary-container);
+}
+.md-nav-bar__item--active .md-nav-bar__label {
+    color: var(--md-sys-color-on-surface);
+}
+
+/* ---- Interaction states ---- */
+
+.md-nav-bar__item:hover .md-state-layer {
+    opacity: var(--md-sys-state-hover-opacity);
+}
+.md-nav-bar__item:focus .md-state-layer {
+    opacity: var(--md-sys-state-focus-opacity);
+}
+.md-nav-bar__item:active .md-state-layer {
+    opacity: var(--md-sys-state-pressed-opacity);
+}

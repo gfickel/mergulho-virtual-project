@@ -1,0 +1,82 @@
+/* M3 icon button — https://m3.material.io/components/icon-buttons/specs */
+
+.md-icon-button {
+    width: 48px;
+    height: 48px;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.md-icon-button:disabled {
+    opacity: 1;
+}
+
+.md-icon-button__container {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--md-sys-shape-corner-full);
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* ---- Variants ---- */
+
+.md-icon-button--standard .md-icon-button__container {
+    color: var(--md-sys-color-on-surface-variant);
+}
+.md-icon-button--standard .md-state-layer {
+    background-color: var(--md-sys-color-on-surface-variant);
+}
+
+.md-icon-button--filled .md-icon-button__container {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+}
+.md-icon-button--filled .md-state-layer {
+    background-color: var(--md-sys-color-on-primary);
+}
+
+.md-icon-button--tonal .md-icon-button__container {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+}
+.md-icon-button--tonal .md-state-layer {
+    background-color: var(--md-sys-color-on-secondary-container);
+}
+
+.md-icon-button--outlined .md-icon-button__container {
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline);
+    color: var(--md-sys-color-on-surface-variant);
+}
+.md-icon-button--outlined .md-state-layer {
+    background-color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ---- Interaction states ---- */
+
+.md-icon-button:hover .md-state-layer {
+    opacity: var(--md-sys-state-hover-opacity);
+}
+.md-icon-button:focus .md-state-layer {
+    opacity: var(--md-sys-state-focus-opacity);
+}
+.md-icon-button:active .md-state-layer {
+    opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* ---- Disabled ---- */
+
+.md-icon-button:disabled .md-icon-button__container {
+    background-color: rgba(0, 0, 0, 0);
+    color: var(--md-sys-color-on-surface-disabled-content);
+}
+.md-icon-button--filled:disabled .md-icon-button__container,
+.md-icon-button--tonal:disabled .md-icon-button__container {
+    background-color: var(--md-sys-color-on-surface-disabled-container);
+}
+.md-icon-button--outlined:disabled .md-icon-button__container {
+    border-color: var(--md-sys-color-on-surface-disabled-container);
+}

@@ -1,0 +1,14 @@
+{
+    "name": "MergulhoVirtual.DesignSystem",
+    "rootNamespace": "MergulhoVirtual.DesignSystem",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

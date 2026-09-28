@@ -1,0 +1,102 @@
+/* M3 exposed dropdown menu — the field half; the popup is MdMenu.uss.
+ * Box mirrors the outlined MdTextField (56dp, outline border, floating label
+ * that masks the border with a surface background — same caveat: use on
+ * surface-colored screens).
+ */
+
+.md-dropdown {
+    flex-shrink: 0;
+}
+
+.md-dropdown:disabled {
+    opacity: 1; /* take over from Unity's default 0.5 dimming; colors below handle it */
+}
+
+.md-dropdown__field {
+    height: 56px;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 16px;
+    padding-right: 12px;
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline);
+    border-radius: var(--md-sys-shape-corner-extra-small);
+    overflow: hidden;
+}
+
+.md-dropdown--open .md-dropdown__field {
+    border-width: 2px;
+    border-color: var(--md-sys-color-primary);
+}
+
+.md-dropdown .md-state-layer {
+    background-color: var(--md-sys-color-on-surface);
+}
+.md-dropdown:hover .md-state-layer {
+    opacity: var(--md-sys-state-hover-opacity);
+}
+.md-dropdown:focus .md-state-layer {
+    opacity: var(--md-sys-state-focus-opacity);
+}
+.md-dropdown:active .md-state-layer {
+    opacity: var(--md-sys-state-pressed-opacity);
+}
+
+.md-dropdown__value {
+    flex-grow: 1;
+    flex-shrink: 1;
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+    color: var(--md-sys-color-on-surface);
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Roboto-Regular.asset");
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.md-dropdown__arrow {
+    font-size: 24px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-left: 8px;
+}
+
+/* ---- Floating label (same pattern as MdTextField outlined) ---- */
+
+.md-dropdown__label {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    translate: 0 -50%;
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+    color: var(--md-sys-color-on-surface-variant);
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Roboto-Regular.asset");
+    transition-property: top, translate, font-size, color;
+    transition-duration: var(--md-sys-motion-duration-short2);
+}
+
+.md-dropdown--floating .md-dropdown__label {
+    top: 0;
+    left: 12px;
+    font-size: 12px;
+    background-color: var(--md-sys-color-surface);
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+.md-dropdown--open .md-dropdown__label {
+    color: var(--md-sys-color-primary);
+}
+
+/* ---- Disabled ---- */
+
+.md-dropdown:disabled .md-dropdown__field {
+    border-color: var(--md-sys-color-on-surface-disabled-container);
+}
+.md-dropdown:disabled .md-dropdown__value,
+.md-dropdown:disabled .md-dropdown__label,
+.md-dropdown:disabled .md-dropdown__arrow {
+    color: var(--md-sys-color-on-surface-disabled-content);
+}

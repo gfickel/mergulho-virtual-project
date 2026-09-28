@@ -1,0 +1,52 @@
+/* M3 snackbar — https://m3.material.io/components/snackbar/specs
+ * Inverse surface, so it reads over any screen in either theme. Bottom-docked
+ * holder geometry is inline C# (works on themeless panels, same convention as
+ * MdMenu); everything visual lives here.
+ */
+
+.md-snackbar {
+    flex-direction: row;
+    align-items: center;
+    min-height: 48px;
+    width: 100%;
+    max-width: 600px;
+    border-radius: var(--md-sys-shape-corner-extra-small);
+    background-color: var(--md-sys-color-inverse-surface);
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+/* With an action, the text button's own 12px label padding fills the gap. */
+.md-snackbar--with-action {
+    padding-right: 4px;
+}
+
+/* Label: M3 body-medium on inverse surface. */
+.md-snackbar__label {
+    margin: 0;
+    padding: 0;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    font-size: 14px;
+    letter-spacing: 0.25px;
+    color: var(--md-sys-color-inverse-on-surface);
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Roboto-Regular.asset");
+    white-space: normal;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+/* The action is an MdButton (text variant); recolor it for inverse surface.
+ * Same specificity as MdButton's own rules — this file is imported after
+ * MdButton.uss in both themes, so these win. */
+.md-snackbar__action {
+    align-self: center; /* MdButton defaults to flex-start */
+}
+
+.md-snackbar__action .md-button__container {
+    color: var(--md-sys-color-inverse-primary);
+}
+
+.md-snackbar__action .md-state-layer {
+    background-color: var(--md-sys-color-inverse-primary);
+}

@@ -1,0 +1,36 @@
+/* M3 modal bottom sheet — https://m3.material.io/components/bottom-sheets
+ * Geometry that must work on themeless test panels (docking, scrim fill)
+ * lives inline in MdBottomSheet.cs; everything visual lives here.
+ */
+
+.md-bottom-sheet__scrim {
+    background-color: var(--md-sys-color-scrim);
+    opacity: 0.32;
+}
+
+.md-bottom-sheet {
+    width: 100%;
+    max-width: 640px;
+    background-color: var(--md-sys-color-surface-container-low);
+    border-top-left-radius: var(--md-sys-shape-corner-extra-large);
+    border-top-right-radius: var(--md-sys-shape-corner-extra-large);
+}
+
+/* Drag handle: 32x4 pill, on-surface-variant at 40% opacity, its center
+ * 22dp below the top edge (spec). Visual-only until drag-to-dismiss lands. */
+.md-bottom-sheet__handle {
+    width: 32px;
+    height: 4px;
+    border-radius: var(--md-sys-shape-corner-full);
+    background-color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.4;
+    align-self: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.md-bottom-sheet__content {
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-bottom: 24px;
+}

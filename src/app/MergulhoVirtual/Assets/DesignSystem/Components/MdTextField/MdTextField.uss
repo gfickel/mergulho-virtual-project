@@ -1,0 +1,159 @@
+/* M3 text field — https://m3.material.io/components/text-fields/specs
+ * 56dp box; label floats when --floating (focused or non-empty). Focus is the
+ * C#-managed --focused class (no :focus-within in USS). The inner Unity
+ * TextField is stripped bare and restyled below.
+ *
+ * Outlined caveat: UI Toolkit can't notch the border stroke, so the floated
+ * label masks it with a surface-colored background — correct when the field
+ * sits on a surface-colored screen, visibly wrong on other surfaces (use the
+ * filled variant there).
+ */
+
+.md-text-field {
+    flex-shrink: 0;
+}
+
+.md-text-field:disabled {
+    opacity: 1; /* take over from Unity's default 0.5 dimming; colors below handle it */
+}
+
+.md-text-field__container {
+    height: 56px;
+    justify-content: center;
+}
+
+/* ---- Label ---- */
+
+.md-text-field__label {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    translate: 0 -50%;
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+    color: var(--md-sys-color-on-surface-variant);
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Roboto-Regular.asset");
+    transition-property: top, translate, font-size, color;
+    transition-duration: var(--md-sys-motion-duration-short2);
+}
+
+.md-text-field--focused .md-text-field__label {
+    color: var(--md-sys-color-primary);
+}
+
+/* ---- Inner Unity TextField, stripped bare ---- */
+
+.md-text-field__input {
+    margin: 0;
+    padding: 0;
+    flex-grow: 1;
+}
+
+.md-text-field .unity-base-text-field__input {
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    margin: 0;
+    padding-left: 16px;
+    padding-right: 16px;
+    font-size: 16px;
+    color: var(--md-sys-color-on-surface);
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Roboto-Regular.asset");
+}
+
+/* ---- Filled variant ---- */
+
+.md-text-field--filled .md-text-field__container {
+    background-color: var(--md-sys-color-surface-container-highest);
+    border-top-left-radius: var(--md-sys-shape-corner-extra-small);
+    border-top-right-radius: var(--md-sys-shape-corner-extra-small);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--md-sys-color-on-surface-variant);
+}
+
+.md-text-field--filled.md-text-field--focused .md-text-field__container {
+    border-bottom-width: 2px;
+    border-bottom-color: var(--md-sys-color-primary);
+}
+
+/* Input text sits below the floated label inside the filled box. */
+.md-text-field--filled .unity-base-text-field__input {
+    padding-top: 20px;
+    padding-bottom: 6px;
+}
+
+.md-text-field--filled.md-text-field--floating .md-text-field__label {
+    top: 8px;
+    translate: 0 0;
+    font-size: 12px;
+}
+
+/* ---- Outlined variant ---- */
+
+.md-text-field--outlined .md-text-field__container {
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline);
+    border-radius: var(--md-sys-shape-corner-extra-small);
+}
+
+.md-text-field--outlined.md-text-field--focused .md-text-field__container {
+    border-width: 2px;
+    border-color: var(--md-sys-color-primary);
+}
+
+/* Label floats onto the border, masking it with a surface background. */
+.md-text-field--outlined.md-text-field--floating .md-text-field__label {
+    top: 0;
+    left: 12px;
+    font-size: 12px;
+    background-color: var(--md-sys-color-surface);
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+/* ---- Supporting / error text ---- */
+
+.md-text-field__supporting {
+    margin-top: 4px;
+    margin-left: 16px;
+    margin-right: 16px;
+    padding: 0;
+    font-size: 12px;
+    color: var(--md-sys-color-on-surface-variant);
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Roboto-Regular.asset");
+    white-space: normal;
+}
+
+/* ---- Error state ---- */
+
+.md-text-field--error .md-text-field__label,
+.md-text-field--error.md-text-field--focused .md-text-field__label {
+    color: var(--md-sys-color-error);
+}
+.md-text-field--error .md-text-field__supporting {
+    color: var(--md-sys-color-error);
+}
+.md-text-field--error.md-text-field--filled .md-text-field__container,
+.md-text-field--error.md-text-field--filled.md-text-field--focused .md-text-field__container {
+    border-bottom-color: var(--md-sys-color-error);
+}
+.md-text-field--error.md-text-field--outlined .md-text-field__container,
+.md-text-field--error.md-text-field--outlined.md-text-field--focused .md-text-field__container {
+    border-color: var(--md-sys-color-error);
+}
+
+/* ---- Disabled ---- */
+
+.md-text-field:disabled .md-text-field__label,
+.md-text-field:disabled .md-text-field__supporting,
+.md-text-field:disabled .unity-base-text-field__input {
+    color: var(--md-sys-color-on-surface-disabled-content);
+}
+.md-text-field--filled:disabled .md-text-field__container {
+    background-color: var(--md-sys-color-on-surface-disabled-container);
+    border-bottom-color: var(--md-sys-color-on-surface-disabled-content);
+}
+.md-text-field--outlined:disabled .md-text-field__container {
+    border-color: var(--md-sys-color-on-surface-disabled-container);
+}

@@ -1,0 +1,46 @@
+/* Sparkline (tide curve) — custom Painter2D drawing, token-colored.
+ * Each layer element is painted with its own USS-resolved `color`
+ * (MdCircularProgress.Arc pattern); geometry lives in MdSparkline.cs.
+ */
+
+.md-sparkline {
+    min-height: 96px;
+}
+
+.md-sparkline__plot {
+    flex-grow: 1;
+}
+
+.md-sparkline__fill {
+    color: var(--md-sys-color-primary);
+    opacity: 0.15;
+}
+
+.md-sparkline__line {
+    color: var(--md-sys-color-primary);
+}
+
+.md-sparkline__baseline {
+    color: var(--md-sys-color-outline);
+    opacity: 0.6;
+}
+
+/* Extremum markers: high tide = tertiary, low tide = primary. */
+.md-sparkline__high-dots {
+    color: var(--md-sys-color-tertiary);
+}
+
+.md-sparkline__low-dots {
+    color: var(--md-sys-color-primary);
+}
+
+.md-sparkline__labels {
+    height: 16px;
+}
+
+.md-sparkline__label {
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    color: var(--md-sys-color-on-surface-variant);
+    -unity-text-align: lower-center;
+}

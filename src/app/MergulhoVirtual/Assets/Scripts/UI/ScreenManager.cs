@@ -6,6 +6,9 @@ public class ScreenManager : MonoBehaviour
     [SerializeField] private GameObject splashScreen;
     [SerializeField] private GameObject mainScreen;
     [SerializeField] private GameObject beachesScreen;
+    [Tooltip("UI Toolkit Beaches screen (Phase 3 strangler). When assigned and 'Use Ui Toolkit Beaches' is on, the Beaches tab shows this instead of the legacy uGUI screen.")]
+    [SerializeField] private GameObject beachesScreenUiToolkit;
+    [SerializeField] private bool useUiToolkitBeaches = true;
     [SerializeField] private GameObject animalsScreen;
     [SerializeField] private GameObject aboutScreen;
     [SerializeField] private GameObject registerScreen;
@@ -40,16 +43,21 @@ public class ScreenManager : MonoBehaviour
 
     public void ShowSplash()   => Show(splashScreen);
     public void ShowMain()     => Show(mainScreen);
-    public void ShowBeaches()  => Show(beachesScreen);
+    public void ShowBeaches()  => Show(ActiveBeachesScreen);
     public void ShowAnimals()  => Show(animalsScreen);
     public void ShowAbout()    => Show(aboutScreen);
     public void ShowRegister() => Show(registerScreen);
+
+    // Strangler toggle: prefer the UI Toolkit Beaches screen when wired + enabled.
+    GameObject ActiveBeachesScreen =>
+        useUiToolkitBeaches && beachesScreenUiToolkit != null ? beachesScreenUiToolkit : beachesScreen;
 
     void Show(GameObject target)
     {
         if (splashScreen   != null) splashScreen.SetActive(target == splashScreen);
         if (mainScreen     != null) mainScreen.SetActive(target == mainScreen);
         if (beachesScreen  != null) beachesScreen.SetActive(target == beachesScreen);
+        if (beachesScreenUiToolkit != null) beachesScreenUiToolkit.SetActive(target == beachesScreenUiToolkit);
         if (animalsScreen  != null) animalsScreen.SetActive(target == animalsScreen);
         if (aboutScreen    != null) aboutScreen.SetActive(target == aboutScreen);
         if (registerScreen != null) registerScreen.SetActive(target == registerScreen);

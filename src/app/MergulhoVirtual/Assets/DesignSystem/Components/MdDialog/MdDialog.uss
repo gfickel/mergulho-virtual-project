@@ -1,0 +1,62 @@
+/* M3 basic dialog — https://m3.material.io/components/dialogs/specs
+ * Geometry of the scrim / centering holder is inline C# (works on themeless
+ * panels, same convention as MdMenu); everything visual lives here.
+ * Elevation is tone-based (surface-container-high) — see the note in _state.uss.
+ */
+
+.md-dialog__scrim {
+    background-color: var(--md-sys-color-scrim);
+    opacity: 0.32;
+}
+
+.md-dialog {
+    min-width: 280px;
+    max-width: 560px;
+    border-radius: var(--md-sys-shape-corner-extra-large);
+    background-color: var(--md-sys-color-surface-container-high);
+    padding: 24px;
+}
+
+.md-dialog__icon {
+    font-size: 24px;
+    color: var(--md-sys-color-secondary);
+    align-self: center;
+    margin-bottom: 16px;
+}
+
+/* Headline: M3 headline-small */
+.md-dialog__headline {
+    margin: 0;
+    padding: 0;
+    font-size: 24px;
+    color: var(--md-sys-color-on-surface);
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Roboto-Regular.asset");
+    white-space: normal;
+    margin-bottom: 16px;
+}
+
+.md-dialog--with-icon .md-dialog__headline {
+    align-self: center;
+    -unity-text-align: upper-center;
+}
+
+/* Supporting text: M3 body-medium */
+.md-dialog__supporting {
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    letter-spacing: 0.25px;
+    color: var(--md-sys-color-on-surface-variant);
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Roboto-Regular.asset");
+    white-space: normal;
+}
+
+.md-dialog__actions {
+    flex-direction: row;
+    justify-content: flex-end;
+    margin-top: 24px;
+}
+
+.md-dialog__action {
+    margin-left: 8px;
+}

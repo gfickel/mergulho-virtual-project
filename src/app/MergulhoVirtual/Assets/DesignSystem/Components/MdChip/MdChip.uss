@@ -1,0 +1,91 @@
+/* M3 chips (assist + filter) — https://m3.material.io/components/chips/specs */
+
+.md-chip {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    align-self: flex-start;
+}
+
+.md-chip:disabled {
+    opacity: 1;
+}
+
+.md-chip__container {
+    flex-direction: row;
+    align-items: center;
+    height: 32px;
+    border-radius: var(--md-sys-shape-corner-small);
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline-variant);
+    padding-left: 16px;
+    padding-right: 16px;
+    overflow: hidden;
+    color: var(--md-sys-color-on-surface);
+}
+
+.md-chip--with-icon .md-chip__container {
+    padding-left: 8px;
+}
+
+.md-chip__icon {
+    font-size: 18px;
+    margin-right: 8px;
+    color: var(--md-sys-color-primary);
+}
+
+/* Label: M3 label-large */
+.md-chip__label {
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    letter-spacing: 0.1px;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Roboto-Medium.asset");
+}
+
+.md-chip .md-state-layer {
+    background-color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ---- Selected (filter) ---- */
+
+.md-chip--selected .md-chip__container {
+    background-color: var(--md-sys-color-secondary-container);
+    border-width: 0;
+    /* +1px padding compensates the removed border so the label doesn't shift */
+    padding-left: 9px;
+    padding-right: 17px;
+    color: var(--md-sys-color-on-secondary-container);
+}
+.md-chip--selected .md-chip__icon {
+    color: var(--md-sys-color-on-secondary-container);
+}
+.md-chip--selected .md-state-layer {
+    background-color: var(--md-sys-color-on-secondary-container);
+}
+
+/* ---- Interaction states ---- */
+
+.md-chip:hover .md-state-layer {
+    opacity: var(--md-sys-state-hover-opacity);
+}
+.md-chip:focus .md-state-layer {
+    opacity: var(--md-sys-state-focus-opacity);
+}
+.md-chip:active .md-state-layer {
+    opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* ---- Disabled ---- */
+
+.md-chip:disabled .md-chip__container {
+    border-color: var(--md-sys-color-on-surface-disabled-container);
+    color: var(--md-sys-color-on-surface-disabled-content);
+}
+.md-chip--selected:disabled .md-chip__container {
+    background-color: var(--md-sys-color-on-surface-disabled-container);
+}
+.md-chip:disabled .md-chip__icon {
+    color: var(--md-sys-color-on-surface-disabled-content);
+}

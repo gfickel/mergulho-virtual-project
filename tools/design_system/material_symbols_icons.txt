@@ -1,0 +1,103 @@
+# Icons included in the shipped MaterialSymbols subset font.
+# One icon name per line (names from MaterialSymbolsOutlined.codepoints).
+# After editing, rerun:  .venv/bin/python tools/design_system/subset_material_symbols.py
+# then regenerate font assets (make ds-setup).
+
+# Navigation / chrome
+arrow_back
+arrow_forward
+arrow_upward
+arrow_downward
+chevron_left
+chevron_right
+expand_more
+expand_less
+close
+menu
+more_vert
+more_horiz
+search
+home
+settings
+info
+help
+open_in_new
+link
+
+# Status / feedback
+check
+check_circle
+error
+warning
+cancel
+block
+refresh
+sync
+history
+schedule
+notifications
+wifi_off
+cloud_upload
+upload
+download
+
+# Actions
+add
+remove
+delete
+edit
+share
+send
+done
+tune
+filter_list
+sort
+list
+grid_view
+star
+favorite
+visibility
+visibility_off
+
+# Media / camera
+photo_camera
+add_a_photo
+image
+photo_library
+videocam
+play_arrow
+pause
+stop
+volume_up
+volume_off
+flip_camera_android
+
+# Location / map
+location_on
+my_location
+map
+explore
+near_me
+gps_fixed
+
+# Domain: sea / diving / AR
+waves
+water
+water_drop
+pool
+scuba_diving
+sailing
+surfing
+beach_access
+sunny
+dark_mode
+light_mode
+air
+thermostat
+view_in_ar
+3d_rotation
+pinch
+
+# Time / calendar
+calendar_month
+event

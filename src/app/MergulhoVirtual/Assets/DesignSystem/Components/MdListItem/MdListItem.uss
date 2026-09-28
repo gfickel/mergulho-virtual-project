@@ -1,0 +1,123 @@
+/* M3 list item — https://m3.material.io/components/lists/specs
+ * Heights: one-line 56dp, two-line 72dp, three-line 88dp.
+ * The root IS the touch target and the state-layer host (full-bleed row).
+ */
+
+.md-list-item {
+    flex-direction: row;
+    align-items: center;
+    padding-left: 16px;
+    padding-right: 16px;
+    min-height: 56px;
+}
+
+.md-list-item--two-line {
+    min-height: 72px;
+}
+
+.md-list-item--three-line {
+    min-height: 88px;
+    align-items: flex-start;
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.md-list-item:disabled {
+    opacity: 1; /* take over from Unity's default 0.5 dimming; colors below handle it */
+}
+
+.md-list-item .md-state-layer {
+    background-color: var(--md-sys-color-on-surface);
+}
+
+/* ---- Leading slot ---- */
+
+.md-list-item__leading-icon {
+    font-size: 24px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-right: 16px;
+}
+
+.md-list-item__leading-image {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--md-sys-shape-corner-small);
+    overflow: hidden;
+    margin-right: 16px;
+    flex-shrink: 0;
+}
+
+.md-list-item__leading-image-inner {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* ---- Content ---- */
+
+.md-list-item__content {
+    flex-grow: 1;
+    flex-shrink: 1;
+    justify-content: center;
+}
+
+/* Headline: M3 body-large */
+.md-list-item__headline {
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    color: var(--md-sys-color-on-surface);
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Roboto-Regular.asset");
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Supporting: M3 body-medium */
+.md-list-item__supporting {
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    letter-spacing: 0.25px;
+    color: var(--md-sys-color-on-surface-variant);
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Roboto-Regular.asset");
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.md-list-item--three-line .md-list-item__supporting {
+    white-space: normal;
+}
+
+/* ---- Trailing slot ---- */
+
+.md-list-item__trailing-icon {
+    font-size: 24px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-left: 16px;
+}
+
+/* ---- Interaction states ---- */
+
+.md-list-item:hover .md-state-layer {
+    opacity: var(--md-sys-state-hover-opacity);
+}
+.md-list-item:focus .md-state-layer {
+    opacity: var(--md-sys-state-focus-opacity);
+}
+.md-list-item:active .md-state-layer {
+    opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* ---- Disabled ---- */
+
+.md-list-item:disabled .md-list-item__headline,
+.md-list-item:disabled .md-list-item__supporting,
+.md-list-item:disabled .md-list-item__leading-icon,
+.md-list-item:disabled .md-list-item__trailing-icon {
+    color: var(--md-sys-color-on-surface-disabled-content);
+}

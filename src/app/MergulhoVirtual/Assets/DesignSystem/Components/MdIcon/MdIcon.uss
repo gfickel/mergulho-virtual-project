@@ -1,0 +1,7 @@
+.md-icon {
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/MaterialSymbols.asset");
+    font-size: 24px;
+    -unity-text-align: middle-center;
+    letter-spacing: 0;
+    flex-shrink: 0;
+}

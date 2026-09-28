@@ -1,0 +1,104 @@
+/* Gallery chrome — attached to the gallery root only, never part of the app
+ * theme. Uses tokens like everything else. */
+
+.gallery-root {
+    flex-grow: 1;
+    background-color: var(--md-sys-color-surface);
+}
+
+.gallery-header {
+    flex-direction: row;
+    align-items: center;
+    padding: 16px;
+}
+
+.gallery-title {
+    flex-grow: 1;
+}
+
+.gallery-scroll {
+    flex-grow: 1;
+}
+
+.gallery-section {
+    padding: 16px;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--md-sys-color-outline-variant);
+}
+
+.gallery-section__title {
+    color: var(--md-sys-color-primary);
+    margin-bottom: 4px;
+}
+
+.gallery-section__desc {
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: 12px;
+}
+
+.gallery-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.gallery-row > * {
+    margin-right: 12px;
+    margin-bottom: 12px;
+}
+
+.gallery-swatch {
+    width: 104px;
+}
+
+.gallery-swatch__color {
+    height: 48px;
+    border-radius: var(--md-sys-shape-corner-small);
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline-variant);
+}
+
+/* One rule per token shown in the Colors section (keep in sync with the roles
+ * list in GalleryController.BuildColorsSection). C# cannot read inherited :root
+ * variables via customStyle.TryGetValue, so USS applies the color and C# reads
+ * back resolvedStyle.backgroundColor for the hex label. */
+.gallery-swatch__color--primary { background-color: var(--md-sys-color-primary); }
+.gallery-swatch__color--on-primary { background-color: var(--md-sys-color-on-primary); }
+.gallery-swatch__color--primary-container { background-color: var(--md-sys-color-primary-container); }
+.gallery-swatch__color--on-primary-container { background-color: var(--md-sys-color-on-primary-container); }
+.gallery-swatch__color--secondary-container { background-color: var(--md-sys-color-secondary-container); }
+.gallery-swatch__color--on-secondary-container { background-color: var(--md-sys-color-on-secondary-container); }
+.gallery-swatch__color--tertiary-container { background-color: var(--md-sys-color-tertiary-container); }
+.gallery-swatch__color--on-tertiary-container { background-color: var(--md-sys-color-on-tertiary-container); }
+.gallery-swatch__color--surface { background-color: var(--md-sys-color-surface); }
+.gallery-swatch__color--on-surface { background-color: var(--md-sys-color-on-surface); }
+.gallery-swatch__color--surface-variant { background-color: var(--md-sys-color-surface-variant); }
+.gallery-swatch__color--on-surface-variant { background-color: var(--md-sys-color-on-surface-variant); }
+.gallery-swatch__color--surface-container-low { background-color: var(--md-sys-color-surface-container-low); }
+.gallery-swatch__color--surface-container { background-color: var(--md-sys-color-surface-container); }
+.gallery-swatch__color--surface-container-high { background-color: var(--md-sys-color-surface-container-high); }
+.gallery-swatch__color--outline { background-color: var(--md-sys-color-outline); }
+.gallery-swatch__color--outline-variant { background-color: var(--md-sys-color-outline-variant); }
+.gallery-swatch__color--error { background-color: var(--md-sys-color-error); }
+.gallery-swatch__color--error-container { background-color: var(--md-sys-color-error-container); }
+.gallery-swatch__color--inverse-surface { background-color: var(--md-sys-color-inverse-surface); }
+.gallery-swatch__color--inverse-primary { background-color: var(--md-sys-color-inverse-primary); }
+
+.gallery-swatch__name {
+    font-size: 10px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 0;
+    padding: 0;
+}
+
+.gallery-icon-cell {
+    width: 76px;
+    align-items: center;
+}
+
+.gallery-icon-cell__name {
+    font-size: 9px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 0;
+    padding: 0;
+}
