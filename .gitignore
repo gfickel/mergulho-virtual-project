@@ -32,3 +32,7 @@ tools/sea_detector/mobileclip_image_encoder.onnx
 tools/design_system/.venv/
 tools/design_system/fonts_src/
 .figma-sync/
+
+# Headless UI screenshots (make ds-shots) — 2x PNG renders of the UI Toolkit
+# screens + design-system gallery. Regenerated on demand, never committed.
+/.shots/
