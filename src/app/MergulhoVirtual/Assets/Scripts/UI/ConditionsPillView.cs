@@ -11,8 +11,6 @@ public class ConditionsPillView : MonoBehaviour
     [SerializeField] TMP_Text label;
     [SerializeField] ConditionsService conditions;
     [SerializeField] TideService tides;
-    [SerializeField] GPSHandler gps;
-    [SerializeField] BeachesScreenController beachesController;
 
     Button button;
 
@@ -88,13 +86,11 @@ public class ConditionsPillView : MonoBehaviour
         }
     }
 
-    void OnTap()
-    {
-        string beach = gps != null ? gps.CurrentPlaceName : null;
-        if (!string.IsNullOrEmpty(beach) && beachesController != null)
-        {
-            beachesController.ShowDetailFor(beach);
-        }
-        AppUiHost.NavigateTo(AppRoutes.Praias);
-    }
+    /// <summary>
+    /// Slice 6 note: this used to also drive the uGUI Beaches screen straight to the
+    /// tapped beach's detail panel. That screen is gone, and the Praias tab already
+    /// shows whatever beach GPS (or the override) resolved to, so the tap is now just
+    /// the navigation.
+    /// </summary>
+    void OnTap() => AppUiHost.NavigateTo(AppRoutes.Praias);
 }

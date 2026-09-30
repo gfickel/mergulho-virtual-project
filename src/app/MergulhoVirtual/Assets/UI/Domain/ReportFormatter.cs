@@ -26,7 +26,15 @@ namespace MergulhoVirtual.UI
 
         // ---- Status pill ----------------------------------------------------
 
-        public const string QueuedLabel = "Pendente";
+        /// <summary>
+        /// Uppercase because the Figma frame renders it that way. The spec's prose
+        /// writes it "Pendente" and the two disagree; the render wins. UI Toolkit
+        /// has no <c>text-transform</c> and the screen may not manufacture a string,
+        /// so the only place it can be cased is here — the same escape hatch
+        /// <see cref="SpeciesCardFormatter"/>'s spec labels use.
+        /// </summary>
+        public const string QueuedLabel = "PENDENTE";
+
         public const string RetryingLabel = "Tentando de novo";
         public const string OfflineLabel = "Sem conexão";
         public const string FailedLabel = "Falhou";
@@ -46,6 +54,15 @@ namespace MergulhoVirtual.UI
                 default: return QueuedLabel;
             }
         }
+
+        /// <summary>
+        /// Action on a row the backend rejected outright. Only a failed row offers
+        /// it: a queued or backing-off report is already going to be retried by the
+        /// queue, so a button there would promise something that is happening
+        /// anyway. Same words as the state views' action (<see cref="StateViewCopy.RetryAction"/>),
+        /// deliberately — it is the same promise.
+        /// </summary>
+        public const string RetryLabel = StateViewCopy.RetryAction;
 
         // ---- Row caption ----------------------------------------------------
 

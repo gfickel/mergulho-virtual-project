@@ -63,8 +63,8 @@ namespace MergulhoVirtual.UI.Tests
         [Test]
         public void TideNow()
         {
-            Assert.That(BeachContentFormatter.TideNow(Tide(rising: true)), Is.EqualTo("1.4 m · subindo"));
-            Assert.That(BeachContentFormatter.TideNow(Tide()), Is.EqualTo("1.4 m · descendo"));
+            Assert.That(BeachContentFormatter.TideNow(Tide(rising: true)), Is.EqualTo("1.4 m ·\u00A0subindo"));
+            Assert.That(BeachContentFormatter.TideNow(Tide()), Is.EqualTo("1.4 m ·\u00A0descendo"));
             Assert.That(BeachContentFormatter.TideNow(default), Is.EqualTo("—"));
         }
 

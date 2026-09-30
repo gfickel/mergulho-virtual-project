@@ -2,8 +2,8 @@
 """Subset the Material Symbols variable font to the icons the app actually uses.
 
 Reads the icon list from material_symbols_icons.txt, resolves codepoints from
-the official .codepoints file, pins the variable axes to the outlined default
-(FILL=0, GRAD=0, opsz=24, wght=400), and writes:
+the official .codepoints file, pins the variable axes (FILL=1, GRAD=0, opsz=24,
+wght=400 — see AXIS_PINS), and writes:
 
   - Assets/DesignSystem/Fonts/MaterialSymbols.ttf   (the shipped subset font)
   - Assets/DesignSystem/Components/MdIcon/MdIconGlyphs.gen.cs  (name -> glyph map)
@@ -31,7 +31,38 @@ ICON_LIST = HERE / "material_symbols_icons.txt"
 OUT_FONT = REPO_ROOT / "src/app/MergulhoVirtual/Assets/DesignSystem/Fonts/MaterialSymbols.ttf"
 OUT_CS = REPO_ROOT / "src/app/MergulhoVirtual/Assets/DesignSystem/Components/MdIcon/MdIconGlyphs.gen.cs"
 
-AXIS_PINS = {"FILL": 0, "GRAD": 0, "opsz": 24, "wght": 400}
+# Variable-axis pins for the instance we ship. The source face is the *Outlined*
+# variable font, whose FILL axis (0..1) morphs each glyph between a hairline outline
+# and a SOLID mark — it is a fill toggle, not a different icon family, so there is
+# nothing else to download.
+#
+# FILL=1, NOT 0 — THIS WAS THE BUG, AND IT AFFECTED EVERY ICON IN THE APP
+#  The pin shipped at 0, so MdIcon rendered Material Symbols Outlined: thin wireframes.
+#  Every V2 glyph is a SOLID mark. Measured amber ink coverage inside the Home feature
+#  tiles was 8% / 8% / 13% against the design's 25% / 16% / 33% — a third to a half of
+#  the ink, on top of the marks reading 4-8dp smaller — so V2's bold amber badges came
+#  out as outlines. Same cause on the navigation bar. FILL=1 is the fix; it changes no
+#  codepoint and no advance width, so MdIconGlyphs.gen.cs and every layout are stable.
+#
+# THE OTHER THREE ARE DELIBERATE AND SHOULD NOT MOVE IN THE SAME CHANGE
+#  GRAD  0   grade, range -50..200: a fine stroke-emphasis trim. Near-irrelevant once
+#            the glyph is solid; leave it as the neutral value.
+#  opsz  24  optical size, range 20..48. Consumers render at 14-38dp and cluster on
+#            24, which this matches. Pinning 20 would thicken the small ones slightly.
+#  wght  400 weight, range 100..700. This is the SECOND lever on ink coverage. If the
+#            marks still read light after FILL=1 lands, raise this — but measure the
+#            FILL=1 result first, because changing both at once makes the result
+#            un-attributable.
+#
+# Remaining known gap, and it is NOT fixed here: Material Symbols draw on a 24-unit
+# grid inside an em box that carries padding V2's Figma vectors do not, so a glyph at
+# font-size N renders visibly smaller than N dp of mark. That is a per-consumer
+# `font-size` bump, not an axis pin.
+#
+# The instance keeps the source's name records ("Material Symbols Outlined") on
+# purpose: nothing resolves this face by family name — MdIcon.uss points at the
+# generated .asset path — and rewriting them would churn the font asset for no gain.
+AXIS_PINS = {"FILL": 1, "GRAD": 0, "opsz": 24, "wght": 400}
 
 
 def read_icons() -> list[str]:

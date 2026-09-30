@@ -317,7 +317,11 @@ namespace MergulhoVirtual.UI
             for (int i = 0; i < options.Count; i++)
             {
                 int index = i;
-                var row = new VisualElement { pickingMode = PickingMode.Ignore };
+                // Pickable, unlike every other row on this screen: the whole 52dp
+                // strip is the toggle. Only the 48dp box at the far right answered
+                // before, which on a 358dp row means the label — the part the thumb
+                // actually aims at — did nothing.
+                var row = new VisualElement();
                 row.AddToClassList("mv-report__behaviour-row");
                 // USS has no :last-child, so the divider is removed by a modifier.
                 if (i == options.Count - 1) row.AddToClassList("mv-report__behaviour-row--last");
@@ -334,6 +338,12 @@ namespace MergulhoVirtual.UI
                 };
                 behaviourBoxes.Add(box);
                 row.Add(box);
+
+                // Routed through the box rather than straight to the ViewModel, so a
+                // row tap and a box tap are the same single path. It cannot
+                // double-fire: MdCheckbox's own Clickable stops the pointer events at
+                // the box, so they never bubble up to this manipulator.
+                row.AddManipulator(new Clickable(box.Toggle));
 
                 card.Add(row);
             }
@@ -383,7 +393,8 @@ namespace MergulhoVirtual.UI
         /// </summary>
         VisualElement BuildIdentitySection()
         {
-            var section = MakeSection(ReportViewModel.IdentitySectionTitle);
+            var section = MakeSection(
+                ReportViewModel.IdentitySectionTitle, ReportViewModel.IdentitySectionOptionalNote);
 
             var name = MakeIdentityField(ReportViewModel.NamePlaceholder, "person");
             name.ValueChanged += value => vm.ReporterName = value;
@@ -522,6 +533,10 @@ namespace MergulhoVirtual.UI
         /// </summary>
         internal void SubmitForTests() => OnSubmit();
 
+        /// <summary>The repaint a retry tap triggers. EditMode has no panel, so the
+        /// tap itself is a ViewModel call and this is its other half.</summary>
+        internal void RenderPendingForTests() => RenderPending();
+
         void ScheduleExit()
         {
             CancelExit();
@@ -575,9 +590,14 @@ namespace MergulhoVirtual.UI
         /// by <see cref="ReportFormatter"/>; the screen only picks the pill's
         /// colour.
         /// </summary>
-        static VisualElement MakePendingCard(ReportPendingRow row)
+        VisualElement MakePendingCard(ReportPendingRow row)
         {
-            var card = new VisualElement { pickingMode = PickingMode.Ignore };
+            // Position (not Ignore) only when the card carries the retry button:
+            // an inert card must keep letting taps fall through to the scroll view.
+            var card = new VisualElement
+            {
+                pickingMode = row.CanRetry ? PickingMode.Position : PickingMode.Ignore,
+            };
             card.AddToClassList("mv-report__card");
             card.AddToClassList("mv-report__pending-card");
             if (row.State == SightingState.Failed)
@@ -604,6 +624,31 @@ namespace MergulhoVirtual.UI
             caption.AddToClassList("md-typescale-body-medium");
             caption.AddToClassList("mv-report__pending-caption");
             card.Add(caption);
+
+            // A permanently-failed report is otherwise a dead end: the queue will
+            // never touch it again and the user has no way to say "try again".
+            // Only Failed rows get this — the other three states are already being
+            // retried, so a button there would promise what is already happening.
+            if (row.CanRetry)
+            {
+                string id = row.Id;
+                // Outlined, not Text: `primary` in this palette is near-black navy,
+                // so a text button on a white card is indistinguishable from the
+                // caption above it. The border and the glyph make it an affordance.
+                var retry = new MdButton
+                {
+                    Variant = MdButtonVariant.Outlined,
+                    Icon = "refresh",
+                    Text = row.RetryText,
+                };
+                retry.AddToClassList("mv-report__pending-retry");
+                retry.Clicked += () =>
+                {
+                    vm.RetryPending(id);
+                    RenderPending();
+                };
+                card.Add(retry);
+            }
 
             return card;
         }
@@ -635,7 +680,26 @@ namespace MergulhoVirtual.UI
 
         /// <summary>Section = a 15/700 label over its content (§8.5: "each section
         /// V, gap 10, label Inter 700 15").</summary>
-        static VisualElement MakeSection(string title)
+        static VisualElement MakeSection(string title) => MakeSection(title, null);
+
+        /// <summary>
+        /// The same section shell with a second, quieter string after the heading —
+        /// V2's "Se identifique (opcional)".
+        ///
+        /// <para>In Figma that is ONE text node carrying mixed character styling: the
+        /// words in the heading role, the parenthetical in the muted body role. A UI
+        /// Toolkit Label has a single style, so it becomes two labels in a row. Both
+        /// strings still come from the ViewModel — the screen only decides where they
+        /// sit, which is the whole point of splitting it rather than leaving the
+        /// parenthetical to inherit 15/700 navy.</para>
+        ///
+        /// <para>Nothing here styles anything: the row's direction, its baseline
+        /// alignment, the gap and the note's muted colour are all
+        /// <c>.mv-report__section-heading</c> / <c>.mv-report__section-optional</c>
+        /// in the stylesheet. This method only decides which strings exist and where
+        /// they sit in the tree.</para>
+        /// </summary>
+        static VisualElement MakeSection(string title, string optionalNote)
         {
             var section = new VisualElement { pickingMode = PickingMode.Ignore };
             section.AddToClassList("mv-report__section");
@@ -643,7 +707,23 @@ namespace MergulhoVirtual.UI
             var heading = new Label(title) { pickingMode = PickingMode.Ignore };
             heading.AddToClassList("md-typescale-title-small");
             heading.AddToClassList("mv-report__section-title");
-            section.Add(heading);
+
+            if (string.IsNullOrEmpty(optionalNote))
+            {
+                section.Add(heading);
+                return section;
+            }
+
+            var row = new VisualElement { pickingMode = PickingMode.Ignore };
+            row.AddToClassList("mv-report__section-heading");
+            row.Add(heading);
+
+            var note = new Label(optionalNote) { pickingMode = PickingMode.Ignore };
+            note.AddToClassList("md-typescale-body-medium");
+            note.AddToClassList("mv-report__section-optional");
+            row.Add(note);
+
+            section.Add(row);
             return section;
         }
 

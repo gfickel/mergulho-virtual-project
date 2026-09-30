@@ -49,7 +49,7 @@ namespace MergulhoVirtual.UI.Tests
                 NextHighAtUtc = new DateTime(2000, 1, 6, 14, 40, 0, DateTimeKind.Utc),
                 NextHighM = 2.24f,
             };
-            Assert.That(ConditionsFormatter.Tide(t, Local), Is.EqualTo("subindo, próxima alta 14:40 (2.2 m)"));
+            Assert.That(ConditionsFormatter.Tide(t, Local), Is.EqualTo("subindo, próxima alta 14:40 (2.2\u00A0m)"));
         }
 
         [Test]
@@ -62,7 +62,7 @@ namespace MergulhoVirtual.UI.Tests
                 NextLowAtUtc = new DateTime(2000, 1, 6, 12, 5, 0, DateTimeKind.Utc),
                 NextLowM = 0.42f,
             };
-            Assert.That(ConditionsFormatter.Tide(t, Local), Is.EqualTo("descendo, próxima baixa 12:05 (0.4 m)"));
+            Assert.That(ConditionsFormatter.Tide(t, Local), Is.EqualTo("descendo, próxima baixa 12:05 (0.4\u00A0m)"));
         }
 
         [Test]

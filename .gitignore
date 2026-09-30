@@ -36,3 +36,39 @@ tools/design_system/fonts_src/
 # Headless UI screenshots (make ds-shots) — 2x PNG renders of the UI Toolkit
 # screens + design-system gallery. Regenerated on demand, never committed.
 /.shots/
+
+# The same screens re-rendered at each DesktopReviewMode device preset
+# (360x640 / 360x800 / 390x844 / 412x915 / 430x932), one subfolder per device —
+# responsive-layout checking. Same rule as .shots/: regenerated, never committed.
+/.shots-devices/
+
+# AR wave-drift simulation output (make ar-sim) — per-run CSV time series +
+# manifest.json. Regenerated on demand, never committed (same rule as .shots/).
+/.arsim/
+
+# Headless Android build output (make apk)
+Builds/
+src/app/MergulhoVirtual/Builds/
+
+# Sea-detector tooling (tools/sea_detector/) keeps its own venv and a local copy
+# of the exported ONNX encoder. The venv is 1.3 GB; the .onnx/.onnx.data pair is
+# 88 MB and is already shipped, LFS-tracked, at
+# Assets/Resources/mobileclip_image_encoder.onnx — this copy is regenerable with
+# export_mobileclip_onnx.py. Neither belongs in history (nor in LFS).
+tools/sea_detector/.venv/
+tools/sea_detector/*.onnx
+tools/sea_detector/*.onnx.data
+
+# Trello -> Jira migration run artifacts. tools/trello_to_jira.py is committed;
+# its inputs/outputs are not — the board dumps are 400 KB API snapshots that go
+# stale immediately, and the import state is one run's card-id -> MV-xx mapping.
+/trello-board.json
+tools/trello_board.json
+tools/jira_import_state.json
+
+# Device logcat captures pulled during on-beach debugging sessions.
+/logcat.txt
+
+# Cross-session Claude Code coordination scratch file (self-declared: not project
+# documentation).
+/claude_comm.md

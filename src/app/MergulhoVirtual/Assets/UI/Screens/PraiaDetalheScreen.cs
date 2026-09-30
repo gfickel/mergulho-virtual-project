@@ -91,14 +91,24 @@ namespace MergulhoVirtual.UI
         public event Action BackRequested;
 
         /// <summary>
-        /// Raised with an <see cref="AppRoutes"/> key for the two surfaces that
-        /// lead off this screen: the floating SOS button
-        /// (<see cref="AppRoutes.Sos"/>) and "Saiba mais sobre a espécie"
-        /// (<see cref="AppRoutes.Especie"/>). Neither route has a screen yet
-        /// (Slice 5 / Decision D1), and that is a deliberate no-op: MdRouter logs
-        /// one warning and leaves the screen exactly where it is.
+        /// Raised with an <see cref="AppRoutes"/> key for the floating SOS button
+        /// (<see cref="AppRoutes.Sos"/>). That route has no screen until Slice 5, and
+        /// that is a deliberate no-op: MdRouter logs one warning and leaves the screen
+        /// exactly where it is.
         /// </summary>
         public event Action<string> NavigationRequested;
+
+        /// <summary>
+        /// "Saiba mais sobre a espécie" was tapped, with the <b>species key</b> of the
+        /// currently selected chip (the AnimalDef asset name — a key, never a label).
+        ///
+        /// <para>A separate event from <see cref="NavigationRequested"/> precisely
+        /// because it carries a payload: a bare <see cref="AppRoutes.Especie"/> would
+        /// tell the host to open the species screen without saying which species. The
+        /// screen still knows nothing about navigation — it raises a key and the host
+        /// decides, which is the same contract as every other screen here.</para>
+        /// </summary>
+        public event Action<string> SpeciesRequested;
 
         public PraiaDetalheScreen(
             PraiasViewModel viewModel,
@@ -394,8 +404,15 @@ namespace MergulhoVirtual.UI
             name.AddToClassList("mv-praia__species-name");
             nameRow.Add(name);
             binomial = new Label { pickingMode = PickingMode.Ignore };
-            binomial.AddToClassList("md-typescale-body-small");
+            // body-medium italic, matching the AR species card and the Espécie page:
+            // a user reaches all three in one tap, and a scientific name that changes
+            // size and slant on the way reads as three different kinds of thing. The
+            // slant is set here rather than in USS because the stylesheet is not this
+            // change's to edit; TextCore synthesises it either way (the shipped Inter
+            // set has no italic face).
+            binomial.AddToClassList("md-typescale-body-medium");
             binomial.AddToClassList("mv-praia__species-binomial");
+            binomial.style.unityFontStyleAndWeight = FontStyle.Italic;
             nameRow.Add(binomial);
             cardContent.Add(nameRow);
 
@@ -407,13 +424,31 @@ namespace MergulhoVirtual.UI
             var learnMore = new Label(BeachDetailViewModel.SpeciesLearnMoreLabel) { focusable = true };
             learnMore.AddToClassList("md-typescale-label-large");
             learnMore.AddToClassList("mv-praia__species-link");
-            learnMore.AddManipulator(new Clickable(
-                () => NavigationRequested?.Invoke(AppRoutes.Especie)));
+            // The key is read at tap time, not captured at build time: this link is
+            // built once and the chip row re-selects underneath it.
+            learnMore.AddManipulator(new Clickable(OnLearnMoreClicked));
             cardContent.Add(learnMore);
 
             card.Add(cardContent);
             section.Add(card);
             return section;
+        }
+
+        /// <summary>
+        /// The link is only ever visible while a species is selected, so a null key
+        /// here would mean the card was rendered without one; raising nothing is then
+        /// the correct answer, and the host would have refused to navigate anyway.
+        ///
+        /// <para>Internal rather than private so the EditMode suite can pin the entry
+        /// point: a <c>Clickable</c> needs a panel and a synthetic pointer event, which
+        /// EditMode has neither of — the same reason the other screen suites express
+        /// taps as direct calls.</para>
+        /// </summary>
+        internal void OnLearnMoreClicked()
+        {
+            string key = vm.SelectedSpecies?.Key;
+            if (string.IsNullOrEmpty(key)) return;
+            SpeciesRequested?.Invoke(key);
         }
 
         void RenderSpecies()

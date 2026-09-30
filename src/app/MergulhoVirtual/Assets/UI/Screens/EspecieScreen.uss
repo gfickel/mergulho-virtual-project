@@ -1,0 +1,455 @@
+/* Espécie (species sub-screen) — Decision D1, DESIGN_IMPLEMENTATION.md §10.
+ *
+ * ⚠ NO FIGMA FRAME EXISTS FOR THIS SCREEN. The V2 frame inventory (§1.1) has no
+ * species page; D1 settled only that the Animais content becomes a sub-screen off
+ * the species cards. So unlike every other sheet here, nothing below is
+ * transcribed — it is DESIGNED against the language Praia detalhe established and
+ * needs a designer's review. Where a value had a precedent it was copied outright
+ * (24dp body gutters, 16dp side gutters, corner-extra-large cards, title-medium
+ * section headings, muted label-small credits at the foot) rather than re-decided.
+ *
+ * TOKENS ONLY: TokenDisciplineTests scans every .uss under Assets/UI exactly like
+ * the design-system components — a color literal (in a rule OR in a comment) or an
+ * undefined var() fails the suite. 1 USS px = 1 dp (§1.2).
+ *
+ * ONE TOKEN CHOICE WORTH THE PARAGRAPH: the 3D VIEWPORT uses the `camera-*`
+ * extension family, which _brand-*.uss introduces for the AR HUD. That family's
+ * real invariant is "this surface's backdrop is NOT the theme, so its colors are
+ * identical in light and dark", and the viewport qualifies: the turntable rig's
+ * clear colour is a fixed deep navy baked into a scene camera, so the element
+ * behind the render has to match it in both themes. `inverse-surface` would have
+ * flipped to a light grey in dark and framed a navy render in white.
+ *
+ * The VIDEO poster was in that family too and no longer is. A video frame is
+ * indeed whatever the clip shows — but the poster is only ever SEEN when there is
+ * no frame (idle, loading, failed, and the letterbox bars beside a paused reel),
+ * and in that state `camera-surface-dim` stacked up to 400dp of near-black on a
+ * light page, reading as broken media rather than as a card waiting to be played.
+ * It is an ordinary media well now, on the same surface as the species photo well
+ * on Praia detalhe, and the affordance over it is painted to suit. No new tokens
+ * were added.
+ *
+ * Accepted fidelity losses, same list as the other screens:
+ *  - No box-shadow (§3.6): every surface carries a 1px outline-variant border,
+ *    which is what separates it from the page.
+ *  - No `gap`: Figma-style gaps become margins, and "skip the first child" is a
+ *    modifier class added in code (USS has no :first-child).
+ *  - No italic face: the binomial's slant is TextCore's synthesised one, the same
+ *    as the AR card's.
+ *  - No text-transform: the three spec labels ship as SpeciesCardFormatter spells
+ *    them, exactly as they do on the AR card.
+ *  - Label padding/margin is zeroed app-wide in Tokens/_typography.uss, so every
+ *    margin below is one this file authored.
+ */
+
+.mv-especie {
+    flex-grow: 1;
+}
+
+/* Opaque page surface. The root above it stays transparent so the strip reserved
+ * for the navigation bar never paints over it or blocks its taps. The TOP
+ * safe-area inset is NOT padding here: the hero is full-bleed and takes it
+ * through MvHeroHeader.TopInset. */
+.mv-especie__content {
+    flex-grow: 1;
+    background-color: var(--md-sys-color-background);
+}
+
+.mv-especie__scroll {
+    flex-grow: 1;
+}
+
+/* ---- Hero (240dp — MvHeroHeader's compact variant; see the screen's remarks) ---- */
+
+/* Painted behind the photo so a species with no image gets a deliberate surface
+ * plus a glyph rather than an empty frame. */
+.mv-especie__hero-placeholder {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--md-sys-color-surface-container-highest);
+}
+
+.mv-especie__hero-placeholder-icon {
+    font-size: 56px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ---- Body ---- */
+
+.mv-especie__body {
+    /* Scroll content sizes to its children; without this the body is a shrinkable
+     * flex child and a short viewport compresses the cards instead of scrolling. */
+    flex-shrink: 0;
+    padding-top: 24px;
+    padding-left: 16px;
+    padding-right: 16px;
+    /* Praia detalhe keeps 72 for its floating SOS pill; there is no floating
+     * control here, so this is breathing room only — the navigation bar's own
+     * clearance is the shell's padding on the root. */
+    padding-bottom: 40px;
+}
+
+.mv-especie__body > * {
+    margin-bottom: 24px;
+}
+
+/* Shared card language: white surface, 1px border, radius 24. */
+.mv-especie__card {
+    background-color: var(--md-sys-color-surface);
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-extra-large);
+}
+
+/* ---- Title ---- */
+
+.mv-especie__title-row {
+    flex-direction: column;
+    padding-top: 4px;
+}
+
+/* title-large is the 20px rung; the beach name on Praia detalhe is bumped to 24
+ * locally and the species name is the same kind of page title, so it matches. */
+.mv-especie__title {
+    font-size: 24px;
+    white-space: normal;
+    color: var(--md-sys-color-primary);
+}
+
+/* body-medium metrics at V2's 500 face, italic — the convention for a scientific
+ * name, and what the AR species card already does. */
+.mv-especie__binomial {
+    margin-top: 2px;
+    white-space: normal;
+    color: var(--md-sys-color-on-surface-variant);
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Medium.asset");
+    -unity-font-style: italic;
+}
+
+/* ---- Description ---- */
+
+.mv-especie__about {
+    padding: 20px;
+}
+
+.mv-especie__description {
+    white-space: normal;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ---- Spec rows (label left, value right) ----
+ * The AR card's three rows on a light card. No heading: the labels are the
+ * content, the same call Praia detalhe's stats card makes. */
+
+.mv-especie__specs {
+    padding: 20px;
+}
+
+/* flex-start rather than centre: identical for one-line rows, and it keeps the
+ * label on the first line when a long value wraps. */
+.mv-especie__spec {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.mv-especie__spec--gutter {
+    margin-top: 12px;
+}
+
+/* label-medium metrics (12/600) at V2's 700 face, with the design's one-off 0.5
+ * tracking on these particular labels (Appendix A.2). */
+.mv-especie__spec-label {
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+    color: var(--md-sys-color-primary);
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset");
+}
+
+.mv-especie__spec-value {
+    flex-shrink: 1;
+    margin-left: 12px;
+    white-space: normal;
+    -unity-text-align: upper-right;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ---- Sections (3D model / videos) ---- */
+
+.mv-especie__section {
+    flex-direction: column;
+    padding-top: 4px;
+}
+
+.mv-especie__section-title {
+    margin-bottom: 12px;
+    white-space: normal;
+    color: var(--md-sys-color-primary);
+}
+
+/* ---- 3D model ---- */
+
+.mv-especie__model-card {
+    overflow: hidden; /* so the viewport's top corners follow the card */
+}
+
+/* 260dp is a judgement call, not a transcription: the rig auto-frames the model
+ * against the camera's VERTICAL field of view (AnimalsScreenController.FitCameraToBounds,
+ * ported verbatim), so a taller viewport spends more of its pixels on the animal
+ * and less on empty water. Full card width at the 390dp design width is 358. */
+.mv-especie__viewport {
+    height: 260px;
+    flex-shrink: 0;
+    background-color: var(--md-sys-color-camera-surface-dim);
+}
+
+.mv-especie__model-image {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* Shown until the rig's first frame lands — see the screen's remarks. */
+.mv-especie__model-placeholder {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 0.15, authored 0.4 — linear-space correction, same rule as HomeScreen's card.
+ * The backdrop is opaque and known (`camera-surface-dim`, the viewport fill), and
+ * white at 0.4 rendered 0xAAAAAA there: a mid-grey glyph at 48px, far more present
+ * than the "nothing has arrived yet" it is standing in for. 0.15 renders 0x6C6D6E,
+ * which is what 0.4 means the way Figma blends. Pre-blending to that opaque value
+ * would be exact, but no token expresses it. */
+.mv-especie__model-placeholder-icon {
+    font-size: 48px;
+    color: var(--md-sys-color-on-camera-surface);
+    opacity: 0.15;
+}
+
+.mv-especie__model-hint {
+    flex-direction: row;
+    align-items: center;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.mv-especie__model-hint-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-right: 8px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-especie__model-hint-label {
+    flex-shrink: 1;
+    white-space: normal;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ---- Videos ---- */
+
+.mv-especie__videos {
+    flex-direction: column;
+}
+
+.mv-especie__video-card {
+    overflow: hidden; /* so the poster's top corners follow the card */
+}
+
+.mv-especie__video-card--gutter {
+    margin-top: 16px;
+}
+
+/* 200dp: the clips are vertical "reels", so ScaleToFit letterboxes them inside a
+ * landscape poster. A taller box would show more of a vertical clip and waste more
+ * on a landscape one; this is the compromise, and the one number here most worth a
+ * designer's opinion. */
+.mv-especie__video-media {
+    height: 200px;
+    flex-shrink: 0;
+    /* A media well, not a camera surface — the same role (and the same token) as
+     * .mv-praia__species-media, whose fill likewise shows only when there is no
+     * image. See the header note. */
+    background-color: var(--md-sys-color-surface-container-high);
+}
+
+.mv-especie__video-frame {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* Shown in every state but Playing: over the empty media well (idle / loading /
+ * failed) and over a paused frame. */
+.mv-especie__video-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+/* THE OVERLAY HAS TWO BACKDROPS, AND THAT IS WHAT `--over-frame` SETTLES.
+ *
+ * Three of the five states (idle / loading / failed) draw the overlay over the
+ * EMPTY MEDIA WELL, which is `surface-container-high` — a light grey. The other
+ * two (playing / paused) draw it over A DECODED VIDEO FRAME, which is arbitrary
+ * content nothing can predict. One set of colours cannot serve both: navy ink
+ * reads on the light well and disappears into dark footage; white ink reads on
+ * dark footage and disappears on the well.
+ *
+ * USS cannot tell those apart on its own — the difference is an inline `display`
+ * the screen writes on the frame — so `RenderVideoState` puts
+ * `mv-especie__video-overlay--over-frame` on the overlay exactly when a frame is
+ * on screen, and the three rules below flip together: the scrim comes up, and the
+ * glyph and its word turn white. That replaces the earlier inline
+ * `card.Scrim.style.opacity` juggling, which set the opacity of an element that
+ * (with the scrim's rule deleted) painted nothing at all.
+ *
+ * SCRIM ALPHA: 0.45, and this is the ONE alpha on the app side deliberately NOT
+ * run through the linear-space correction. That correction undoes an sRGB-dialect
+ * value transcribed from Figma over a known backdrop; this element has neither —
+ * the Espécie screen is a post-V2 addition with no Figma frame, and its backdrop
+ * is a video. So the number is chosen by function instead: over typical footage
+ * (luminance ~0.25) a 0.45 black veil leaves ~0.14, which puts white ink at about
+ * 5.6:1 — and while a clip actually runs the overlay's own 0.8 thins it to an
+ * effective 0.36, so the video reads through and the control still does not
+ * vanish. The scrim is a SIBLING behind the content rather than opacity on the
+ * overlay itself, because UI Toolkit inherits opacity down a subtree and dimming
+ * the container would dim the glyph with it. */
+.mv-especie__video-scrim {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--md-sys-color-scrim);
+    opacity: 0;
+}
+
+.mv-especie__video-overlay--over-frame .mv-especie__video-scrim {
+    opacity: 0.45;
+}
+
+/* Over the light media well (idle / loading / failed): navy on 0xE5E7EB, ~12:1.
+ * `on-camera-surface` used to be here and was correct only while the well was
+ * near-black — it would measure ~1.15:1 now. */
+.mv-especie__video-action-icon {
+    font-size: 44px;
+    color: var(--md-sys-color-primary);
+}
+
+.mv-especie__video-action-label {
+    margin-top: 4px;
+    color: var(--md-sys-color-primary);
+}
+
+/* Over a frame (playing / paused): white on the scrimmed video. `on-camera-surface`
+ * and not `on-primary`, for the same reason the AR HUD uses it — it is 0xFFFFFF in
+ * BOTH themes, and a veiled video frame is no more a themed surface than the
+ * camera is. `on-primary` would flip to 0x233145 in dark and put a dark glyph on
+ * dark footage. */
+.mv-especie__video-overlay--over-frame .mv-especie__video-action-icon,
+.mv-especie__video-overlay--over-frame .mv-especie__video-action-label {
+    color: var(--md-sys-color-on-camera-surface);
+}
+
+.mv-especie__video-spinner {
+    margin-bottom: 4px;
+}
+
+/* 14dp of touch over a 3dp rule — a 3dp seek target is unhittable with a thumb. */
+.mv-especie__video-track {
+    height: 14px;
+    flex-shrink: 0;
+    justify-content: center;
+}
+
+.mv-especie__video-bar {
+    height: 3px;
+    background-color: var(--md-sys-color-outline-variant);
+}
+
+.mv-especie__video-fill {
+    height: 3px;
+    width: 0;
+    background-color: var(--md-sys-color-secondary);
+}
+
+.mv-especie__video-footer {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 12px;
+    padding-bottom: 14px;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.mv-especie__video-title {
+    flex-shrink: 1;
+    white-space: normal;
+    color: var(--md-sys-color-primary);
+}
+
+.mv-especie__video-time {
+    flex-shrink: 0;
+    margin-left: 12px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* A failed stream is an ordinary state with an ordinary line, not a broken card —
+ * and on a Linux editor it is the ONLY state, since Unity cannot decode H.264
+ * there. */
+.mv-especie__video-error {
+    margin-top: -4px;
+    padding-bottom: 14px;
+    padding-left: 16px;
+    padding-right: 16px;
+    white-space: normal;
+    color: var(--md-sys-color-error);
+}
+
+/* ---- Credits ----
+ * No card and no heading: the same muted label-small treatment Praia detalhe gives
+ * the beach photo's credit, which is what keeps two lines of Sketchfab licence text
+ * from reading as content. A licence condition, though, not decoration — every
+ * shipped photo and model is CC-BY-SA or public domain. */
+
+/* No side padding: every card edge on every screen sits on the body's 16dp
+ * gutter, and 4 of indent put the credit lines alone at x 20.5. Praia detalhe's
+ * equivalent has none either. */
+.mv-especie__credits {
+    flex-direction: column;
+}
+
+/* No opacity. `on-surface-variant` measures 4.65:1 on the page and passes AA;
+ * the 0.8 that used to be here took it to 2.68:1, and this is a 14-line block of
+ * CC BY-SA attribution — a licence condition, and one that has to be readable. */
+.mv-especie__credit {
+    white-space: normal;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-especie__credit--gutter {
+    margin-top: 8px;
+}

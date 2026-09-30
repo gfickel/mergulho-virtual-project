@@ -48,6 +48,13 @@ namespace MergulhoVirtual.DesignSystem
     /// banned by TokenDisciplineTests. One token + one opacity on a layer under
     /// the label is the only way to get both.
     /// </para>
+    /// <para>
+    /// <b>The corner radius is set from code, not USS.</b> A tag is the one pill
+    /// in the library with no authored height — it is padding plus the label
+    /// face's line box — and a stadium requires a radius of exactly half the
+    /// height, which USS cannot compute. See <see cref="MdShape.KeepStadium"/>
+    /// and <c>Tokens/_shape.uss</c>; <c>corner-full</c> would draw a lens here.
+    /// </para>
     /// </summary>
     [UxmlElement]
     public partial class MvTag : VisualElement
@@ -122,6 +129,9 @@ namespace MergulhoVirtual.DesignSystem
 
             Add(surface);
             Add(_label);
+
+            // Height is content-driven, so the stadium radius has to follow it.
+            MdShape.KeepStadium(this);
         }
     }
 }

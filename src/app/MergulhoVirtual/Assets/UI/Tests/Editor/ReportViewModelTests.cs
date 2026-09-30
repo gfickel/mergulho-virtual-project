@@ -47,6 +47,20 @@ namespace MergulhoVirtual.UI.Tests
 
             public IReadOnlyList<SightingRecord> ListPending() => Pending;
             public IReadOnlyList<SightingRecord> ListFailed() => Failed;
+            /// <summary>Moves the record from Failed to Pending, like the real
+            /// adapter does, so a test can assert the row actually changed state.</summary>
+            public readonly List<string> Retried = new List<string>();
+            public bool Retry(string id)
+            {
+                Retried.Add(id);
+                var record = Failed.Find(r => r != null && r.Id == id);
+                if (record == null) return false;
+                Failed.Remove(record);
+                record.State = SightingState.Queued;
+                record.AttemptCount = 0;
+                Pending.Add(record);
+                return true;
+            }
         }
 
         sealed class FakePicker : IPhotoPicker
@@ -649,7 +663,7 @@ namespace MergulhoVirtual.UI.Tests
             var row = vm.PendingRows[0];
             Assert.That(row.Id, Is.EqualTo("abc"));
             Assert.That(row.TitleText, Is.EqualTo("Tubarão-limão"));
-            Assert.That(row.StatusText, Is.EqualTo("Pendente"));
+            Assert.That(row.StatusText, Is.EqualTo("PENDENTE"));
             Assert.That(row.CaptionText, Is.EqualTo("Hoje, 9:32 · Baía do Sueste"),
                 "the beach's pt-BR label, not the places.json key");
             Assert.That(row.PhotoPath, Is.EqualTo("/tmp/a.jpg"));
@@ -780,6 +794,82 @@ namespace MergulhoVirtual.UI.Tests
             vm.Dispose();
             Assert.That(reports.HasSubscribers, Is.False);
             Assert.DoesNotThrow(() => vm.Dispose(), "Dispose is idempotent");
+        }
+
+        // ---- Retrying a failed report ---------------------------------------
+
+        /// <summary>
+        /// Only a failed row offers a retry. Queued / retrying / offline rows are
+        /// already going to be tried again by the queue, so a button there would
+        /// promise what is happening anyway.
+        /// </summary>
+        [Test]
+        public void OnlyFailedRows_OfferARetry()
+        {
+            foreach (var state in new[]
+                     {
+                         SightingState.Queued, SightingState.Retrying, SightingState.WaitingForNetwork,
+                     })
+            {
+                reports.Pending.Clear();
+                reports.Failed.Clear();
+                reports.Pending.Add(new SightingRecord { Id = "p", WhenUtc = Now, State = state });
+                var open = NewVm();
+                Assert.That(open.PendingRows[0].CanRetry, Is.False, state.ToString());
+                open.Dispose();
+            }
+
+            reports.Pending.Clear();
+            reports.Failed.Clear();
+            reports.Failed.Add(new SightingRecord { Id = "f", WhenUtc = Now, State = SightingState.Failed });
+            var vm = NewVm();
+            Assert.That(vm.PendingRows[0].CanRetry, Is.True);
+            Assert.That(vm.PendingRows[0].RetryText, Is.EqualTo(ReportFormatter.RetryLabel));
+        }
+
+        [Test]
+        public void RetryPending_HandsTheRowIdToTheService_AndRebuildsTheFeed()
+        {
+            reports.Failed.Add(new SightingRecord
+            {
+                Id = "f1",
+                SpeciesLabel = "Tubarão-limão",
+                WhenUtc = Now,
+                State = SightingState.Failed,
+                AttemptCount = 3,
+            });
+            var vm = NewVm();
+            int changes = 0;
+            vm.Changed += () => changes++;
+
+            Assert.That(vm.RetryPending("f1"), Is.True);
+
+            Assert.That(reports.Retried, Is.EqualTo(new[] { "f1" }));
+            Assert.That(changes, Is.GreaterThanOrEqualTo(1), "the row must repaint in the same frame as the tap");
+            Assert.That(vm.PendingRows.Count, Is.EqualTo(1));
+            Assert.That(vm.PendingRows[0].State, Is.EqualTo(SightingState.Queued));
+            Assert.That(vm.PendingRows[0].CanRetry, Is.False, "it is queued now, not failed");
+            Assert.That(vm.PendingRows[0].StatusText, Is.EqualTo(ReportFormatter.QueuedLabel));
+        }
+
+        [Test]
+        public void RetryPending_WithAnUnknownId_ReportsFalseAndLeavesTheFeedAlone()
+        {
+            reports.Failed.Add(new SightingRecord { Id = "f1", WhenUtc = Now, State = SightingState.Failed });
+            var vm = NewVm();
+
+            Assert.That(vm.RetryPending("nope"), Is.False);
+            Assert.That(vm.PendingRows.Count, Is.EqualTo(1));
+            Assert.That(vm.PendingRows[0].State, Is.EqualTo(SightingState.Failed));
+        }
+
+        [Test]
+        public void RetryPending_WithNoService_IsASafeNoOp()
+        {
+            var vm = new ReportViewModel(species, null, picker, new FakeActiveBeach(), new FakeBeaches(),
+                utcNow: () => Now, toLocalTime: d => d);
+            Assert.That(vm.RetryPending("anything"), Is.False);
+            vm.Dispose();
         }
     }
 }

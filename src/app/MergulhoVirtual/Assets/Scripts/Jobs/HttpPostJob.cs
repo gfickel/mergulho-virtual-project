@@ -32,10 +32,22 @@ public class HttpPostJob : Job
             if (!string.IsNullOrEmpty(IdempotencyKeyHeader))
                 req.SetRequestHeader("Idempotency-Key", IdempotencyKeyHeader);
 
-            yield return req.SendWebRequest();
+            // Never a bare SendWebRequest(): with no timeout, a half-open socket
+            // holds the queue's single execution slot forever. See Job.Send.
+            var outcome = new RequestOutcome();
+            yield return Send(req, outcome);
+
+            if (outcome.Aborted)
+            {
+                LastError = "watchdog: " + outcome.Reason;
+                LastFailureWasNetwork = true;
+                setResult(JobResult.TransientFailure);
+                yield break;
+            }
 
             if (req.result == UnityWebRequest.Result.Success)
             {
+                LastFailureWasNetwork = false;
                 setResult(JobResult.Success);
                 yield break;
             }
@@ -44,10 +56,15 @@ public class HttpPostJob : Job
 
             if (req.result == UnityWebRequest.Result.ConnectionError)
             {
+                // The radio, not the server: the queue runs a gentler schedule for
+                // these and is allowed to pull the job forward when signal returns.
+                LastFailureWasNetwork = true;
                 setResult(JobResult.TransientFailure);
                 yield break;
             }
 
+            // A server answered, whatever it said, so the escalating schedule applies.
+            LastFailureWasNetwork = false;
             long code = req.responseCode;
             if (code >= 500 || code == 408 || code == 429 || code == 0)
                 setResult(JobResult.TransientFailure);

@@ -46,12 +46,26 @@ namespace MergulhoVirtual.UiShots
         /// <summary>Beach whose detail screen the "…-detail" subjects open.</summary>
         public const string DetailBeachName = "Praia do Sancho";
 
+        /// <summary>
+        /// Switches the conditions fixture to "nothing loaded and the fetch failed"
+        /// for the duration of one subject, so the error/offline states of §8.7 can
+        /// be shot. Set and cleared by the harness around a single capture; the
+        /// registry holds one instance per interface, so a per-subject flag is the
+        /// cheapest honest way to get two states out of one fake.
+        /// </summary>
+        public static bool ConditionsUnavailable;
+
+        /// <summary>Makes <see cref="IConnectivity"/> report no link, which is what
+        /// picks the offline variant over the generic error.</summary>
+        public static bool Offline;
+
         /// <summary>Every fake, keyed by the interface a constructor may ask for.</summary>
         public static readonly IReadOnlyDictionary<Type, object> Services =
             new Dictionary<Type, object>
             {
                 [typeof(IBeachCatalog)] = new FixedBeachCatalog(),
                 [typeof(IConditionsService)] = new FixedConditions(),
+            [typeof(IConnectivity)] = new FixedConnectivity(),
                 [typeof(ITideService)] = new FixedTides(),
                 [typeof(IBeachOverride)] = new NoopBeachOverride(),
                 [typeof(IOnboardingState)] = new FirstRunOnboarding(),
@@ -60,6 +74,10 @@ namespace MergulhoVirtual.UiShots
                 [typeof(IActiveBeach)] = new FixedActiveBeach(),
                 [typeof(ISightingReports)] = new FixedSightingReports(),
                 [typeof(IPhotoPicker)] = new FixedPhotoPicker(),
+                [typeof(IArSelection)] = new SilentArSelection(),
+                [typeof(ISpeciesModelViewer)] = new StandInModelViewer(),
+                [typeof(IVideoPlayback)] = new StandInVideoPlayback(),
+                [typeof(IArticleCatalog)] = new FileArticleCatalog(),
             };
 
         /// <summary>Beach photos really do come from Resources — they are committed assets, so still deterministic.</summary>
@@ -69,6 +87,17 @@ namespace MergulhoVirtual.UiShots
         /// <summary>Species photos, same deal — Resources/Animals is committed.</summary>
         public static Sprite LoadSpeciesSprite(string imageName) =>
             string.IsNullOrEmpty(imageName) ? null : Resources.Load<Sprite>("Animals/" + imageName);
+
+        /// <summary>
+        /// Article covers and inline figures. <b>No folder prefix</b>, unlike the two
+        /// above: an article authors a complete Resources path
+        /// ("Beaches/praia_do_sancho", "Animals/tiger_shark"), which is what lets one
+        /// article illustrate itself from several folders. Mirrors
+        /// <c>AppUiHost.LoadArticleSprite</c> — prefixing would make every figure in
+        /// every shot resolve to null and vanish with no warning.
+        /// </summary>
+        public static Sprite LoadArticleSprite(string resourcePath) =>
+            string.IsNullOrEmpty(resourcePath) ? null : Resources.Load<Sprite>(resourcePath);
 
         // ------------------------------------------------------------------
         // Catalog — the real places.json, read through the production adapter so
@@ -115,7 +144,7 @@ namespace MergulhoVirtual.UiShots
         // ------------------------------------------------------------------
         sealed class FixedConditions : IConditionsService
         {
-            public ConditionsData Current { get; } = new ConditionsData
+            static readonly ConditionsData Snapshot = new ConditionsData
             {
                 BeachName = DetailBeachName,
                 FetchedAtUtc = FixedNowUtc.AddMinutes(-8),
@@ -127,9 +156,22 @@ namespace MergulhoVirtual.UiShots
                 WindDirectionDeg = 105f,
             };
 
+            // Computed, not an initialiser, so the failure subjects can flip the
+            // whole registry's answer for the duration of one shot.
+            public ConditionsData Current => ConditionsUnavailable ? null : Snapshot;
+            public bool LastFetchFailed => ConditionsUnavailable;
+            public bool IsFetching => false;
+            public void Refresh() { }
+
 #pragma warning disable 67 // Never raised: the fixture is frozen by design.
             public event Action<ConditionsData> Changed;
 #pragma warning restore 67
+        }
+
+        /// <summary>Connectivity, switched by <see cref="Offline"/>.</summary>
+        sealed class FixedConnectivity : IConnectivity
+        {
+            public bool IsOnline => !Offline;
         }
 
         // ------------------------------------------------------------------
@@ -210,29 +252,119 @@ namespace MergulhoVirtual.UiShots
             }
         }
 
+        /// <summary>
+        /// The real AnimalDef assets, with one deliberate exception.
+        ///
+        /// <para><b>The AR species card's three spec rows are blank on every
+        /// shipped asset</b> (Decision D8 — a blank beats an invented fact), so
+        /// with the raw catalog the <c>mergulho-card</c> shot would show a card
+        /// with a name and nothing else, and the frame it exists to be compared
+        /// against would be unreviewable. <see cref="SpecFixtures"/> fills those
+        /// three fields for the ONE species Tela 8 itself draws, with the exact
+        /// strings the designer put in the frame — sample content from the design,
+        /// not marine biology invented here, and it never leaves this file.</para>
+        ///
+        /// <para>It fills blanks only, so the moment somebody authors the real
+        /// values on tiger_shark.asset the shot switches to them; and it names one
+        /// species only, so <c>mergulho</c> and every other screen still render the
+        /// honest, empty state. The same rule the beach-content fixture follows:
+        /// the harness must not hide what the app actually shows today.</para>
+        /// </summary>
         sealed class ResourcesSpeciesCatalog : ISpeciesCatalog
         {
+            /// <summary>key → (approximate size, diet, behaviour), verbatim from Tela 8 (31:3979).</summary>
+            static readonly Dictionary<string, (string Size, string Diet, string Behaviour)> SpecFixtures =
+                new Dictionary<string, (string, string, string)>(StringComparer.Ordinal)
+                {
+                    ["tiger_shark"] = ("3 a 4 metros", "Peixes, tartarugas e moluscos", "Solitário e noturno"),
+                };
+
             readonly global::UiServiceAdapters.SpeciesCatalogAdapter inner =
                 new global::UiServiceAdapters.SpeciesCatalogAdapter();
+
+            List<SpeciesInfo> cached;
+            Dictionary<string, SpeciesInfo> byKey;
 
             public IReadOnlyList<SpeciesInfo> Species
             {
                 get
                 {
-                    try { return inner.Species; }
-                    catch (Exception e)
-                    {
-                        Debug.LogWarning($"[ui-shots] Resources/Animals unavailable ({e.Message}).");
-                        return Array.Empty<SpeciesInfo>();
-                    }
+                    EnsureLoaded();
+                    return cached;
                 }
             }
 
             public SpeciesInfo Find(string key)
             {
-                try { return inner.Find(key); }
-                catch { return null; }
+                if (string.IsNullOrEmpty(key)) return null;
+                EnsureLoaded();
+                return byKey.TryGetValue(key, out var info) ? info : null;
             }
+
+            void EnsureLoaded()
+            {
+                if (cached != null) return;
+                cached = new List<SpeciesInfo>();
+                byKey = new Dictionary<string, SpeciesInfo>(StringComparer.Ordinal);
+
+                IReadOnlyList<SpeciesInfo> source;
+                try { source = inner.Species; }
+                catch (Exception e)
+                {
+                    Debug.LogWarning($"[ui-shots] Resources/Animals unavailable ({e.Message}).");
+                    return;
+                }
+
+                foreach (var real in source)
+                {
+                    if (real == null || string.IsNullOrEmpty(real.Key)) continue;
+                    // Copied rather than mutated: the adapter's instances are its
+                    // own cache, and a shot must not edit them.
+                    var info = new SpeciesInfo
+                    {
+                        Key = real.Key,
+                        DisplayName = real.DisplayName,
+                        Binomial = real.Binomial,
+                        ImageName = real.ImageName,
+                        Description = real.Description,
+                        ApproximateSize = real.ApproximateSize,
+                        Diet = real.Diet,
+                        Behaviour = real.Behaviour,
+                        // Espécie screen. Copying these is what makes the shot show the
+                        // real credits, the real clip list and the real "this species
+                        // has a model" flag — i.e. lemon_shark as the only one with a
+                        // video section. A field forgotten here silently deletes a
+                        // whole block from the PNG with no warning anywhere.
+                        PhotoCredit = real.PhotoCredit,
+                        ModelCredit = real.ModelCredit,
+                        HasModel = real.HasModel,
+                        Videos = real.Videos,
+                    };
+                    if (SpecFixtures.TryGetValue(info.Key, out var sample))
+                    {
+                        if (!info.HasApproximateSize) info.ApproximateSize = sample.Size;
+                        if (!info.HasDiet) info.Diet = sample.Diet;
+                        if (!info.HasBehaviour) info.Behaviour = sample.Behaviour;
+                    }
+                    cached.Add(info);
+                    byKey[info.Key] = info;
+                }
+            }
+        }
+
+        /// <summary>
+        /// No AR in batchmode: nothing raycasts, so nothing is ever selected. The
+        /// <c>mergulho-card</c> subject opens its card by calling
+        /// <c>MergulhoViewModel.ShowSpecies</c> directly, which is the same method
+        /// a real tap ends up in.
+        /// </summary>
+        sealed class SilentArSelection : IArSelection
+        {
+#pragma warning disable 67 // Never raised: there is no AR scene in a screenshot.
+            public event Action<string> SpeciesSelected;
+#pragma warning restore 67
+
+            public void SetListening(bool listening) { }
         }
 
         /// <summary>
@@ -290,6 +422,9 @@ namespace MergulhoVirtual.UiShots
             public IReadOnlyList<SightingRecord> ListPending() => pending;
             public IReadOnlyList<SightingRecord> ListFailed() => failed;
 
+            /// <summary>The shots never tap it; a frozen feed has nothing to move.</summary>
+            public bool Retry(string id) => false;
+
 #pragma warning disable 67 // Never raised: the fixture is frozen by design.
             public event Action Changed;
 #pragma warning restore 67
@@ -317,11 +452,183 @@ namespace MergulhoVirtual.UiShots
             }
         }
 
+        // ------------------------------------------------------------------
+        // Educational content — the REAL articles.json, read through the production
+        // adapter, for the same reason the beach-content fixture reads the real file:
+        // it is a committed generated artefact (so the shots stay deterministic) and
+        // it is what the screens actually render today. A fixture full of invented
+        // articles would hide both the block types nobody has authored yet and the
+        // ones that are there.
+        // ------------------------------------------------------------------
+        sealed class FileArticleCatalog : IArticleCatalog
+        {
+            readonly global::UiServiceAdapters.ArticleCatalogAdapter inner =
+                new global::UiServiceAdapters.ArticleCatalogAdapter();
+
+            public IReadOnlyList<ArticleSummary> All()
+            {
+                try { return inner.All(); }
+                catch (Exception e)
+                {
+                    Debug.LogWarning($"[ui-shots] articles.json unavailable ({e.Message}); rendering an empty index.");
+                    return Array.Empty<ArticleSummary>();
+                }
+            }
+
+            public Article Find(string id)
+            {
+                try { return inner.Find(id); }
+                catch (Exception e)
+                {
+                    Debug.LogWarning($"[ui-shots] articles.json unavailable ({e.Message}).");
+                    return null;
+                }
+            }
+
+            public bool IsAvailable
+            {
+                get
+                {
+                    try { return inner.IsAvailable; }
+                    catch { return false; }
+                }
+            }
+        }
+
         /// <summary>First run: the Início welcome card is showing (Tela 6).</summary>
         sealed class FirstRunOnboarding : IOnboardingState
         {
             public bool WelcomeDismissed => false;
             public void DismissWelcome() { }
+        }
+
+        // ------------------------------------------------------------------
+        // Espécie (Decision D1) — the 3D turntable and the video player.
+        //
+        // NEITHER CAN BE REAL HERE, and the shots have to say so honestly. The
+        // turntable is a scene-root rig in MainScene with its own camera and lights;
+        // the harness builds a throwaway panel in an empty edit-mode context, so there
+        // is no rig to render and nothing would make one appear short of loading the
+        // scene. The video player needs a decoder, and on a Linux editor Unity cannot
+        // decode H.264 at all (CLAUDE.md says so twice), so even with a player there
+        // would be no frame.
+        //
+        // Both fakes therefore report AVAILABLE and hand back a flat stand-in texture.
+        // That is deliberately more than "return null": it is what proves the two
+        // Image elements actually fill their boxes — absolute inset, StretchToFill on
+        // one and ScaleToFit on the other — which a null texture would leave
+        // unverified behind a placeholder. What the shots cannot show is whether a
+        // SHARK frames well in that box; that needs Play mode or a device, and it is
+        // called out in the handover.
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Stands in for the scene's <c>AnimalViewerRig</c>. Gestures are accepted and
+        /// dropped — there is nothing to rotate — and the "render target" is a fixed
+        /// vertical gradient in the rig's own deep-navy range, so the viewport reads as
+        /// a rendered surface rather than as a broken image.
+        /// </summary>
+        sealed class StandInModelViewer : ISpeciesModelViewer
+        {
+            Texture2D texture;
+
+            public bool IsAvailable => true;
+
+            public Texture Texture => texture ?? (texture = MakeGradient(
+                new Color(0.043f, 0.082f, 0.137f), new Color(0.094f, 0.161f, 0.239f)));
+
+#pragma warning disable 67 // Never raised: the stand-in texture never changes.
+            public event Action TextureChanged;
+#pragma warning restore 67
+
+            public bool Show(string speciesKey) => !string.IsNullOrEmpty(speciesKey);
+            public void Hide() { }
+            public void SetViewportSize(int widthPx, int heightPx) { }
+            public void Rotate(float pixelsX) { }
+            public void Zoom(float metres) { }
+        }
+
+        /// <summary>
+        /// Stands in for the <c>VideoPlayer</c>. It skips <see cref="VideoPlaybackState.Loading"/>
+        /// and goes straight to Playing with a fixed length, so a subject that calls
+        /// <c>ToggleVideo</c> renders the state that has the most in it to review — the
+        /// frame, the seek track at a real position and the clock — without a decoder
+        /// and without a clock that would make the PNG change every run.
+        /// </summary>
+        sealed class StandInVideoPlayback : IVideoPlayback
+        {
+            const double FixedDuration = 42d;
+
+            /// <summary>A third of the way in: far enough along that the filled part of
+            /// the track is unmistakably a fill and not a rounding artifact.</summary>
+            const double FixedPosition = 14d;
+
+            Texture2D texture;
+
+            public bool IsAvailable => true;
+            public string Url { get; private set; }
+            public VideoPlaybackState State { get; private set; } = VideoPlaybackState.Idle;
+
+            public Texture Texture => State == VideoPlaybackState.Idle
+                ? null
+                : texture ?? (texture = MakeGradient(
+                    new Color(0.055f, 0.145f, 0.184f), new Color(0.129f, 0.278f, 0.325f)));
+
+            public double PositionSeconds => State == VideoPlaybackState.Idle ? 0d : FixedPosition;
+            public double DurationSeconds => State == VideoPlaybackState.Idle ? 0d : FixedDuration;
+
+            public event Action Changed;
+
+            public void Play(string url)
+            {
+                if (string.IsNullOrWhiteSpace(url)) return;
+                Url = url;
+                State = VideoPlaybackState.Playing;
+                Changed?.Invoke();
+            }
+
+            public void Pause()
+            {
+                if (State != VideoPlaybackState.Playing) return;
+                State = VideoPlaybackState.Paused;
+                Changed?.Invoke();
+            }
+
+            public void Stop()
+            {
+                if (State == VideoPlaybackState.Idle && Url == null) return;
+                Url = null;
+                State = VideoPlaybackState.Idle;
+                Changed?.Invoke();
+            }
+
+            /// <summary>Frozen: the playhead must not move, or the PNG changes per run.</summary>
+            public void Seek(double seconds) { }
+        }
+
+        /// <summary>A 4x64 top-to-bottom gradient — stretched over a viewport, bilinear
+        /// filtering makes it a smooth one. Cheap, deterministic, and obviously not a
+        /// photograph.</summary>
+        static Texture2D MakeGradient(Color top, Color bottom)
+        {
+            const int width = 4;
+            const int height = 64;
+            var t = new Texture2D(width, height, TextureFormat.RGBA32, false)
+            {
+                name = "ui-shots stand-in",
+                wrapMode = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Bilinear,
+            };
+            var pixels = new Color[width * height];
+            for (int y = 0; y < height; y++)
+            {
+                // Row 0 is the BOTTOM of a Texture2D.
+                var color = Color.Lerp(bottom, top, y / (float)(height - 1));
+                for (int x = 0; x < width; x++) pixels[y * width + x] = color;
+            }
+            t.SetPixels(pixels);
+            t.Apply(false);
+            return t;
         }
     }
 }

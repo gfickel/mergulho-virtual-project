@@ -16,15 +16,21 @@
     flex-direction: row;
     align-items: center;
     height: 32px;
-    border-radius: var(--md-sys-shape-corner-small);
+    /* corner-extra-small IS the chip rung of the V2 shape scale (8dp, see
+     * Tokens/_shape.uss); corner-small is the 10dp icon-tile rung. */
+    border-radius: var(--md-sys-shape-corner-extra-small);
     border-width: 1px;
     border-color: var(--md-sys-color-outline-variant);
-    padding-left: 16px;
-    padding-right: 16px;
+    /* V2's chip inset is 12, not M3's 16 (Figma state layer: pad 6/12/6/12).
+     * Every inset below is authored as "visual inset minus the 1px border", so
+     * the border and the padding together add up to the transcribed number. */
+    padding-left: 12px;
+    padding-right: 12px;
     overflow: hidden;
     color: var(--md-sys-color-on-surface);
 }
 
+/* M3's leading-icon inset: 8 + the 1px border = 9dp of visual lead-in. */
 .md-chip--with-icon .md-chip__container {
     padding-left: 8px;
 }
@@ -48,21 +54,33 @@
     background-color: var(--md-sys-color-on-surface-variant);
 }
 
-/* ---- Selected (filter) ---- */
+/* ---- Selected ----
+ * Both kinds can be selected: a filter chip toggles itself, an assist chip is
+ * painted from the owning ViewModel (the Reportar species/size/behaviour rows).
+ * V2 fills a selected chip with the brand navy and sets the label in white —
+ * `primary` / `on-primary`, NOT the pale amber `secondary-container`. */
 
 .md-chip--selected .md-chip__container {
-    background-color: var(--md-sys-color-secondary-container);
+    background-color: var(--md-sys-color-primary);
     border-width: 0;
-    /* +1px padding compensates the removed border so the label doesn't shift */
+    /* +1px padding compensates the removed border so the label doesn't shift.
+     * This is the NO-ICON pair (12 + 1); the two-class rule below restores the
+     * leading-icon pair (8 + 1). Without that rule a selected chip with no icon
+     * — i.e. every selected assist chip, see MdChip.cs — would inherit the icon
+     * variant's 8dp lead-in and render visibly off-centre. */
+    padding-left: 13px;
+    padding-right: 13px;
+    color: var(--md-sys-color-on-primary);
+}
+/* (0,3,0) beats both single-modifier rules, so source order is irrelevant here. */
+.md-chip--selected.md-chip--with-icon .md-chip__container {
     padding-left: 9px;
-    padding-right: 17px;
-    color: var(--md-sys-color-on-secondary-container);
 }
 .md-chip--selected .md-chip__icon {
-    color: var(--md-sys-color-on-secondary-container);
+    color: var(--md-sys-color-on-primary);
 }
 .md-chip--selected .md-state-layer {
-    background-color: var(--md-sys-color-on-secondary-container);
+    background-color: var(--md-sys-color-on-primary);
 }
 
 /* ---- Interaction states ---- */

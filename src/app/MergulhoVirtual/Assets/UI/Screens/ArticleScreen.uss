@@ -1,0 +1,559 @@
+/* Conteúdo — the article reader.
+ *
+ * ⚠ NO FIGMA FRAME EXISTS FOR THIS SCREEN. V2 predates the educational-content
+ * feature, so nothing below is transcribed — it is DESIGNED against the language the
+ * other screens established and it wants a designer's review. Where a value had a
+ * precedent it was copied outright rather than re-decided: the compact 240dp hero and
+ * 16dp side gutters from Espécie, white `surface` cards with a 1px `outline-variant`
+ * border, title-medium section headings in `primary`, muted label-small credits, and
+ * MvAlertBar's 12/16 + corner-large + container/on-container tinting for the callouts.
+ *
+ * TOKENS ONLY: TokenDisciplineTests scans every .uss under Assets/UI as RAW TEXT, so a
+ * colour literal fails the suite even inside a comment — hex is written 0xRRGGBB here
+ * by house convention. 1 USS px = 1 dp (§1.2).
+ *
+ * THE ONE THING WORTH READING BEFORE EDITING: THE VERTICAL RHYTHM IS ORDER-DEPENDENT.
+ *   Every block carries `.mv-conteudo__block`, whose 20dp top margin is the default
+ *   rhythm. A heading needs MORE air above it than a paragraph does, so
+ *   `.mv-conteudo__heading--2/--3` override that margin — and both selectors are a
+ *   single class, i.e. the same specificity, so the override works ONLY because the
+ *   heading rules come LATER in this file. Moving the block rule below them silently
+ *   flattens every section break in the app's longest-form text.
+ *
+ * Accepted fidelity losses, the same list as every other screen:
+ *  - No box-shadow (§3.6): cards carry a 1px outline-variant border instead.
+ *  - No `line-height`: paragraph leading is Inter's own metrics (Appendix B). This is
+ *    the screen where that costs the most — it is the only long-form reading surface
+ *    in the app — and it is the number a designer would most want back.
+ *  - No `gap`: gaps are margins, and "skip the first child" is a modifier the screen
+ *    adds in code (USS has no :first-child).
+ *  - No `aspect-ratio`: figures are a fixed height — see .mv-conteudo__figure-media.
+ *  - No italic face: the quote's slant is TextCore's synthesised one, the same as the
+ *    binomial on Praia detalhe and Espécie.
+ *  - Label padding/margin is zeroed app-wide in Tokens/_typography.uss, so every
+ *    margin below is one this file authored.
+ */
+
+.mv-conteudo {
+    flex-grow: 1;
+}
+
+/* Opaque page surface. The root above it stays transparent so the navigation bar's
+ * reserved strip never paints over it or blocks its taps. The TOP safe-area inset is
+ * NOT padding here: the hero is full-bleed and takes it through MvHeroHeader.TopInset
+ * (and the no-hero nav row takes it as its own padding-top). */
+.mv-conteudo__content {
+    flex-grow: 1;
+    background-color: var(--md-sys-color-background);
+}
+
+.mv-conteudo__scroll {
+    flex-grow: 1;
+}
+
+/* ---- The two back affordances (exactly one is drawn) ---- */
+
+/* An article with no cover photo. The 48dp touch target sits on the body's 16dp
+ * gutter with MdIconButton's 40dp visual centred inside — the same trade
+ * MvHeroHeader documents for its floating button, so both arrows sit on one grid.
+ * `padding-top` is written from SetEdgeInsets, so nothing is authored here. */
+.mv-conteudo__nav-row {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    padding-left: 16px;
+    padding-bottom: 4px;
+}
+
+/* ---- Body ---- */
+
+.mv-conteudo__body {
+    /* Scroll content sizes to its children; without this the body is a shrinkable flex
+     * child and a short viewport compresses the text instead of scrolling it. */
+    flex-shrink: 0;
+    padding-top: 20px;
+    padding-left: 16px;
+    padding-right: 16px;
+    /* Breathing room only — the navigation bar's clearance is the shell's padding on
+     * the root. A little longer than Espécie's 40 because a reader who reaches the end
+     * of a long text wants the last line clear of the bar. */
+    padding-bottom: 48px;
+}
+
+/* Shared card language, same as every other screen: white surface, 1px border,
+ * radius 24. */
+.mv-conteudo__card {
+    background-color: var(--md-sys-color-surface);
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-extra-large);
+}
+
+/* ---- Header ---- */
+
+.mv-conteudo__header {
+    flex-direction: column;
+}
+
+.mv-conteudo__meta {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.mv-conteudo__meta-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-right: 6px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Shares a row with the glyph and is bounded by construction ("N min de leitura ·
+ * <categoria>"), so it is the house pattern for a label in a flex row: no shrink,
+ * no wrap. A category long enough to overflow would ellipsise, which is right — the
+ * reading estimate is the load-bearing half and the category is repeated as the
+ * heading on the index this page was opened from. */
+.mv-conteudo__meta-label {
+    flex-shrink: 0;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-conteudo__title {
+    white-space: normal;
+    color: var(--md-sys-color-primary);
+}
+
+/* The standfirst. body-large at `on-surface-variant` rather than the paragraph's
+ * `on-surface`: it is the teaser the index already showed, so it introduces the piece
+ * without competing with the first paragraph. */
+.mv-conteudo__summary {
+    margin-top: 10px;
+    white-space: normal;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-conteudo__updated {
+    margin-top: 12px;
+    white-space: normal;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* NO OPACITY, on this or on the figure credits below. A credit is a licence
+ * CONDITION, not decoration — the same rule that had to be applied to Praia
+ * detalhe's and Espécie's credit lines after they were dimmed to 0.8 and measured at
+ * 3.29:1 / 2.68:1. `on-surface-variant` on the page passes AA on its own. */
+.mv-conteudo__credit {
+    margin-top: 6px;
+    white-space: normal;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ---- Blocks ---- */
+
+.mv-conteudo__blocks {
+    flex-direction: column;
+}
+
+/* The default rhythm between two blocks. READ THE ORDER NOTE IN THE FILE HEADER
+ * before moving this rule: the heading overrides below depend on coming after it. */
+.mv-conteudo__block {
+    margin-top: 20px;
+}
+
+/* A section break wants clearly more air above it than between two paragraphs, and
+ * clearly less below (it belongs to what follows). UI Toolkit has no adjacent-sibling
+ * selector, so "less below" is expressed as the heading's own margin-bottom being 0
+ * and the following block keeping its 20 — which reads as 20dp under a heading and
+ * 32dp above one. */
+.mv-conteudo__heading {
+    white-space: normal;
+    color: var(--md-sys-color-primary);
+}
+
+.mv-conteudo__heading--2 {
+    margin-top: 32px;
+}
+
+.mv-conteudo__heading--3 {
+    margin-top: 24px;
+}
+
+/* The long-form reading text, and the only thing on the page at full `on-surface`
+ * contrast — everything else (standfirst, captions, credits, list rows' chrome) is
+ * `on-surface-variant` so the prose leads. */
+.mv-conteudo__paragraph {
+    white-space: normal;
+    color: var(--md-sys-color-on-surface);
+}
+
+/* ---- Bullet list ---- */
+
+.mv-conteudo__bullets {
+    flex-direction: column;
+}
+
+.mv-conteudo__bullet {
+    flex-direction: row;
+    /* flex-start, not center: a wrapping row must keep its marker on the FIRST line. */
+    align-items: flex-start;
+}
+
+.mv-conteudo__bullet--gutter {
+    margin-top: 8px;
+}
+
+/* 14dp of fixed hanging indent: the U+2022 glyph plus its optical gap, so every row's
+ * text starts on the same vertical, including wrapped lines. No shrink and no wrap —
+ * the house pattern for a label in a flex row beside a wrapping sibling. */
+.mv-conteudo__bullet-marker {
+    width: 14px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    color: var(--md-sys-color-secondary);
+}
+
+.mv-conteudo__bullet-text {
+    flex-shrink: 1;
+    white-space: normal;
+    color: var(--md-sys-color-on-surface);
+}
+
+/* ---- Numbered list (MvNumberedList in a card) ----
+ * The component is container-less by design — V2 puts its rows inside a white card
+ * the screen owns, exactly as Praia detalhe's "Dicas de convivência" does. */
+
+.mv-conteudo__numbered {
+    padding: 20px;
+}
+
+/* ---- Callout ----
+ * MvAlertBar's visual language (12/16 padding, corner-large, 1px same-role border,
+ * container fill, on-container ink) plus a tone-label row the component has no slot
+ * for. Tones map to the families the feature brief fixes; note `info` is `primary`
+ * here and NOT MvAlertBar's `info`, which is amber (secondary-container) because V2's
+ * one alert bar is the amber lifeguard notice. Four tones, four rules, three
+ * declarations each — the glyph and the label inherit `color` from the root. */
+
+.mv-conteudo__callout {
+    flex-direction: column;
+    padding: 12px 16px;
+    border-width: 1px;
+    border-radius: var(--md-sys-shape-corner-large);
+}
+
+.mv-conteudo__callout-head {
+    flex-direction: row;
+    align-items: center;
+}
+
+.mv-conteudo__callout-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-right: 8px;
+}
+
+/* No shrink, no wrap: it shares a row with the glyph and the four tone names are
+ * fixed, one-word strings ("Informação" is the longest at 11 characters). */
+.mv-conteudo__callout-tone {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.mv-conteudo__callout-text {
+    margin-top: 6px;
+    white-space: normal;
+}
+
+.mv-conteudo__callout--info {
+    background-color: var(--md-sys-color-primary-container);
+    border-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary-container);
+}
+
+.mv-conteudo__callout--warning {
+    background-color: var(--md-sys-color-warning-container);
+    border-color: var(--md-sys-color-warning);
+    color: var(--md-sys-color-on-warning-container);
+}
+
+.mv-conteudo__callout--success {
+    background-color: var(--md-sys-color-success-container);
+    border-color: var(--md-sys-color-success);
+    color: var(--md-sys-color-on-success-container);
+}
+
+.mv-conteudo__callout--error {
+    background-color: var(--md-sys-color-error-container);
+    border-color: var(--md-sys-color-error);
+    color: var(--md-sys-color-on-error-container);
+}
+
+/* ---- Quote ----
+ * No `format_quote` glyph: it is not in the icon subset (and adding one to a 95-glyph
+ * subset for a decorative mark is not worth the re-subset + font rebuild). A 4dp
+ * accent rule is the older, quieter convention anyway, and it is the only place on the
+ * page the amber `secondary` appears as a structural mark. */
+
+.mv-conteudo__quote {
+    flex-direction: column;
+    border-left-width: 4px;
+    border-left-color: var(--md-sys-color-secondary);
+    padding-left: 16px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.mv-conteudo__quote-text {
+    white-space: normal;
+    color: var(--md-sys-color-on-surface);
+    /* Synthesised by TextCore — the shipped Inter set has no italic face, same as the
+     * binomial on Praia detalhe and Espécie. */
+    -unity-font-style: italic;
+}
+
+.mv-conteudo__quote-author {
+    margin-top: 8px;
+    white-space: normal;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ---- Figure ---- */
+
+.mv-conteudo__figure {
+    flex-direction: column;
+}
+
+/* 200dp ≈ 16:9 at the 390dp design width (the content box is 358, and 358/16×9 =
+ * 201). UI Toolkit has no `aspect-ratio`, so the height is fixed and the ratio drifts
+ * with the viewport: 1.79:1 at 390dp, 1.64:1 at 360dp. Invisible, because the Image is
+ * ScaleAndCrop — a slightly taller box crops slightly less, it never letterboxes.
+ * `overflow: hidden` is what makes the photo's corners follow the rounded box. */
+.mv-conteudo__figure-media {
+    height: 200px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: var(--md-sys-shape-corner-large);
+    background-color: var(--md-sys-color-surface-container-high);
+}
+
+.mv-conteudo__figure-image {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.mv-conteudo__figure-caption {
+    margin-top: 8px;
+    white-space: normal;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ---- Cross-reference rows (species / beach) ---- */
+
+/* A card-shaped 48dp+ tap target. `min-height`, never `height`: the name and the label
+ * stack, and with `overflow: hidden` on the box a fixed height would CLIP the second
+ * line rather than grow — the MvOptionCard footgun, paid for once already. */
+.mv-conteudo__ref {
+    flex-direction: row;
+    align-items: center;
+    min-height: 64px;
+    padding: 12px 16px;
+    overflow: hidden; /* so the state layer follows the rounded corners */
+    background-color: var(--md-sys-color-surface);
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-large);
+}
+
+/* Consecutive references are the norm, not the exception — the tubarões article has
+ * five in a row — so they sit closer together than two unrelated blocks would. USS has
+ * no adjacent-sibling combinator, so "the one before me was also a reference" is a
+ * modifier the screen adds in code; it must come AFTER .mv-conteudo__block to win the
+ * specificity tie (see the file header). */
+.mv-conteudo__block--tight {
+    margin-top: 8px;
+}
+
+.mv-conteudo__ref-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+    margin-right: 12px;
+    color: var(--md-sys-color-secondary);
+}
+
+.mv-conteudo__ref-text {
+    flex-direction: column;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.mv-conteudo__ref-name {
+    white-space: normal;
+    color: var(--md-sys-color-primary);
+}
+
+.mv-conteudo__ref-label {
+    margin-top: 2px;
+    white-space: normal;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-conteudo__ref-chevron {
+    font-size: 24px;
+    flex-shrink: 0;
+    margin-left: 8px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-conteudo__ref .md-state-layer {
+    background-color: var(--md-sys-color-primary);
+}
+
+.mv-conteudo__ref:hover .md-state-layer {
+    opacity: var(--md-sys-state-hover-opacity);
+}
+
+.mv-conteudo__ref:focus .md-state-layer {
+    opacity: var(--md-sys-state-focus-opacity);
+}
+
+.mv-conteudo__ref:active .md-state-layer {
+    opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* ---- Video card ----
+ * The same card Espécie draws, and deliberately so: it is the same player, the same
+ * public bucket and the same failure mode, so a reader who meets a clip in an article
+ * and a clip on a species page must meet the same control. Every value below is
+ * copied from EspecieScreen.uss rather than re-decided; read the long notes there for
+ * why the scrim is a sibling, why the overlay stays up while playing, and why the
+ * poster is an ordinary media well rather than a camera surface. */
+
+.mv-conteudo__video-card {
+    overflow: hidden; /* so the poster's top corners follow the card */
+}
+
+.mv-conteudo__video-media {
+    height: 200px;
+    flex-shrink: 0;
+    background-color: var(--md-sys-color-surface-container-high);
+}
+
+.mv-conteudo__video-frame {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.mv-conteudo__video-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 0.45 over a decoded frame, 0 over the empty well. The one alpha here deliberately
+ * NOT run through the linear-space correction, for the reason EspecieScreen.uss gives
+ * at length: the correction undoes an sRGB value transcribed from a design over a
+ * known backdrop, and this element has neither — no Figma frame, and a video for a
+ * backdrop. Chosen by function instead (white ink lands around 5.6:1 over typical
+ * footage), and kept identical to the species card's so the two cannot drift. */
+.mv-conteudo__video-scrim {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--md-sys-color-scrim);
+    opacity: 0;
+}
+
+.mv-conteudo__video-overlay--over-frame .mv-conteudo__video-scrim {
+    opacity: 0.45;
+}
+
+.mv-conteudo__video-action-icon {
+    font-size: 44px;
+    color: var(--md-sys-color-primary);
+}
+
+.mv-conteudo__video-action-label {
+    margin-top: 4px;
+    color: var(--md-sys-color-primary);
+}
+
+/* Over a frame: white in BOTH themes, which is what `on-camera-surface` guarantees —
+ * a veiled video frame is no more a themed surface than the AR camera is, and
+ * `on-primary` would flip to a dark navy in dark theme and vanish into dark footage. */
+.mv-conteudo__video-overlay--over-frame .mv-conteudo__video-action-icon,
+.mv-conteudo__video-overlay--over-frame .mv-conteudo__video-action-label {
+    color: var(--md-sys-color-on-camera-surface);
+}
+
+.mv-conteudo__video-spinner {
+    margin-bottom: 4px;
+}
+
+/* 14dp of touch over a 3dp rule — a 3dp seek target is unhittable with a thumb. */
+.mv-conteudo__video-track {
+    height: 14px;
+    flex-shrink: 0;
+    justify-content: center;
+}
+
+.mv-conteudo__video-bar {
+    height: 3px;
+    background-color: var(--md-sys-color-outline-variant);
+}
+
+.mv-conteudo__video-fill {
+    height: 3px;
+    width: 0;
+    background-color: var(--md-sys-color-secondary);
+}
+
+.mv-conteudo__video-footer {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 12px;
+    padding-bottom: 14px;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.mv-conteudo__video-title {
+    flex-shrink: 1;
+    white-space: normal;
+    color: var(--md-sys-color-primary);
+}
+
+/* The clock is the load-bearing half of this row and never wraps; the caption beside
+ * it takes the flex. */
+.mv-conteudo__video-time {
+    flex-shrink: 0;
+    white-space: nowrap;
+    margin-left: 12px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* A failed stream is an ordinary state with an ordinary line, not a broken card — and
+ * on a Linux editor it is the ONLY state, since Unity cannot decode H.264 there. */
+.mv-conteudo__video-error {
+    margin-top: -4px;
+    padding-bottom: 14px;
+    padding-left: 16px;
+    padding-right: 16px;
+    white-space: normal;
+    color: var(--md-sys-color-error);
+}

@@ -11,7 +11,7 @@
  *   tab         64 wide, vertical, gap 4, centered
  *   active      56x32 pill, padding 4/16, radius 16, secondary (amber) fill,
  *               24dp icon tinted on-secondary (navy), label 600 11px white
- *   inactive    no pill, icon + label white at 50%, label 500 11px
+ *   inactive    no pill, icon + label white at 50%, label 600 11px
  *
  * The 34dp OS home-indicator strip under the row is SAFE-AREA PADDING APPLIED BY THE
  * HOST, not a drawn element (§1, Appendix B). That is why the bar declares
@@ -21,16 +21,31 @@
  *
  * WHY THE BASE RULES ARE THE *INACTIVE* LOOK
  *  USS has no `:not()`, so "inactive" cannot be selected directly. The base rules
- *  therefore describe the inactive destination and `--active` overrides it. This is
- *  also where `Inter-Medium.asset` (weight 500) earns its keep: V2's inactive labels
- *  are 500 while the shared `.md-typescale-label-small` class is 600, so the 500 face
- *  is applied here, on the inactive state only, and `--active` restores the 600 face.
- *  Sizes/tracking still match label-small (11px / ls 0) — same values, different face.
+ *  therefore describe the inactive destination and `--active` overrides it.
  *
- * WHITE AT 50% IS NOT A LITERAL
- *  `color: var(--md-sys-color-inverse-on-surface)` + `opacity: 0.5` (Appendix A.1 maps
- *  "white at 50%" to inverse-on-surface at 50%). `opacity` is a number, not a color,
- *  so TokenDisciplineTests stays green and a re-theme still moves it.
+ * INACTIVE LABEL WEIGHT IS 600 — AND THE FIGMA FILE DOES NOT AGREE WITH ITSELF
+ *  This used to be documented as settled ("V2's inactive labels are 500"). It is not.
+ *  4 of the 12 V2 frames draw the bar as 500 inactive / 600 active; the other 8 —
+ *  including every higher, i.e. newer, node id — draw BOTH states at 600 and let the
+ *  50%-strength ink carry the state on its own. Resolved in favour of **600**: the newer
+ *  frames win, it matches the shared `.md-typescale-label-small` class, and a single
+ *  face for both states means selecting a tab cannot re-measure the string. So the
+ *  only thing `--active` now changes about the label is its ink color. `Inter-Medium`
+ *  (500) is still in Fonts/ if the designer ever confirms the other reading; that is
+ *  a one-line change to the rule below.
+ *  Sizes/tracking match label-small (11px / ls 0) either way.
+ *
+ * "WHITE AT 50%" IS A PRE-BLENDED TOKEN, NOT AN opacity — AND THAT IS THE FIX
+ *  Appendix A.1 maps the inactive tab's "white at 50%" to inverse-on-surface at 50%,
+ *  and this used to author it as `color: var(--md-sys-color-inverse-on-surface)` plus
+ *  `opacity: 0.5`. That is correct arithmetic in Figma and wrong in Unity: the project
+ *  renders in LINEAR color space, so the blend happens after an sRGB->linear convert
+ *  and lands too light — measured (183,184,185) against the design's (127,130,136).
+ *  The inactive tabs read almost as bright as the active one, which is the entire
+ *  state distinction gone. The bar is an OPAQUE inverse-surface, so the composite is
+ *  knowable exactly and is authored as the token `inverse-on-surface-muted`
+ *  (Tokens/_brand-*.uss, per theme because both the ink and the bar flip). Active
+ *  therefore switches COLOR rather than opacity. Still no literal, still re-themeable.
  *
  * ONE DELIBERATE DEVIATION: THE PILL BOX IS UNCONDITIONAL
  *  V2's tabs are 41dp (inactive) and 49dp (active) tall, both centred in the 64dp row,
@@ -56,6 +71,12 @@
     padding-left: 24px;
     padding-right: 24px;
     background-color: var(--md-sys-color-inverse-surface);
+    /* DELIBERATE 1dp OVERSHOOT: this hairline sits outside the 98dp fill (64dp row +
+     * the host's 34dp safe-area padding), so the bar measures 99dp against V2's 98.
+     * Leave it. The 98 is a fill height and every content position inside it measured
+     * exact, so any change that recovers the dp has to move content off spec — and
+     * UI Toolkit has no box-shadow, which makes this border the project's accepted
+     * substitute for V2's shadowed bar edge. */
     border-top-width: 1px;
     border-top-color: var(--md-sys-color-primary);
 }
@@ -95,24 +116,34 @@
 
 .md-nav-bar__icon {
     font-size: 24px;
-    color: var(--md-sys-color-inverse-on-surface);
-    opacity: 0.5;
+    color: var(--md-sys-color-inverse-on-surface-muted);
 }
 
-/* Label — label-small metrics (11px / ls 0) at the 500 face (inactive).
- * `margin-top: 4px` is V2's `gap: 4`; USS has no `gap`.
- * Deliberately NOT clipped: V2 lets a long label ("Avistamentos", 72dp) overflow the
- * 64dp tab symmetrically rather than ellipsize it, and space-between leaves room. */
+/* Label — label-small metrics (11px / ls 0) at the 600 face (see the weight note
+ * in the header). `margin-top: 4px` is V2's `gap: 4`; USS has no `gap`.
+ *
+ * Deliberately NOT clipped: V2 lets a long label ("Avistamentos", ~71dp) overflow the
+ * 64dp tab symmetrically rather than ellipsize it, and space-between leaves room.
+ *
+ * `width: 100%` + `middle-center` IS THAT SYMMETRY, and it is not decoration. A flex
+ * child wider than its line is clamped to FLEX-START by Yoga rather than centred, so
+ * an auto-width label that outgrows its tab silently stops obeying the item's
+ * `align-items: center` — and "Avistamentos" is the only one of the four that does,
+ * which is why tab 4 alone rendered ~3.75dp left of its own icon. Pinning the box to
+ * the tab's 64dp and letting TextCore centre the string inside it puts the overhang
+ * on both sides. The other three labels fit, so centring inside 64dp is a no-op
+ * for them. */
 .md-nav-bar__label {
     margin-top: 4px;
     padding: 0;
     flex-shrink: 0;
+    width: 100%;
     font-size: 11px;
     letter-spacing: 0;
-    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Medium.asset");
-    color: var(--md-sys-color-inverse-on-surface);
-    opacity: 0.5;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-SemiBold.asset");
+    color: var(--md-sys-color-inverse-on-surface-muted);
     white-space: nowrap;
+    -unity-text-align: middle-center;
 }
 
 /* ---- Active destination ---- */
@@ -122,11 +153,14 @@
 }
 .md-nav-bar__item--active .md-nav-bar__icon {
     color: var(--md-sys-color-on-secondary);
-    opacity: 1;
 }
+/* Same 600 face as the base rule (restated so the pair is readable at a glance, and
+ * so flipping the inactive weight back to 500 stays a one-line change up there);
+ * the ink COLOR is what actually moves between the two states — see the header note
+ * on why this is a token swap and not an opacity. */
 .md-nav-bar__item--active .md-nav-bar__label {
     -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-SemiBold.asset");
-    opacity: 1;
+    color: var(--md-sys-color-inverse-on-surface);
 }
 /* Ripple on the amber pill must be the on-color, not white. */
 .md-nav-bar__item--active .md-state-layer {

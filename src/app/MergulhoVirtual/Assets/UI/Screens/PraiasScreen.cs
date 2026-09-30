@@ -306,7 +306,17 @@ namespace MergulhoVirtual.UI
             card.Add(captionLabel);
 
             value = new Label { pickingMode = PickingMode.Ignore };
-            value.AddToClassList("md-typescale-title-medium");
+            // 16/700, not V2's 18/700 (title-medium). The two cards split the row
+            // evenly, so the value box is 139dp at 390 and 124dp at 360, while
+            // "1.4 m · descendo" measures 147.4dp at 18 and 131.1dp at 16 — at the
+            // authored size the falling tide wrapped even at the 390 design width,
+            // and the rising one started wrapping at 360. One rung down fits both
+            // at 390 and the common (rising) string at 360, which is as far as type
+            // can carry this: 15/700 would clear 360 by 1.2dp, inside the error of
+            // the measurement. The remaining 360 falling-tide wrap is handled in
+            // BeachContentFormatter.TideNow, which binds the separator so it breaks
+            // as "1.4 m" / "· descendo" instead of stranding the dot.
+            value.AddToClassList("md-typescale-title-small-increased");
             value.AddToClassList("mv-praias__stat-value");
             card.Add(value);
             return card;

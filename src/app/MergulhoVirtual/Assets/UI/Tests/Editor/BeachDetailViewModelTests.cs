@@ -423,7 +423,7 @@ namespace MergulhoVirtual.UI.Tests
             Assert.That(vm.IdealTideText, Is.EqualTo("Baixa"));
             Assert.That(vm.IdealTideNextEventText, Is.EqualTo("próx. baixa 14:40"));
             Assert.That(vm.HasIdealTideNextEvent, Is.True);
-            Assert.That(vm.TideNowText, Is.EqualTo("1.4 m · descendo"));
+            Assert.That(vm.TideNowText, Is.EqualTo("1.4 m ·\u00A0descendo"));
         }
 
         [Test]

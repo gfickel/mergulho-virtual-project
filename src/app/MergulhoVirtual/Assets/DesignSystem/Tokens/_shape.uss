@@ -17,10 +17,36 @@
  *  corner-large          |   16     | 16  | list cards, alert bar, nav pill, stat cards
  *  corner-large-increased|   --     | 20  | feature cards, CTA, AR info card (added rung)
  *  corner-extra-large    |   28     | 24  | large content cards
- *  corner-full           |  1000    | 1000| pills (V2 writes 100/999)
+ *  corner-full           |  1000    | 1000| CIRCLES ONLY (see the warning below)
  *
- * "full" (pill) uses a large px value; UI Toolkit clamps radius to half the element's
- * smaller dimension, which yields the pill shape.
+ * WARNING: corner-full IS A CIRCLE TOKEN, NOT A PILL TOKEN.
+ *  Do not put it on anything whose width differs from its height.
+ *
+ *  CSS resolves an over-large border-radius by scaling ALL radii by one shared
+ *  factor f <= 1, which preserves the stadium shape. UI Toolkit does NOT: it
+ *  clamps each axis independently, rx = min(r, width/2) and ry = min(r, height/2).
+ *  So on a 295x42 element a 1000px radius resolves to rx=147.5, ry=21 -- a full
+ *  ELLIPSE (a lens), not a stadium. The token is only correct where width ==
+ *  height, where both clamps land on the same number and you get the circle.
+ *
+ *  A STADIUM THEREFORE NEEDS r == height/2 EXACTLY. Larger re-opens the ellipse
+ *  (rx keeps growing toward width/2); smaller is a plain rounded rect. Two ways
+ *  to get it, and the rule for choosing:
+ *
+ *   - Height is authored in USS (every pill in this library but one). Write the
+ *     literal half-height on the same rule as the height it halves:
+ *         height: 40px;  border-radius: 20px;
+ *     No runtime cost, still overridable by a screen stylesheet, and the pair is
+ *     pinned by ShapeDisciplineTests so it cannot silently drift apart.
+ *
+ *   - Height is driven by content -- font metrics, wrapping, OS font scale --
+ *     so it cannot be known at author time. Call MdShape.KeepStadium(element),
+ *     which re-pins the radius to half the RESOLVED height on every
+ *     GeometryChangedEvent. MvTag is the only current user: its height is
+ *     padding plus TextCore's line box for the label face.
+ *
+ *  ShapeDisciplineTests fails the build if corner-full appears on a rule that is
+ *  not a declared square, so a pill cannot quietly regress into a lens again.
  *
  * Components whose look shifts with this retune (intentional — the component restyle
  * slices re-point them where V2 disagrees):

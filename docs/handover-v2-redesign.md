@@ -9,15 +9,21 @@ gets built, in what order, against which Figma frames, with every number transcr
 document does not repeat it — it says where the work actually stands, how to run it, what is
 deliberately unfinished, and what to do next.
 
-Written 2026-09-28, against the working tree at that date. The test and screenshot numbers
-below come from `src/app/MergulhoVirtual/Logs/*.xml` and `.shots/manifest.json` from the last
-headless run; re-run them before trusting them.
+Written 2026-09-28; **revised 2026-09-29**, after Slice 6, the `MvStateView` half of Slice 5,
+and a Figma-fidelity + responsive pass that moved most of the design system. The test and
+screenshot numbers below come from `src/app/MergulhoVirtual/Logs/ds-test-*.xml` and
+`.shots/manifest.json` from the last headless run; re-run them before trusting them.
+
+**Nothing in any of it has been run on hardware.** Every green check in this document is an
+editor, batchmode or rendered-PNG check. §8 is the list of what that leaves unproven — and the
+2026-09-29 work put items *onto* that list as well as taking items off it.
 
 ---
 
 ## 1. Where things stand
 
-Four of the seven delivery slices are done (§7 of the plan carries the detail):
+Six of the seven delivery slices are done and the seventh is half done (§7 of the plan carries
+the detail):
 
 | Slice | State |
 |---|---|
@@ -25,22 +31,47 @@ Four of the seven delivery slices are done (§7 of the plan carries the detail):
 | **1 — Shell + Início** (`MdRouter`, nav bar, HomeScreen) | done |
 | **2 — Praias** (landing + Praia detalhe + 8 new components) | done; **content file is empty** |
 | **3 — Avistamentos** (Reportar form) | done **front-end only**; backend untouched |
-| **4 — Mergulho (AR HUD)** | not started |
-| **5 — SOS + states** | not started; **blocked** on real emergency numbers (Decision D3) |
-| **6 — Retire uGUI** | not started (partly pre-empted — see §4) |
+| **4 — Mergulho (AR HUD)** | done in the editor; **the on-device check it rests on is still owed** |
+| **5 — SOS + states** | **half done**: `MvStateView` built and wired (conditions card, failed sightings); **SOS not started**, blocked on real emergency numbers (Decision D3) |
+| **6 — Retire uGUI** | done 2026-09-29, **except `MainScreen`** — see §4 |
 
-Verified green, headless, editor closed:
+Verified green, headless, editor closed (2026-09-29, `Logs/ds-test-editmode.xml` +
+`Logs/ds-test-playmode.xml` + `.shots/manifest.json`):
 
 ```
-make ds-test        EditMode   402/402
-make ds-test-play   PlayMode    21/21
-make ds-shots                   78 PNGs written, 0 subjects skipped
+make ds-test        EditMode   683/683   (177 DesignSystem + 305 UI + 201 Assembly-CSharp-Editor)
+make ds-test-play   PlayMode    27/27
+make ds-shots                   98 PNGs at 390x844, 0 subjects skipped
+  + device presets              49 subjects x 5 widths -> .shots-devices/   (see §2)
 make ds-compile                 0 errors
 ```
 
+### The 2026-09-29 fidelity + responsive pass, and what it did to the risk picture
+
+Most of the day's work was an audit of the implementation against the Figma frames, plus the
+first render of every screen at five device widths. It is worth knowing as a *handover* fact
+rather than a changelog one, because it cuts both ways:
+
+**It removed risk.** The AR HUD's tap-passthrough bug was found and fixed *before* any device
+test — `ObjectInteraction` read `Pointer.current` with no UI check at all, so a tap on the
+species card, its ⨯, or a row of the open beach menu **also** fired the 0.2 m SphereCast behind
+it (the ⨯ could close the card and immediately re-open it). It now panel-picks via
+`RuntimePanelUtils.ScreenToPanel` + `panel.Pick` first (§8). Every screen was rendered at
+360×640, 360×800, 390×844, 412×915 and 430×932; **nothing overflowed or clipped at any width**
+and four 360 dp text-reflow defects were fixed (§6).
+
+**It added risk, and this is the part that matters here.** Unity renders in **linear colour
+space** (`ProjectSettings.asset` `m_ActiveColorSpace: 1`) while Figma blends in sRGB, so every
+alpha transcribed off a Figma layer was compositing too light. Correcting it changed how a
+number of overlays *look*, in places dramatically — the AR species card's hairlines and its ⨯
+disc are now much fainter, which is faithful to the design and is nonetheless a real change in
+feel that **no one has seen on a real screen, in daylight, over a live camera feed.** Separately
+the icon font was re-subset at `FILL: 1`, so **every icon in the app changed face** from
+outlined to solid. Both are now near the top of §8.
+
 ### Code-complete is not shippable here
 
-Four independent things stand between this and a release, and none of them is code:
+Five independent things stand between this and a release, and none of them is code:
 
 - **Beach content is blank.** `beaches_content.json` has **0 of 17** beaches with a risk level,
   best season, sighting peak, lifeguard hours or tips, and **3 of 17** with a species list.
@@ -50,11 +81,18 @@ Four independent things stand between this and a release, and none of them is co
   from `places.json` descriptions and the AR spawner list, not authored by anyone who knows
   the beaches. See §5.
 - **SOS is placeholder.** No screen exists and no real phone numbers exist. Decision D3 is
-  open and blocks Slice 5 outright.
-- **Two icon sites still render a stand-in** for an asset the designer owes (§7).
+  open and blocks the SOS half of Slice 5 outright (the `MvStateView` half shipped without it).
+- **Two icon sites still render a stand-in** for an asset the designer owes (§6), and
+  `MvStateView`'s illustration slot renders empty waiting for a second one (§9).
+- **Two of the five 3D models are licensed CC BY-NC.** `hammerhead` (Jer Bot / CC BY-NC) and
+  `reef_shark` (DigitalLife3D / CC BY-NC 4.0) — read the `modelCredit` field on each `.asset`.
+  Non-commercial is fine for a free public-good app and is a **licensing problem the moment the
+  app is distributed commercially**, in any store listing that charges or carries ads. Surfaced
+  on 2026-09-29 while normalising the credit lines; nobody has decided about it (§5, §9).
 - **Nothing has been run on a device.** Every green check above is an editor check. The AR
-  overlay, the safe-area insets, Inter at real DPI, and a real photo upload against production
-  App Check are all unverified. §8 has the checklist.
+  overlay, the safe-area insets, Inter at real DPI, the newly-filled icon face, the
+  colour-space-corrected overlays, and a real photo upload against production App Check are all
+  unverified. §8 has the checklist.
 
 ---
 
@@ -76,6 +114,16 @@ Only the Python targets (`make ds-tokens`, `make ds-icons`) are safe with the Ed
 | `make ds-tokens` | Regenerates `_colors-*.uss` from `tools/design_system/brand-theme.json`. Python; never hand-edit the generated files. |
 | `make ds-icons` | Re-subsets `MaterialSymbols.ttf` from `tools/design_system/material_symbols_icons.txt`. Python. |
 | `make ds-setup` | Font assets + PanelSettings + GalleryScene. Run after re-subsetting icons or adding a font. |
+
+**`ds-icons` before `ds-setup`, always.** `ds-icons` rewrites the TTF; `ds-setup` bakes the
+TextCore SDF font asset *from* that TTF. Run them the other way round and every render still
+shows the old glyphs, with nothing to tell you why. (This is exactly how the `FILL: 1` icon
+change lands — §6.) Both must precede any screenshot run.
+
+**`ds-setup` and `ds-shots` dirty the LFS-tracked font assets.** `Assets/DesignSystem/Fonts/*.asset`
+grow whenever a new glyph is rasterised into the SDF atlas, so they show up modified after a
+render you thought was read-only. They are regenerated output — commit them or discard them,
+but do not go looking for the edit that caused it.
 | `make ui-setup` | Runs `AppUiBuilder.BuildHeadless` — builds/rewires the `AppUI` GameObject, `AppPanelSettings`, and `ScreenManager`'s fields into `MainScene`. Idempotent. |
 | `make ds-test` | EditMode: token discipline + component structure + every ViewModel suite. |
 | `make ds-test-play` | PlayMode: pointer/interaction suites. |
@@ -128,9 +176,12 @@ Things to know:
   hidden window is 640×480), so the harness hands screens 47 dp top / 34 dp bottom explicitly.
   Override with `MV_SHOT_TOP_INSET` / `MV_SHOT_BOTTOM_INSET`. The fake status bar and home
   indicator the Figma frames draw are OS chrome and are deliberately not rendered.
-- **`.shots/` is never cleaned.** The 8 `beaches-*.png` files sitting there are from the
-  pre-Slice-2 `BeachesScreen` and are stale. Trust `manifest.json` (or the
-  `UI-SHOTS-SUMMARY written=N skipped=N` line the Makefile prints), not `ls | wc -l`.
+- **`.shots/` is never cleaned by the target.** Renamed or deleted subjects leave their old
+  PNGs behind forever, and a stale file looks exactly like a current one. Trust
+  `manifest.json` (or the `UI-SHOTS-SUMMARY written=N skipped=N` line the Makefile prints),
+  not `ls | wc -l`. The directory was wiped by hand on 2026-09-29 — the 8 stale
+  `beaches-*.png` from the pre-Slice-2 screen that this bullet used to warn about are gone —
+  so it is clean *now*, which is not the same as self-cleaning.
 
 **Adding a subject.** Nothing is required: any `IAppScreen` in the `MergulhoVirtual.UI`
 assembly that the table does not name gets a bare and a shell subject discovered automatically.
@@ -147,14 +198,56 @@ that interface, or every screen using it starts silently skipping. The fixtures 
 mirror rather than share the EditMode test fakes: the tests want *empty* data to assert the
 "—" fallbacks, the harness wants *plausible* data that exercises every row.
 
+### Rendering the device matrix — same harness, environment variables
+
+There is **no separate make target.** `UiScreenshotHarness` reads `MV_SHOT_WIDTH`,
+`MV_SHOT_HEIGHT`, `MV_SHOT_SCALE`, `MV_SHOT_TOP_INSET`, `MV_SHOT_BOTTOM_INSET`, `MV_SHOT_DIR`,
+`MV_SHOT_THEMES` and `MV_SHOT_FILTER`, so a device frame is one line:
+
+```bash
+MV_SHOT_WIDTH=360 MV_SHOT_HEIGHT=640 MV_SHOT_TOP_INSET=24 MV_SHOT_BOTTOM_INSET=0 \
+  MV_SHOT_THEMES=light MV_SHOT_DIR="$PWD/.shots-devices/android-360x640" make ds-shots
+```
+
+The five frames are the ones in **`DesktopReviewMode.Presets`**
+(`Assets/Scripts/UI/UiToolkit/DesktopReviewMode.cs`), so the exe, `.shots/` and this matrix
+agree on one list. Insets travel with the frame because they are a property of the device:
+
+| Preset | Frame | Insets | Stands for |
+|---|---|---|---|
+| `android-360x640` | 360 × 640 | 24 / 0 | small 16:9 — the stress test |
+| `android-360x800` | 360 × 800 | 24 / 0 | the common budget device |
+| `v2ref-390x844` | 390 × 844 | 47 / 34 | what everything was transcribed at |
+| `pixel-412x915` | 412 × 915 | 24 / 0 | Pixel 7/8 class |
+| `iphone-430x932` | 430 × 932 | 47 / 34 | the large-notch case |
+
+Output lands in **`.shots-devices/<preset>/`** (gitignored beside `.shots/`), light theme only,
+49 subjects each. The two 360 presets render pixel-identically apart from viewport height.
+
+**The thing to understand before reading any of it:** both PanelSettings use **Constant
+Physical Size at 160 dpi**, so `1 USS px = 1 dp` and the layout does **not** scale on a
+different phone — a narrower device simply gets less width and has to reflow. **Pixel
+resolution is therefore a non-issue.** Usable dp width and safe-area insets are the entire
+risk. [android-adaptivity.md](android-adaptivity.md) works that through, including the two DPI
+failure modes and the one cheap on-device readout that would settle them; the 2026-09-29 pass
+is the wider re-run of its Finding 1 (all 49 subjects × 5 frames, where it did 4 shell screens
+× 3 frames).
+
 ### Verification order per change
 
 1. `make ds-compile`
 2. `make ds-test` + `make ds-test-play`
-3. `make ds-shots` and actually look at the PNGs
+3. `make ds-shots` and **actually look at the PNGs.** Not optional after any change to
+   flex direction, wrapping or typography: on 2026-09-29 a fully green suite (726 tests at the
+   time) coexisted with a visibly broken Reportar screen — splitting "(opcional)" into its own
+   label made the section title a flex-row child, it inherited `flex-shrink: 1`, "Se
+   identifique" wrapped to two lines and collided with the "Seu nome" field. **Structure tests
+   cannot see layout.** That is also the honest argument for §8: the automated gates prove less
+   than their green count suggests.
 4. **Gallery first for visual bugs.** If a bug reproduces in `gallery-*.png` it is a component
    bug — fix the component and add a regression test. If it does not, it is screen wiring.
-5. Device build for anything the editor cannot judge (§8).
+5. Render the 360 dp frame for anything that adds text or a horizontal row (above).
+6. Device build for anything the editor cannot judge (§8).
 
 ---
 
@@ -176,10 +269,14 @@ Assembly-CSharp                     everything else: AR, GPS, Firebase, JobQueue
 **`MergulhoVirtual.UI` may not reference `Assembly-CSharp`**, and Unity's asmdef graph enforces
 it — the reference only flows the other way. That is the whole isolation story: a screen cannot
 reach for `GPSHandler`, `ARSession`, `JobQueue` or Firebase even by accident. It talks to
-interfaces in `Assets/UI/Interfaces/` (`IBeachCatalog`, `IConditionsService`, `ITideService`,
-`IBeachContent`, `ISpeciesCatalog`, `IActiveBeach`, `IBeachOverride`, `IOnboardingState`,
-`ISightingReports`, `IPhotoPicker`) and the mapping to the real engine types lives in exactly
-one file, `Assets/Scripts/UI/UiToolkit/UiServiceAdapters.cs`, on the Assembly-CSharp side.
+interfaces in `Assets/UI/Interfaces/` — currently `IBeachCatalog`, `IBeachContent`,
+`IConditionsService`, `ITideService`, `IActiveBeach`, `IBeachOverride`, `ISpeciesCatalog`,
+`IOnboardingState`, `ISightingReports`, `IPhotoPicker`, `IConnectivity`, `IArSelection`,
+`ISpeciesModelViewer`, `IVideoPlayback` — and the mapping to the real engine types lives in
+exactly one file, `Assets/Scripts/UI/UiToolkit/UiServiceAdapters.cs`, on the Assembly-CSharp
+side. The last three are the interesting ones for §8: they are the only paths from a screen to
+the AR raycast, the 3D turntable rig and the video decoder, **and all three are unexercisable
+in batchmode**, so nothing behind them has ever run.
 
 ### The shell
 
@@ -198,7 +295,10 @@ MainScene (root)
   because sub-screens have no tab). Screens are registered once and kept alive; switching
   toggles `display`, so per-visit work belongs in `OnEnter`/`OnExit`, never in a constructor.
   Navigating to an unregistered route logs one warning, returns `false` and changes nothing —
-  that is the deliberate state of `AppRoutes.Sos` and `AppRoutes.Especie` today.
+  that is the deliberate state of `AppRoutes.Sos` today. (`AppRoutes.Especie` was in that
+  list until 2026-09-29, when Decision D1 landed as `EspecieScreen` — and it is the one
+  route that carries a **payload**: `PraiaDetalheScreen.SpeciesRequested` raises a species
+  key, `AppUiHost.OnSpeciesRequested` sets the ViewModel and only then pushes.)
 - **`Assets/UI/Navigation/IAppScreen.cs`** — the contract (`Key`, `Root`, `OnEnter`, `OnExit`,
   `SetEdgeInsets`), plus **`AppRoutes`** (four tab keys + `PraiaDetalhe`, `Sos`, `Especie`,
   `Sobre`), **`AppTabs.Default`** (the bar, in V2 order) and **`AppIcons`** (icon names that
@@ -267,15 +367,43 @@ title-case instead of being `ToUpper()`-ed in the view (§6).
 
 ---
 
-## 4. What Slice 6 still has to clean up
+## 4. What is left of uGUI after Slice 6
 
-Slice 1 pre-empted part of it. Already done: `ScreenManager` has no screen fields, and
-`BottomNav`, `BeachesScreen`, `AnimalsScreen` and `RegisterScreen` are deactivated and unrouted
-in `MainScene` (see `AppUiBuilder.UnroutedLegacyScreens`). They stay in the scene by the
-strangler rule until Slice 6 deletes them along with their uGUI builders.
+**`ScreenUI` holds exactly four GameObjects now:** `Panel` (the always-on debug overlay),
+`SplashScreen`, `MainScreen` and `AboutScreen`. Slice 6 (2026-09-29) deleted `BottomNav`,
+`BeachesScreen`, `RegisterScreen` and `AnimalsScreen` from `MainScene` together with their
+controllers and Editor builders, and `AppUiBuilder.UnroutedLegacyScreens` went with them —
+there is no list of screens-to-keep-deactivated any more. `ScreenManager` has had no screen
+fields since Slice 1.
 
-Still routed, on purpose: `MainScreen` (the AR HUD, until Slice 4) and `AboutScreen` (Sobre,
-per Decision D2 — this is what keeps the shipped Instagram widget reachable with no rebuild).
+Also deleted, because their only user was one of those four objects: `ListItemView` +
+`Assets/Prefabs/UI/ListItem.prefab`, `ConditionsCardView`, `TideSparkline`, `MaxWidthClamp`,
+`BeachSelectorDropdown`, and the uGUI inline-video spawner pair `VideoSection` +
+`VideoSectionBuilder`.
+
+**Five things that look dead and are not** — check before you reach for any of them:
+
+| Kept | Live consumer |
+|---|---|
+| `AnimalViewerRig` (scene root, inactive) | `EspecieScreen` via `UiServiceAdapters.SpeciesModelViewerAdapter`; wired by `AppUiHost.animalViewerRig`. Its construction was extracted out of the deleted `AnimalsScreenBuilder` into **`Assets/Editor/AnimalViewerRigBuilder.cs`** (`Tools > Mergulho Virtual > Create Animal Viewer Rig`) so it stays reproducible. Re-run `make ui-setup` after rebuilding it. |
+| `VideoPlayerController`, `PointerHeldFlag`, `VideoRef` | the About screen's Instagram card (`InstagramWidgetBuilder`). UI Toolkit video goes through `IVideoPlayback` instead — do not resurrect the uGUI path. |
+| `AspectCover` | `ScreenUI/SplashScreen/Image` and `ScreenUI/AboutScreen/Image`. |
+| `UI/RoundedRect` shader + `RoundedRectCard.mat` | the Instagram card. (`MainScreen/ArTuning` was its other consumer until that subtree was deleted on 2026-09-29.) |
+| `Assets/RenderTextures/AnimalViewer.renderTexture` | `AnimalViewerRig/ViewerCamera` — the descriptor template `SpeciesModelViewerAdapter` clones per species. |
+
+Still routed, on purpose: `AboutScreen` (Sobre, per Decision D2 — this is what keeps the
+shipped Instagram widget reachable with no rebuild).
+
+**`MainScreen` was not retired in Slice 6 — and is now an empty shell.** It was a third case
+since Slice 4: not routed, but not unrouted either. Its `TopBar` is deactivated (that is what
+`MergulhoScreen` replaced) and the rest of the subtree was switched on and off with the Mergulho
+route by `AppUiHost.OnRouteChanged`, because it carried **ArTuning**, the on-beach panel that
+tuned the AR stabilisation filters live. **That panel and its JSON persistence were deleted on
+2026-09-29** (the decision was "drop", not "port"), so `MainScreen` now holds nothing but the
+deactivated `TopBar` and the route toggle achieves nothing. Retiring it is unblocked and still
+pending: delete the GameObject, `AppUiHost.legacyArOverlay` and its `OnRouteChanged` branch,
+`AppUiBuilder`'s `mainScreen` lookup + `LegacyArOverlayChildrenToHide`, and
+`ConditionsPillView`/`BeachNameView`. Do not put it back on the router either.
 
 ---
 
@@ -338,7 +466,36 @@ it exists only in request logs. **A privacy notice and a retention policy are ow
 anyone adds `reporter_email: str = Form(None)`.** This is flagged in both `ISightingReports`
 and `ReportSightingJob`; do not treat it as a one-line backend change.
 
-### The species catalog has one wrong record
+### The species catalog — what is blank and what is wrong
+
+**`approximateSize`, `diet` and `behaviour` are blank on all five `AnimalDef` assets.** Slice 4
+added the three fields for the AR info card's spec rows and mirrored them onto `SpeciesInfo`;
+nobody has authored a value. Both consumers drop a row they have no value for, so **the AR
+species card and the Espécie screen ship with no spec table at all** — name, binomial and
+description only. Fifteen short strings (5 species × 3 fields) would light both up; they are
+species facts, so they want the biologists, not a guess.
+
+~~**`hammerhead.asset`'s `modelCredit` is not a credit line.**~~ — **fixed 2026-09-29.** It
+held the full ~180-word Sketchfab *description* of the model (the Bimini photogrammetry
+write-up, over 20 YAML lines) and rendered as the largest element on the Espécie page. All five
+assets are now one line on the `photoCredit` convention — `Modelo: <author> / <licence>
+(<source>)` — with no author name or licence identifier lost.
+
+⚠️ **Normalising them surfaced a licensing problem: two of the five models are non-commercial.**
+`hammerhead` is *Jer Bot / CC BY-NC (Sketchfab)* and `reef_shark` is *DigitalLife3D / CC BY-NC
+4.0 (Sketchfab)*; the other three are CC BY 4.0. That is fine for a free public-good app and
+**blocks any commercial distribution** — a paid listing, ads, or a sponsor build. It is a
+project decision, not a code one: either keep the app non-commercial, obtain a commercial
+licence from those two authors, or replace the two models. Nobody has been asked (§9).
+
+**`lemon_shark.asset`'s two videos are the same file.** `"Tubarão-limão em ação"` and
+`"Tubarão-limão (vídeo 2)"` both point at
+`…/conteudos-educacionais/videos/reelsvideo.io_1780764982422.mp4`, so Espécie renders two cards
+that play identical content. Either the second URL was never filled in or the entry is a
+duplicate; lemon_shark is the only species with videos at all, so this is the whole of the
+video content.
+
+### The species catalog also has one wrong record
 
 `Assets/Resources/Animals/reef_shark.asset` reads `displayName: Tubarão-bico-fino`,
 `binomial: Carcharhinus acronotus` (blacknose shark), with a blacknose description — but its
@@ -348,8 +505,8 @@ and `ReportSightingJob`; do not treat it as a one-line backend change.
 The binomial was added recently and contradicts the model, the credit and the project's own
 species doc. `AnimalDef`'s own comment says the field is deliberately blank where identification
 is open, because a wrong binomial is worse than none. **Someone who knows the species has to
-say which it is**; the asset shows on both the Praia detalhe species card and (once D1 lands)
-the Animais detail screen.
+say which it is**; the asset shows on the Praia detalhe species card, the Reportar species
+chips, the AR info card and the Espécie screen.
 
 ---
 
@@ -357,36 +514,67 @@ the Animais detail screen.
 
 Read this section before "fixing" anything. Roughly half the visible oddities are the design.
 
-### Bugs — fix these
+**A ~~struck-through~~ heading means the bug is fixed and the entry is kept on purpose** — either
+because the cause recurs, or because someone comparing against an older screenshot needs to know
+what moved. Nothing here is deleted just for being done.
 
-**Submit button on Reportar is not full width.** V2 draws a 358 dp bar; it renders as a pill
+### Bugs — the fixed ones and the ones still open
+
+~~**Submit button on Reportar is not full width.**~~ — **fixed 2026-09-29.** Kept here because
+the cause recurs for any full-width `MdButton`. V2 draws a 358 dp bar; it rendered as a pill
 hugging its label, centred. `ReportScreen.uss`'s `.mv-report__submit { align-self: stretch }`
 does stretch `MdButton`'s transparent 48 dp touch-target root (the screen sheet is on the
 document root, so it outranks the theme's `align-self: flex-start`), but the *visible* surface
-is `.md-button__container`, which has no `flex-grow` and so hugs its content inside a
-full-width invisible parent. The `.mv-report__submit .md-button__container` rule sets height
-and radius but never width. Fix is `flex-grow: 1` on that container rule.
+is `.md-button__container`, which had no `flex-grow` and so hugged its content inside a
+full-width invisible parent. The `.mv-report__submit .md-button__container` rule set height
+and radius but never width. The fix was `flex-grow: 1` on that container rule — **local to the
+screen**, exactly as `MvStateView.uss` does for its own action, and deliberately *not* a change
+to `MdButton`'s default, which would widen every hugging button in the app. The changed region
+in all four `report-*.png` shots is exactly 358×47 dp at the 16 dp gutter and nothing else on
+the screen moved. `PraiasScreen`'s "Ciência cidadã" CTA looks similar but is **not** the same
+bug: V2 draws it as a 36 dp hugging pill, and it is correct as-is.
 
-**`MdChip` selected is the wrong colour family.** It renders `secondary-container` (pale amber
-`#FFDF9E`) with a navy label; V2's selected chip is **white on navy** (`primary`). Its radius
-is `corner-small` (10) where V2 chips are 8. **This was deliberately not forked per screen** —
-no screen USS overrides chip colours, only margins — because the same chip is used by Reportar
-(species, size) *and* Praia detalhe (species), and the right fix is one `MdChip` restyle that
-corrects both at once plus the gallery. `_shape.uss` already carries a note saying MdChip has
-not been restyled. Resist patching it in `ReportScreen.uss`.
+~~**Every pill in the app renders as an ELLIPSE, not a stadium.**~~ — **fixed 2026-09-29.**
+`--md-sys-shape-corner-full` is `1000px`, and UI Toolkit clamps the corner radius **per axis**
+(`rx = min(r, width/2)`, `ry = min(r, height/2)`) rather than scaling both by one factor the way
+CSS does, so a 295×42 pill got 147×21 corners — a perfect ellipse. Every pill now carries an
+explicit half-height radius (`MvHeroHeader`'s selector 21px, Praia detalhe's floating SOS 26px)
+or, where the height is content-driven, `MdShape.KeepStadium`, which reads the resolved height
+at runtime (`MvTag`). **The four surviving `corner-full` uses are genuinely square elements** —
+`MdIconButton` 40×40, `MdCheckbox` 40×40, `MvNumberedList` 24×24, `MvMediaPicker`'s remove badge
+28×28 — where the token produces a correct circle. Two new suites guard it: `ShapeDisciplineTests`
+(EditMode, fails a `corner-full` on a known-wide element) and `StadiumCornersTests` (PlayMode,
+covers `KeepStadium` including a height change). Verified by fitting rendered corner curvature
+against a circle model, not by eye. **Kept in this section because the token is still `1000px`**
+and reaching for it on a wide element will silently reproduce the bug.
+
+~~**`MdChip` selected is the wrong colour family.**~~ — **fixed 2026-09-29**, as the one
+component restyle that could not wait: selected fill is now `primary` / `on-primary` (navy +
+white, which V2 and the M3 spec agree on) instead of `secondary-container`, radius is
+`corner-extra-small` (8), horizontal padding 12. The fix that mattered most was not cosmetic —
+**`MdChip.cs` injected a check glyph into ANY selected chip regardless of `Kind`**, so an
+*Assist* chip grew 18.5 dp the instant you tapped it and re-flowed the row under your finger.
+It is now gated on `Kind == Filter`. ⚠️ The old asymmetric `9/17` padding pair was
+**intentional** (it assumed a selected chip always carried an icon); removing the injection
+broke that assumption, so it was re-derived as a symmetric no-icon pair plus a
+higher-specificity `.md-chip--selected.md-chip--with-icon` rule — do not "simplify" it back.
 
 **`MdCard` is still radius 12** (`corner-medium`) where V2 cards are 16. Real design-system
 debt, **but invisible today**: `MdCard` is instantiated nowhere in the app — only in the gallery
-and its tests — because every V2 screen authors its own card surface at `corner-large`. Fix it
-in the same pass as the `MdChip` restyle, and expect the gallery shots to change.
+and its tests — because every V2 screen authors its own card surface at `corner-large`. It is
+what is left of the restyle pass now that `MdChip` and the pills are done; expect the gallery
+shots to change.
 
 **`MdMenu`'s scrollbar is hidden by a workaround in the wrong place.** `MdMenu` builds a stock
-`ScrollView`, and with 18 beaches the picker always overflows, so it would be the one place in
-the app showing UI Toolkit's desktop scrollbar-with-steppers. `PraiasScreen.OpenBeachMenu`
-queries the menu's `ScrollView` and sets `ScrollerVisibility.Hidden` from C# (scroller
-visibility is an inline style USS cannot reach — §7). The code comment says it plainly: this
-belongs in `MdMenu`, and is parked in the screen only because Slice 2 did not own the component.
-Move it when you next touch `MdMenu`.
+`ScrollView`, and with 18 entries the beach picker always overflows, so it would be the one
+place in the app showing UI Toolkit's desktop scrollbar-with-steppers.
+`PraiasScreen.OpenBeachMenu` queries the menu's `ScrollView` and sets `ScrollerVisibility.Hidden`
+from C# (scroller visibility is an inline style USS cannot reach — §7). **Still true after the
+2026-09-29 `MdMenu` restyle**, which fixed the menu being nearly invisible (it was
+`surface-container` on a `background` page with no border, no shadow, and a `.md-menu__scrim`
+class that was **styled in no `.uss` file in the project**; it is now `surface` + a 1 px
+`outline-variant` + a real scrim) but did not move the scroller fix. Move it when you next touch
+the component.
 
 **Escaping a pushed screen costs two taps.** `MdNavigationBar.SelectedIndex` returns early when
 the value is unchanged, so it raises no event — and while a sub-screen is pushed the bar still
@@ -398,6 +586,116 @@ currently the worst case. Resolves when pushed screens get a real back affordanc
 cheaply, by making the bar raise its event on a re-tap of the active destination.
 
 **The `reef_shark` binomial contradicts its model** — see §5.
+
+### Two changes that moved how the app LOOKS, on purpose
+
+Both landed 2026-09-29, both are corrections rather than restyles, and both are the reason a
+screenshot you remember from last week will not match one you take today. **Neither has been
+seen on hardware** (§8).
+
+**1. Every Figma-transcribed alpha was compositing too light, and has been corrected.** Unity
+renders in **linear colour space** (`ProjectSettings.asset` `m_ActiveColorSpace: 1`): a USS
+colour is sRGB, converted to linear, blended, converted back. **Figma blends directly in sRGB.**
+So an overlay authored at the alpha the designer wrote did not reproduce the designer's
+composite. The model was validated, not assumed — `camera-fill` white @0.10 over `#050B14` was
+predicted at (90,90,92) and measured (90,91,92) in the render.
+
+Two things decide how each site was fixed, and both matter if you touch one:
+
+- **The direction depends on the overlay.** A *light* overlay on a dark ground needs its alpha
+  cut ~3.5× (0.15 → 0.043); a *dark* overlay on a light ground needs it *raised* ~1.7×
+  (0.25 → 0.43). Never assume "reduce".
+- **Per-channel corrected alphas diverge**, so **no single alpha reproduces Figma exactly.**
+  Where the backdrop is opaque and known, pre-blending to an opaque token is exact — that is why
+  the `camera-*` family is now a set of literal hexes with their derivation tabulated in
+  `Tokens/_brand-light.uss`, and why `camera-divider` and `camera-fill-outline` had to be added
+  (`camera-outline` and `camera-outline-dim` each served two different opaque backdrops, and one
+  alpha can serve both where one pre-blend cannot). Where the backdrop is arbitrary — a photo, a
+  video frame — a real alpha is kept at the corrected value (`MvHeroHeader`'s scrim 0.35 → 0.505,
+  compact 0.25 → 0.38).
+
+⚠️ **The AR species card is where this is most visible and least verified.** Its hairline
+(`camera-outline`), its internal rule (`camera-divider`) and its ⨯ disc (`camera-fill` +
+`camera-fill-outline`) all got substantially **fainter** — `camera-outline` was rendering
+(108,109,110) and is now `0x2A3037`. That is faithful to V2. It is also the opposite direction
+from "make the HUD legible in sunlight", and the card sits over a live camera feed the
+screenshot harness does not render at all. See §8.
+
+The biggest single miss the sweep caught was **`MdNavigationBar`'s inactive destinations**:
+`inverse-on-surface` at `opacity: 0.5` rendered (183,184,185) against the designer's measured
+(127,130,136), so inactive tabs read nearly as bright as the active one and the selected-state
+signal was all but gone. They now use a new `inverse-on-surface-muted` token, and `--active`
+swaps ink **colour** rather than opacity.
+
+Several alphas were deliberately **not** corrected, each for a stated reason in the source: M3
+state layers (relative interaction feedback, not transcriptions), `MdDialog` / `MdBottomSheet`
+scrims (M3 spec constants, and V2 has no dialog or sheet frame to match), `MdMenu`'s scrim (a
+menu is not modal — under linear blending its 0.32 renders as the light non-modal veil a
+dropdown actually wants; it coincides with `MdDialog`'s number while meaning something
+different, so **do not unify the three**), and `MdSparkline`'s own defaults (the Figma card is a
+flattened bitmap, so there is no authored alpha to transcribe).
+
+⚠️ **One site is a genuine unknown, not a decision: `MvStateView`'s icon at `opacity: 0.62`.**
+Its comment claims the composite lands within ~6/255 of the designed swatch — but it is
+unknowable whether that was computed in sRGB (in which case 0.73 is right) or read off a
+rendered PNG (in which case 0.62 already is). **Unlike every other site there is no recorded
+Figma hex to check against.** This needs the designer's swatch, not a guess (§9).
+
+**2. The icon set changed face — outlined to filled.** `AXIS_PINS` in
+`tools/design_system/subset_material_symbols.py` went `FILL: 0` → `FILL: 1`. MdIcon had been
+shipping Material Symbols **Outlined** where every V2 glyph is a **solid** mark; measured amber
+ink coverage in the Home feature tiles was 8/8/13 % against Figma's 25/16/33 %. Validated
+offline with fontTools first: **advance widths are byte-identical (960/960 on every glyph)**, so
+there is no layout shift and no `MdIconGlyphs.gen.cs` churn — but **48 of 95 icons gain ink, up
+to 4×** (`visibility` 10.5 → 34.5 %, `location_on` 14.6 → 37.0 %). This is a change to *every
+icon in the app* and it has only ever been seen in a PNG. `wght` (100–700) is the second lever
+if the filled face still reads too light; measure the FILL=1 result before reaching for it.
+
+### 360 dp — what was fixed, what is accepted, and the one thing still wrong
+
+The 2026-09-29 pass was the first time any screen was rendered below 390 dp beyond the four
+shell frames in [android-adaptivity.md](android-adaptivity.md). **412 and 430 are shippable
+as-is** — 16 dp gutters held everywhere, both grids split the extra width evenly, hero overlays
+and bottom-anchored elements were correct under both inset pairs, and no screen stylesheet
+contains a fixed-width offender. **At 360, nothing overflowed or clipped either**; every failure
+was text reflow, and four were fixed:
+
+1. **`MvHeroHeader`'s selector pill** — 98 dp of fixed chrome left only a 170 dp label slot at
+   360. Chrome trimmed to 88 dp (inner gutters 16→14, pin gap 8→6, chevron gap 12→8) **and** the
+   label reduced 16→15 px. Truncation went 2 names → 1 at 360 and 1 → 0 at 390. The deviation is
+   documented in full as "deviation 4" in the component's own header.
+2. **`PraiaDetalheScreen`'s species name row** — `Tubarão-bico-fino` + `Carcharhinus acronotus`
+   measured 316.8 dp against 294 dp of content, and `align-items: flex-end` bottom-aligned the
+   binomial to the name's *last* line, stranding "fino" beside it. The common name is now pinned
+   whole (`flex-shrink: 0` + `nowrap`); the decorative binomial ellipsises instead.
+3. **`ConditionsFormatter`'s Maré row** — the space inside `(2.2 m)` is now U+00A0, so the string
+   can no longer break as `… (2.2` / `m)`. This also fixed a pre-existing wrap at 390.
+4. **`BeachContentFormatter` / the Praias tide stat** — value 18 px → 16 px
+   (`title-small-increased`) **and** an NBSP after the `·`. At 18 px the separator was stranded
+   in three of four cases, including at 390.
+
+⚠️ **Two of those are deliberate deviations from the transcribed spec at 390 and want designer
+sign-off** (§9): the hero pill label is **15 px** where V2 says 16, and the Praias stat value is
+**16 px** where V2 says 18. Both are in-ladder sizes and both fix pre-existing 390 dp wraps — but
+they are type *reductions*, and small type is exactly what degrades on a bright beach.
+
+⚠️ **"Praia da Cacimba do Padre" still truncates at 360**, as `Praia da Cacimba do P…` — one of
+the 17 names. The visible prefix was checked to be unique among all of them, so it is legible
+rather than ambiguous, but it is the one known unresolved reflow.
+
+**Accepted at 360, not bugs:** the Reportar size-chip row wraps to two rows (chips need 343.4 dp
+against a 328 dp box; it degrades gracefully and every way to close the gap costs more than it
+buys — chip padding 12→10 still wraps at 331.4); the Praias location name wraps to two lines;
+and the Home feature-grid icon misalignment widens to ~12.5 dp, which is a consequence of the
+deliberate `justify-content: center` over unequal body line counts.
+
+⚠️ **A flag that was raised and then retracted — do not re-raise it.** The **Lua row looks like
+it has the same dangling-`·` bug and does not.** Word wrap takes the last break that *fits*, not
+the first: `Gibosa Minguante · 100%` is only 168.9 dp inside the 212 dp column, so the break
+lands after the percentage and the separator stays mid-line. An NBSP there would be a no-op, and
+actively harmful if the column ever narrowed (it would force a line starting with a leading
+`·`). A comment on `ConditionsFormatter.Moon` records this, so the next person who measures
+236.1 > 212 and reaches for the same fix stops.
 
 ### Faithful to the design — leave these alone
 
@@ -441,9 +739,14 @@ cheaply, by making the bar raise its event on a re-tap of the active destination
 
 - **The SOS tile (Home) and the floating SOS pill (Praia detalhe)** raise `AppRoutes.Sos`,
   which has no screen. `MdRouter` logs one warning and changes nothing. Slice 5 / Decision D3.
-- **"Saiba mais sobre a espécie"** on the beach species card raises `AppRoutes.Especie`, same
-  deal. Decision D1 — Animais becomes a sub-screen reached from here; the standalone list is
-  dropped.
+- ~~**"Saiba mais sobre a espécie"**~~ — **no longer inert.** Decision D1 landed 2026-09-29:
+  the link raises `PraiaDetalheScreen.SpeciesRequested` with the species key and opens
+  `EspecieScreen` (description, 3D turntable, inline videos, credits). Two things about it are
+  still open: **it has no Figma frame**, so the layout is designed rather than transcribed and
+  wants a designer's review (DESIGN_IMPLEMENTATION.md §8.8); and **the 3D viewer and the video
+  playback have never run** — neither can be exercised in batchmode (no rig, and Unity's Linux
+  VideoPlayer cannot decode H.264), so both need an Android build. §4 also lists the AR info
+  card as a second entry point; that one is NOT wired, because Tela 8 draws no such link.
 - **"Baixar a tábua de maré do mês"** on Home's conditions card is visible and does nothing.
   The DHN tide table is a PDF the project parses offline and publishes nowhere: there is no URL
   to open, and inventing one would ship a dead link. `AppUiHost.OnTideTableRequested` logs it.
@@ -454,23 +757,33 @@ cheaply, by making the bar raise its event on a re-tap of the active destination
   deliberately neutral, so it reads as "not final". It is rendered by **two cross-referenced
   sites that must flip together**: the bottom-bar tab (`AppTabs.Default`) and the Início feature
   tile (`HomeViewModel.AvistamentosIconPlaceholder`, an alias of the same constant). A **third**
-  stand-in — `"help"` — sits in the gallery's nav-bar demo and has drifted from the other two;
-  fix all three when the SVG arrives. Plausible-looking marine glyphs (`waves`, `surfing`,
-  `scuba_diving`, `pool`) are explicitly excluded from the icon subset so none of them can
-  quietly become the shipped icon.
+  stand-in — `"help"`, at `GalleryController.cs:553` — sits in the gallery's nav-bar demo and has
+  drifted from the other two; fix all three when the SVG arrives.
+  *Correction, 2026-09-29:* it has been said (here and in CLAUDE.md) that plausible marine glyphs
+  are "excluded from the icon subset so none can quietly become the shipped icon". **That is not
+  true of the font** — `waves`, `pool`, `scuba_diving` and `surfing` are all in
+  `tools/design_system/material_symbols_icons.txt` and all ship. The guarantee is real but it
+  lives one level up, at the **consumer**: both sites read the single constant
+  `AppIcons.AvistamentosPlaceholder`, so the icon can only change in one place. Fix the claim,
+  not the file.
 
 ### Screenshot-harness artifacts (not app bugs)
 
 - `shell-praia-detalhe-*.png` shows **no active tab**, because the harness `Navigate`s straight
   to the sub-screen instead of `Push`ing from Praias. In the app, Praias stays lit.
-- `.shots/` still holds 8 `beaches-*.png` from the pre-Slice-2 screen. Stale, not regressions.
+- `.shots/` is not self-cleaning, so a renamed or deleted subject leaves its PNG behind
+  indefinitely and it looks identical to a current one. (The 8 pre-Slice-2 `beaches-*.png` this
+  bullet used to name were cleared by hand on 2026-09-29.) Trust `manifest.json`.
+- `.shots-devices/*` is **light theme only** and one frame per subject — the dark theme is only
+  rendered at 390 dp. Nothing is known about dark at any other width; nothing suggests it
+  differs, since the reflow is a function of dp width and not of palette.
 
 ---
 
-## 7. Three project-wide footguns
+## 7. Project-wide footguns
 
-These three cost real time. All are already solved; the solutions are invisible unless you know
-they exist, and each is easy to undo by accident.
+These cost real time. All are already solved; the solutions are invisible unless you know they
+exist, and each is easy to undo by accident.
 
 **1. Unity's default `Label` metrics are non-zero, and are now reset app-wide.** The default
 runtime theme gives every `Label` `padding: 4 2 4 1` and `margin: 4 4 2 2` — 14 dp of invisible
@@ -498,31 +811,126 @@ its own title. Any element that moves between a row context and a column context
 `flex-grow`/`flex-basis`. The comment on `.mv-feature-card--wide` in `HomeScreen.uss` is the
 worked example.
 
+**4. A USS alpha is not the alpha Figma drew.** Unity blends in linear space, Figma in sRGB, so
+a transcribed alpha always composites too light — and the correction's *direction* depends on
+whether the overlay is lighter or darker than its ground. Worked through in §6; the reason it
+belongs here too is that it is invisible, it applies to every new overlay anyone adds, and the
+natural instinct ("the designer wrote 0.35, so write 0.35") is the wrong one. Pre-blend to an
+opaque token where the backdrop is known; correct the alpha where it is not.
+
+**5. A `#RRGGBB` literal inside a USS *comment* fails `TokenDisciplineTests`** exactly like a
+real declaration would — the check scans raw file text and cannot tell a comment from a rule.
+Write hex in comments as `0xRRGGBB`. This broke the build once; 28 comment literals across four
+stylesheets had to be rewritten.
+
 ---
 
 ## 8. What to do next, in order
 
-### 1. Build to a device — before Slice 4
+### 1. Build to a device — still the top of the list, and the list got *longer*
 
-Slice 4 puts a UI Toolkit overlay on the live AR camera, and it builds on an assumption nobody
-has tested: the shell's panel is already at `sortingOrder = 100` over the uGUI `ScreenUI`
-canvas, with a transparent `PickingMode.Ignore` root so taps fall through to the AR HUD. In the
-editor that is fine. On hardware it is unverified. **Verify it before you build on it** — if the
-stacking or hit-testing is wrong, Slice 4's whole approach changes.
+Slice 4 shipped a UI Toolkit overlay on the live AR camera **on an assumption nobody has
+tested**: the shell's panel is at `sortingOrder = 100` over the uGUI `ScreenUI` canvas, with a
+transparent `PickingMode.Ignore` root so taps fall through to the AR scene. In the editor that
+is fine. On hardware it is unverified, and the whole screen rests on it — if the stacking or
+hit-testing is wrong, Slice 4's approach has to change.
 
-While you are there, four slices' worth of editor-only work gets its first real check:
+**The 2026-09-29 pass changed this list in both directions**, and the handover point is that
+the net movement was *not* downward. It retired most of the layout-and-reflow questions (§D
+below, all answered in headless renders), and it found and fixed one real AR bug before any
+device saw it — but it also **changed how the app looks** in ways only a PNG has ever judged,
+which is now the top of the list.
 
+**What the automated gates prove, and what they do not.** 683 EditMode tests, 27 PlayMode and
+343 rendered PNGs is real coverage of structure, formatting, token discipline and reflow. It
+is *not* coverage of appearance: on 2026-09-29 a fully green suite (726 tests at that moment)
+coexisted with a Reportar screen whose section title had wrapped into the field below it. And
+**the screenshot harness renders no camera feed at all** — the AR HUD's background in every
+shot is flat black — so nothing about the one screen that is composited over live video has
+ever been seen composited over anything.
+
+#### A. The AR HUD — highest risk, and now less certain than it was
+
+- [ ] ⚠️ **Is the species card still legible over bright, sunlit, moving water?** This is the
+      item that got *worse* on 2026-09-29. The card ships opaque because V2's 77 %-plus-blur
+      cannot be reproduced — and the linear-colour-space correction (§6) then made its chrome
+      **substantially fainter**: the card hairline, its internal rule and the ⨯ disc all
+      dropped (`camera-outline` was rendering (108,109,110), now `0x2A3037`). That is faithful
+      to Figma and it is the opposite direction from "readable on a beach at midday". Judge it
+      outdoors, on real water, not indoors. If the chrome vanishes, the answer is a
+      camera-specific override — not undoing the colour-space correction, which is right.
+- [ ] **The AR camera is visible through the screen.** Everything but the control strip and the
+      species card must be transparent; `mergulho-light.png` shows black where the camera
+      should be.
+- [ ] **Tapping a shark opens the card.** Exercises a path that had never worked before Slice 4:
+      `BeachSharkSpawner` → `ArSpeciesTarget.Attach` (which adds the collider the prefabs do not
+      have) → `ObjectInteraction`'s sphere cast → `ArSelectionAdapter` → `MergulhoViewModel`.
+      Any one of those links failing looks identical from the outside: nothing happens.
+      `ObjectInteraction.verbose` logs every cast.
+- [ ] **Tapping the card, its ⨯, the pill or the back arrow does NOT also hit the animal behind
+      it** — and tapping open water still *does* reach the AR scene. **Confirm a fix, no longer
+      discover a bug:** `ObjectInteraction` read `Pointer.current` with no `EventSystem` check
+      and no UI Toolkit panel pick, so every tap on the HUD also fired the 0.2 m SphereCast
+      behind it and the ⨯ could close the card and immediately re-open it. It now panel-picks
+      (`RuntimePanelUtils.ScreenToPanel` + `panel.Pick`) before raycasting, with an optional
+      `uiPanelSource` `UIDocument` wired by `AppUiBuilder` and a cached `FindAnyObjectByType`
+      fallback. Open water still passes through because the HUD root, hero and dock are
+      `PickingMode.Ignore` by design — **that is the half most likely to be wrong on hardware**,
+      so test both directions, not just the card.
+- [ ] **No stray uGUI chrome is left on the AR route.** The "AJUSTE AR" pill and its panel were
+      deleted on 2026-09-29, so nothing at 72 % of the screen height on the right should draw or
+      accept a tap any more; `ScreenUI/MainScreen` is an empty shell that still toggles with the
+      route.
 - [ ] **Nav bar over AR.** On the Mergulho route, the bar draws above the camera feed *and* is
       tappable; the AR HUD underneath still receives its own taps.
+
+#### B. What the 2026-09-29 pass changed, that only a PNG has judged
+
+Every item here is new to this checklist. None of it is a bug report — each is a deliberate
+change whose *effect on a real screen* is unknown.
+
+- [ ] ⚠️ **Every icon in the app changed face**, outlined → filled (`FILL: 1`). 48 of 95 glyphs
+      gain ink, up to 4× (`visibility` 10.5 → 34.5 % coverage). Advance widths are
+      byte-identical, so nothing moved — but the whole app's iconography now reads heavier.
+      Look at the bottom bar and the Início feature tiles first.
+- [ ] ⚠️ **The colour-space-corrected overlays**, beyond the AR card: the hero scrims
+      (0.35 → 0.505, compact 0.25 → 0.38), the Home sparkline fill and baseline, the freshness
+      line, `MvTag--on-image`, `MvMediaPicker`'s remove badge. All are lighter-over-photo or
+      darker-over-light cases where the correction went in opposite directions; the sanity check
+      is that hero text stays readable over the *brightest* beach photo in `Resources/`.
+- [ ] **The bottom bar's inactive/active contrast.** Inactive destinations moved from
+      `inverse-on-surface` @0.5 to the `inverse-on-surface-muted` token, which is the single
+      largest colour change in the pass — the selected-state signal had been nearly erased.
+      Confirm the selected tab is obvious at arm's length.
+- [ ] ⚠️ **`MvStateView`'s status glyph at `opacity: 0.62`** — genuinely unknown, not a judgement
+      call (§6, §9). Worth an eye on device, but the real answer is the designer's swatch.
+- [ ] ⚠️ **The two deliberate 390 dp type reductions** — the hero selector label at 15 px (V2:
+      16) and the Praias tide stat at 16 px (V2: 18). Both fix real wraps; both are *smaller*
+      type, and small type is exactly what degrades outdoors. Read them in sunlight before
+      asking the designer to sign off (§9).
+- [ ] **`MdChip` selected**, now navy + white with no injected check glyph. The glyph injection
+      grew a chip 18.5 dp on tap and re-flowed the row under the user's finger — worth one tap
+      on the Reportar species and size rows to confirm nothing shifts.
+
+#### C. Five slices of editor-only work, still awaiting a first real check
+
 - [ ] **Safe-area insets on a notched phone.** The opaque page surface paints under the status
       bar / notch (not a transparent strip showing camera), content clears it, and the bar's
-      bottom padding matches the home indicator.
+      bottom padding matches the home indicator. (Both inset pairs — 47/34 and 24/0 — are
+      rendered now, but from *injected* numbers; `Screen.safeArea` itself has never been read on
+      a real device.)
 - [ ] **AR resume is sub-second entering Mergulho**, and the frame-rate unlock happens leaving
       it (`ScreenManager` pauses `ARSession` and raises `Application.targetFrameRate` to the
       display rate on non-AR routes). Check battery/thermals on a long session too.
-- [ ] **Inter legibility and pt-BR wrapping at real DPI** — the plan accepts the loss of
-      `line-height`, so long strings are the risk. Worth checking the Home feature-card bodies,
-      the conditions rows and the Praia detalhe advisory bar specifically.
+- [ ] **Inter legibility at real DPI**, now that *wrapping* is covered headlessly (§D). The
+      plan accepts the loss of `line-height`, so the remaining question is purely optical
+      density: the Home feature-card bodies, the conditions rows and the Praia detalhe advisory
+      bar are the dense spots.
+- [ ] **The `Screen.dpi` question.** `1 USS px = 1 dp` only holds if Unity's Android backend
+      reports Android's bucketed `densityDpi` rather than the panel's physical DPI. It is a
+      *mechanism* question, so one phone answers it for all of them — and
+      [android-adaptivity.md](android-adaptivity.md) has the four-line `GeometryChangedEvent`
+      log to drop behind a debug flag on the build you are making anyway.
 - [ ] **A real photo pick → upload returns 200** against the production backend with App Check
       enforced. Exercises `GalleryPicker` on the device's gallery, the EXIF-preserving byte
       copy, `Idempotency-Key`, and the App Check header path end to end.
@@ -530,24 +938,74 @@ While you are there, four slices' worth of editor-only work gets its first real 
       feed should show it. This was a real bug — nothing instantiated `JobQueue` at launch, so a
       queued sighting sat on disk until the user submitted *another* one; it is fixed by
       constructing the reports adapter in `AppUiHost.Awake`. It has EditMode coverage
-      (`ListPending_SurvivesARestart`) and **has never run on hardware**.
+      (`ListPending_SurvivesARestart`) and **has never run on hardware**. While you are there:
+      a *retrying* row now repaints on the host's 60 s tick (`ISightingReports.Changed` never
+      fires on a transient retry, so the attempt count and "Tentando de novo" / "Sem conexão"
+      label used to freeze at whatever `OnEnter` computed) — leave the tab open through a
+      failed attempt and watch it update.
+- [ ] **The Espécie screen's 3D turntable and inline video.** Neither can be exercised in
+      batchmode — there is no rig in a headless panel, and Unity's Linux `VideoPlayer` cannot
+      decode the H.264 the educational clips are encoded as. The viewport fit was rewritten on
+      2026-09-29 (it had been fitting the animal's longest dimension against the camera's
+      *vertical* FOV, so a shark filled ~14 % of the box) and the second visit to a species used
+      to show the placeholder instead of the model. **All of that is unverified.**
+
+#### D. Retired from this list by the 2026-09-29 headless pass — and the limit of that
+
+Recorded so the work is not redone, and so the distinction stays sharp: these were answered in
+**rendered PNGs, not on hardware.** A render proves layout; it does not prove the device.
+
+- [x] **Does the layout survive a narrower phone?** Every screen rendered at 360×640, 360×800,
+      390×844, 412×915 and 430×932. **Nothing overflowed, clipped, or scrolled horizontally at
+      any width.** 412 and 430 are clean as-is; 360 needed four text-reflow fixes, all applied
+      (§6). No screen stylesheet contains a fixed-width offender.
+- [x] **Do both safe-area configurations lay out correctly?** 47/34 and 24/0 both rendered
+      across all 49 subjects; hero overlays and bottom-anchored elements correct in both.
+      (The *measurement* of the real inset remains item C.1.)
+- [x] **Does pixel resolution matter?** No. Constant Physical Size at 160 dpi means a
+      higher-resolution phone gets a sharper image of the same dp layout. Only dp width and
+      insets matter — which is what the five presets cover.
+- [x] **Does the AR HUD's ⨯ work?** It did not, and it now does — found by reading
+      `ObjectInteraction` rather than by tapping a phone. Still needs the device confirmation in
+      §A, because the *fix* is the untested part.
+
+#### E. Newly owed, and nobody has decided
+
+- [ ] ⚠️ **OS font scale is not inherited — accessibility gap, no decision taken.** Both
+      PanelSettings are `ConstantPhysicalSize` at `referenceDpi 160`, which scales the panel by
+      `Screen.dpi / 160` and by nothing else. Nothing in the project reads Android's font-scale
+      or display-size setting (grep: there is no reference to it anywhere in `Assets/`), so a
+      user who enlarges system text almost certainly sees **no change in this app**. That is a
+      real accessibility gap for an outdoor app with 11–13 px supporting text, and it is a
+      *product* decision as much as a technical one: honouring font scale means every fixed
+      `height` in the design system becomes a `min-height` (`MvOptionCard` has already been
+      through exactly that conversion) and every stadium radius becomes `MdShape.KeepStadium`.
+      Confirm the behaviour on device first — it is one setting toggle — then decide.
 
 ### 2. Then, in rough priority order
 
-1. **Unblock Slice 5** — chase Decision D3 (SOS numbers and vetted first-aid copy). It is the
-   only slice with a hard external dependency, so start the ask early even if you build
-   something else meanwhile.
-2. **Slice 4 — Mergulho AR HUD**, once the device check passes.
-3. **A component-restyle pass**: `MdChip` (selected colours + radius 8) and `MdCard` (radius
-   16), plus moving the `MdMenu` scroller fix into `MdMenu`. One pass, one set of regression
-   tests, gallery shots updated.
-4. **The submit-button width fix** (§6) — a one-line change worth doing next time you open
-   `ReportScreen.uss`.
+1. **Unblock the SOS half of Slice 5** — chase Decision D3 (SOS numbers and vetted first-aid
+   copy). It is the only slice with a hard external dependency, so start the ask early even if
+   you build something else meanwhile. The states half is done and needs nothing from anyone
+   except `MvStateView`'s illustration asset (§9).
+2. **Finish the component-restyle pass.** `MdChip` and the pill/stadium bug were done on
+   2026-09-29 (§6); what is left is `MdCard` (radius 12 → 16, invisible today because nothing in
+   the app instantiates it) and moving the `MdMenu` scroller fix out of `PraiasScreen`. Smaller
+   than it was, same rule: one pass, one set of regression tests, gallery shots updated.
+3. **Get the designer's answers on the three items the 2026-09-29 pass opened** — the
+   `MvStateView` opacity swatch, the two 390 dp type reductions, and a look at the filled icon
+   face (§9). All three are cheap to act on and all three are currently guesses.
+4. ~~**The submit-button width fix**~~ — **done 2026-09-29** (§6).
 5. **A back affordance for pushed screens**, which also resolves the two-tap escape.
-6. **Slice 6** — delete the dead uGUI screens and builders, and give Animais its home per D1.
+6. **Delete `ScreenUI/MainScreen`.** ArTuning — its last reason to exist — was dropped on
+   2026-09-29, so the shell and its route toggle (`AppUiHost.legacyArOverlay`,
+   `AppUiBuilder.LegacyArOverlayChildrenToHide`, `ConditionsPillView`, `BeachNameView`) can all
+   go. Once they do, uGUI is down to the splash, the debug overlay and Sobre.
 
 The backend half of Slice 3 (persisting the six dropped fields) is deliberately **not** on this
-list ahead of the privacy decision on `reporter_email` (§5).
+list ahead of the privacy decision on `reporter_email` (§5). Nor is the **CC BY-NC model
+licensing** question (§5) — but that one is a *distribution* blocker rather than an engineering
+task, so it wants asking early even though nothing is waiting on the answer today.
 
 ---
 
@@ -555,8 +1013,36 @@ list ahead of the privacy decision on `reporter_email` (§5).
 
 ### For the designer
 
+Three of these are new on 2026-09-29 and are cheap to act on — they are marked **NEW**. All
+three are currently guesses that shipped, which is exactly the kind of thing this document
+exists to keep visible.
+
+- **NEW — `MvStateView`'s status-glyph opacity: 0.62 or 0.73?** The only site in the whole
+  colour-space sweep (§6) with **no recorded Figma hex to check against**. The code comment
+  claims the composite lands within ~6/255 of the designed swatch, but whether that was
+  computed in sRGB (→ 0.73 is right) or read off a rendered PNG (→ 0.62 already is) is
+  unknowable from here. **One swatch settles it.** Do not let anyone "reason it out" —
+  every other site in that sweep had a measured colour to land on and this one does not.
+- **NEW — sign-off on two type reductions** (DESIGN_IMPLEMENTATION.md's Decision D9). The hero
+  selector label is **15 px** where V2 says 16, and the Praias "Maré agora" value is **16 px**
+  where V2 says 18. Both are in-ladder sizes, both were needed to stop pre-existing wraps *at
+  the 390 dp design width* (not only at 360), and both make outdoor-legibility slightly worse.
+  If either is refused, the alternative is not "put the size back" — it is to shorten the
+  string or re-spec the row.
+- **NEW — the icon set is now the FILLED face.** `FILL: 1`, which is what V2 actually draws;
+  48 of 95 glyphs gained ink, up to 4×. Nothing moved (advance widths are identical) but the
+  whole app reads heavier. Worth one look-over, and it supersedes half of the "Material
+  Symbols substitutes" concern at the bottom of this list.
 - **The shark-fin icon.** The long-pole asset. Nothing else can substitute it; three stand-in
-  sites are waiting on it (§6).
+  sites are waiting on it (§6). *Note for whoever chases it:* the old claim that marine glyphs
+  were excluded from the icon subset to stop one becoming the shipped icon is **not true of the
+  font** — `waves`, `pool`, `scuba_diving` and `surfing` all ship. The single-constant
+  consumer is what actually holds the line.
+- **`MvStateView`'s illustration.** V2's error/offline frames (`79:1304` / `81:1403`) draw a
+  line-art shark-in-the-waves behind the status glyph; it is a raster in the Figma file with no
+  export in this repo. The component's slot is built and `SetIllustration(Sprite|Texture2D)` is
+  ready — it renders **empty** until the asset arrives, and no stand-in art was invented. An
+  export at ~261×286 dp @2× drops straight in.
 - **The shark watermark in Home's lower third.** Present in the Figma render of Tela 7, not
   implemented. Is it decorative and droppable, or does it need to ship (and as what asset)?
 - **The tide curve is teal.** The "Hoje" conditions card is a flattened bitmap in Figma, and its
@@ -574,10 +1060,21 @@ list ahead of the privacy decision on `reporter_email` (§5).
 
 - **SOS phone numbers and first-aid copy** (Decision D3). **Blocks Slice 5 entirely.** Wrong
   emergency numbers are worse than no SOS screen.
+- **NEW — will this app ever be distributed commercially?** Two of the five 3D models are
+  **CC BY-NC** (`hammerhead`, `reef_shark` — §5). Non-commercial covers a free public-good app
+  and does not cover a paid listing, ads, or a sponsor build. Three ways out — stay
+  non-commercial, license those two models commercially from their authors, or replace them —
+  and the cheapest one to choose is whichever gets chosen *before* anyone commits to a
+  distribution model.
+- **NEW — `lemon_shark`'s second video.** Both of its `videos` entries point at the same URL,
+  so the only species in the app that has any video renders two identical cards. Either supply
+  the second clip or delete the entry; one line of YAML either way.
 - **Beach content** — [beaches-content-todo.md](beaches-content-todo.md), 17 beaches. Slice 2
   is code-complete and content-empty until this lands (§5).
 - **The `reef_shark` species mismatch** — is it *Carcharhinus acronotus* or *C. perezi*, and
   does the 3D model match whichever it is? (§5)
+- **`approximateSize` / `diet` / `behaviour` for the five species** — 15 short strings, blank
+  on every asset, which is why the AR info card and Espécie render no spec table (§5).
 - **`reporter_email`** — is the app collecting it at all, and if so with what notice and what
   retention? Needed before the backend persists it (§5).
 - **The DHN tide table** — publish the PDF, or drop the link from Home (§6).
@@ -589,12 +1086,30 @@ list ahead of the privacy decision on `reporter_email` (§5).
 Stated plainly so it is not mistaken for confidence:
 
 - **Nothing on a device.** Everything in this document is editor, batchmode and screenshot
-  evidence.
+  evidence. That did not change on 2026-09-29; the volume of evidence grew and its *kind* did
+  not.
+- **The screenshot harness renders no camera feed.** Every `mergulho-*.png` is the HUD over flat
+  black. So the one screen that exists to be composited over live video has never been seen
+  composited over anything — including after the change that made its chrome fainter (§6, §8A).
+- **The colour-space corrections were computed and validated against renders, not observed on a
+  screen.** The model is sound (predicted (90,90,92) vs measured (90,91,92), agreeing to ±1 per
+  channel on every case tested) and it predicts *pixels*, not perception. Whether a 0x2A3037
+  hairline reads on a phone held up to the sea is a different question, and an unanswered one.
+- **The five device frames are renders, not devices.** Insets were injected, not measured;
+  `Screen.dpi` was never read; touch was never used. They prove the layout reflows, which is
+  what they were built to prove.
+- **A green suite is not a correct screen.** 683 EditMode + 27 PlayMode tests passed while a
+  screen was visibly broken (§2). Structure, formatting and token discipline are well covered;
+  layout is covered only by looking.
 - The **Figma frames** were read from the cached `.figma-sync/` snapshot (file version
   `2402812393380097744`, last modified 2026-09-24), not re-fetched. Run `tools/figma_fetch.sh`
   if the designer has moved since.
-- The **test and screenshot counts** are from the last logged run on 2026-09-28; they are not
-  continuously enforced by CI (there is no CI for the Unity project).
-- **Pixel-level fidelity against the Figma renders was not measured.** The gaps in §6 are ones
-  visible by eye in `.shots/` or provable from the source; a careful side-by-side of every frame
-  would very likely find more.
+- The **test and screenshot counts** are from the last logged run on 2026-09-29
+  (`Logs/ds-test-editmode.xml`, 683 across three assemblies); they are not continuously enforced
+  by CI (there is no CI for the Unity project). ⚠️ **If a number here disagrees with another
+  document, re-run — do not reconcile on paper.**
+- **Pixel-level fidelity against the Figma renders was still not exhaustively measured.** The
+  2026-09-29 pass audited alphas, icon ink coverage, type sizes and reflow, which is a large
+  bite of it, and worked from the frames that had measurable properties; the flattened-bitmap
+  regions of the Figma file (the conditions card's chart, the state-view illustration) cannot be
+  audited that way at all.

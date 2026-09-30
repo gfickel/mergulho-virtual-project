@@ -147,6 +147,21 @@ namespace MergulhoVirtual.UI
         /// </summary>
         IReadOnlyList<SightingRecord> ListFailed();
 
+        /// <summary>
+        /// Puts a permanently-failed report back in the queue, by the
+        /// <see cref="SightingRecord.Id"/> <see cref="ListFailed"/> reported. True
+        /// when it was taken back; false when there is no failed report with that
+        /// id (it already went through, or another retry beat this one).
+        ///
+        /// <para><b>This is the only way out of <see cref="SightingState.Failed"/>.</b>
+        /// A permanent failure is otherwise terminal: the report sits on disk
+        /// forever with nothing the user can do about it. Retrying keeps the
+        /// report's own id, which is the idempotency key, so a retry of something
+        /// the backend actually stored collapses server-side instead of
+        /// duplicating.</para>
+        /// </summary>
+        bool Retry(string id);
+
         /// <summary>Raised when a report finished (delivered or failed), i.e. when
         /// the two lists may have changed.</summary>
         event Action Changed;

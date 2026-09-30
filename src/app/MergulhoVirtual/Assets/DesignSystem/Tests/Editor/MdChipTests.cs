@@ -51,9 +51,32 @@ namespace MergulhoVirtual.DesignSystem.Tests
             Assert.That(chip.ClassListContains(MdChip.SelectedClassName));
         }
 
+        /// <summary>
+        /// The check is a FILTER affordance. An assist chip (what the Reportar
+        /// species / size / behaviour rows build) must keep exactly the same
+        /// width selected and unselected, or the row re-flows under the finger.
+        /// </summary>
+        [Test]
+        public void SelectedAssistChip_DoesNotGrowACheckIcon()
+        {
+            var chip = new MdChip { Kind = MdChipKind.Assist, Text = "Tubarão-tigre" };
+            var icon = chip.Q<MdIcon>();
+
+            chip.Selected = true;
+            Assert.That(chip.ClassListContains(MdChip.SelectedClassName), "still paints as selected");
+            Assert.That(icon.style.display.value, Is.EqualTo(DisplayStyle.None), "no check on an assist chip");
+            Assert.That(chip.ClassListContains(MdChip.WithIconClassName), Is.False);
+
+            // An assist chip with its OWN leading icon keeps it, selected or not.
+            var withIcon = new MdChip { Kind = MdChipKind.Assist, Text = "Marés", Icon = "waves" };
+            withIcon.Selected = true;
+            Assert.That(withIcon.Q<MdIcon>().text, Is.EqualTo(MdIconGlyphs.Map["waves"]));
+        }
+
         [Test]
         public void ChipWithoutIcon_HidesLeadingIconUntilSelected()
         {
+            // Filter kind: this is the one path on which selection adds the check.
             var chip = new MdChip { Kind = MdChipKind.Filter, Text = "Porto" };
             var icon = chip.Q<MdIcon>();
             Assert.That(icon.style.display.value, Is.EqualTo(DisplayStyle.None));

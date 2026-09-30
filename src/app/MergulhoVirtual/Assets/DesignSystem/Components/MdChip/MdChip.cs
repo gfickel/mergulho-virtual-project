@@ -12,7 +12,8 @@ namespace MergulhoVirtual.DesignSystem
     /// <summary>
     /// M3 chip (assist + filter). Filter chips toggle <see cref="Selected"/> on
     /// click and show a leading check when selected; assist chips just raise
-    /// <see cref="Clicked"/>. Root = ≥48dp touch target, __container = the
+    /// <see cref="Clicked"/> and never grow a check, so selecting one cannot
+    /// change its width. Root = ≥48dp touch target, __container = the
     /// visible 32dp chip.
     /// </summary>
     [UxmlElement]
@@ -124,7 +125,13 @@ namespace MergulhoVirtual.DesignSystem
 
         void UpdateLeadingIcon()
         {
-            string icon = _selected ? CheckIconName : _iconName;
+            // The check belongs to FILTER chips only. An assist chip that grows an
+            // 18.5dp glyph the moment it is selected re-flows its whole row under
+            // the user's finger (the Reportar species / size / behaviour rows are
+            // assist chips painted from the ViewModel), and V2 draws selected and
+            // unselected assist chips at identical width. Kind's setter re-runs
+            // this, so a chip selected before its kind is known still catches up.
+            string icon = _selected && _kind == MdChipKind.Filter ? CheckIconName : _iconName;
             _leadingIcon.Icon = icon;
             bool hasIcon = icon.Length > 0;
             _leadingIcon.style.display = hasIcon ? DisplayStyle.Flex : DisplayStyle.None;

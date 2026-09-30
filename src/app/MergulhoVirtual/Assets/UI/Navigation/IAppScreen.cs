@@ -53,6 +53,22 @@ namespace MergulhoVirtual.UI.Navigation
         public const string Especie = "especie";
         public const string Sobre = "sobre";
 
+        /// <summary>
+        /// The "Conteúdo educativo" index — the list of educational articles, grouped
+        /// by category. A SUB-SCREEN, not a fifth tab: V2's bottom bar has exactly four
+        /// destinations and that is fixed, so the feature is reached the way Sobre is
+        /// (Decision D2), from a card on Início.
+        /// </summary>
+        public const string Conteudos = "conteudos";
+
+        /// <summary>
+        /// One article, open for reading. Pushed <i>with a payload</i> — the article id
+        /// travels on its own event so <c>ArticleViewModel</c> is set before the push
+        /// (see <c>AppUiHost.OnArticleRequested</c>); a bare route would open the reader
+        /// on whatever article happened to be there last.
+        /// </summary>
+        public const string Conteudo = "conteudo";
+
         public static readonly string[] Tabs = { Home, Mergulho, Praias, Avistamentos };
     }
 

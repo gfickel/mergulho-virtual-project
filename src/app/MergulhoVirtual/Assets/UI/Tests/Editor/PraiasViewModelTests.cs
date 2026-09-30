@@ -61,6 +61,10 @@ namespace MergulhoVirtual.UI.Tests
         sealed class FakeConditions : IConditionsService
         {
             public ConditionsData Current { get; set; }
+            public bool LastFetchFailed { get; set; }
+            public bool IsFetching { get; set; }
+            public int RefreshCalls;
+            public void Refresh() => RefreshCalls++;
 #pragma warning disable 67
             public event Action<ConditionsData> Changed;
 #pragma warning restore 67

@@ -8,7 +8,10 @@
     height: 4px;
     align-self: stretch;
     flex-shrink: 0;
-    border-radius: var(--md-sys-shape-corner-full);
+    /* Stadium = half of the 4dp track height. NOT corner-full: the track is as
+     * wide as its parent, so a huge radius would round it to a lens rather than
+     * capping the 4dp bar. See Tokens/_shape.uss. */
+    border-radius: 2px;
     overflow: hidden;
     background-color: var(--md-sys-color-secondary-container);
 }

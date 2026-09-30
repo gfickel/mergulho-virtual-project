@@ -1,14 +1,60 @@
 /* M3 menu — https://m3.material.io/components/menus/specs
  * Geometry of the overlay layer / scrim / popup position is inline C# (works
  * on themeless panels); everything visual lives here, token-only as always.
+ *
+ * NOTE: no hex literals anywhere in this file, comments included —
+ * TokenDisciplineTests.ComponentUss_HasNoHardcodedColors scans the raw text.
+ *
+ * THE SURFACE IS `surface` PLUS A HAIRLINE, NOT A CONTAINER TONE
+ *  UI Toolkit has no box-shadow, and this project's accepted substitution for a
+ *  shadowed surface is a 1px `outline-variant` border (DESIGN_IMPLEMENTATION §1).
+ *  MdMenu never received one, because it had no border to re-point — and its
+ *  `surface-container` fill sits six levels per channel from the `background` it
+ *  floats over, so on the Praias landing the popup had no discernible edge
+ *  anywhere on any side. V2 draws the menu as a white card. Hence `surface` +
+ *  the hairline; the two together are what make it read as a layer.
  */
 
 .md-menu {
-    background-color: var(--md-sys-color-surface-container);
+    background-color: var(--md-sys-color-surface);
+    border-width: 1px;
+    border-color: var(--md-sys-color-outline-variant);
     border-radius: var(--md-sys-shape-corner-extra-small);
     padding-top: 8px;
     padding-bottom: 8px;
     max-height: 240px;
+}
+
+/* The tap-to-dismiss backdrop. It had NO rule in any stylesheet until now — the
+ * class name existed only in MdMenu.cs — so the layer was fully transparent and the
+ * popup read as part of the page under it.
+ *
+ * 0.32 IS KEPT, BUT IT IS NOT THE SAME 0.32 AS MdDialog's — READ THIS BEFORE MOVING IT
+ *  Stock M3 gives menus NO scrim at all (only the modal surfaces, dialog and bottom
+ *  sheet, get one), so this is a deliberate addition and the number wants justifying
+ *  rather than copying. Two facts decide it:
+ *
+ *  1. A menu is not modal. The beach selector opens over the Praias hero photo for a
+ *     routine pick; a full modal wash there reads as a dialog and is a heavier
+ *     affordance than the interaction deserves. V2's Tela 9 shows no page dim. The
+ *     *separation* problem that motivated this rule is already solved properly, by
+ *     the `surface` fill + 1px hairline above — this layer only has to say "the page
+ *     behind is inert". Note it does not need any opacity to be TAPPABLE: a fully
+ *     transparent element still receives pointer events, so visibility is purely a
+ *     design choice here.
+ *  2. Unity blends in LINEAR color space, so an authored 0.32 black does NOT render as
+ *     a 32% dim: over a light page it renders as an ~16% one (measured effective sRGB
+ *     alpha 0.157). For a modal that is a defect — MdDialog and MdBottomSheet both
+ *     under-dim for exactly this reason and would need ~0.58 authored to deliver M3's
+ *     0.32. For a MENU the weaker result is the wanted one: a ~16% veil is the light,
+ *     non-modal dim this control should have.
+ *
+ *  So the authored number coincides with the dialog's while meaning something
+ *  different: there it is a spec value rendering too weak, here it is chosen for what
+ *  it actually renders. Do not "unify" the three by moving this one with them. */
+.md-menu__scrim {
+    background-color: var(--md-sys-color-scrim);
+    opacity: 0.32;
 }
 
 .md-menu__scroll {
@@ -34,21 +80,26 @@
     opacity: var(--md-sys-state-pressed-opacity);
 }
 
+/* The current choice. V2's open dropdown (Tela 9) draws no row fill at all, but a
+ * 17-beach list wants *some* marker for "this is what is set" — so it is a neutral
+ * raised surface tone, not the amber `secondary-container` this used to paint,
+ * which read as a selected chip sitting in a list. The label keeps `on-surface`. */
 .md-menu__item--selected {
-    background-color: var(--md-sys-color-secondary-container);
+    background-color: var(--md-sys-color-surface-container-high);
 }
 
+/* V2's menu rows are Inter 14 / 500. No `.md-typescale-*` class carries that pair
+ * (label-large is 14/600, body-large 14/400), so the face is authored here — the
+ * same exception `.md-nav-bar__label` and `.mv-alert-bar` make. Sizes and tracking
+ * are the brand's (14 / ls 0), not stock M3's 16 / 400. */
 .md-menu__item-label {
     margin: 0;
     padding: 0;
-    font-size: 16px;
+    font-size: 14px;
+    letter-spacing: 0;
     color: var(--md-sys-color-on-surface);
-    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Regular.asset");
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Medium.asset");
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.md-menu__item--selected .md-menu__item-label {
-    color: var(--md-sys-color-on-secondary-container);
 }

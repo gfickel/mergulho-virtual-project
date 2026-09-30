@@ -70,6 +70,8 @@ namespace MergulhoVirtual.DesignSystem.Tests
             var labels = VisibleLabels(sparkline);
             Assert.That(labels.Select(l => l.text), Is.EquivalentTo(new[] { "▲1", "▲4", "▼3" }));
             // Each label is positioned at its extremum's fraction of the width.
+            // Unattached, no width resolves, so this is the pre-clamp fallback;
+            // ClampLabelCenter_* below pins what happens once one does.
             var high1 = labels.First(l => l.text == "▲1");
             Assert.That(high1.style.left.value.value, Is.EqualTo(100f * 1 / 5).Within(0.01f));
             Assert.That(high1.style.left.value.unit, Is.EqualTo(LengthUnit.Percent));
@@ -82,6 +84,34 @@ namespace MergulhoVirtual.DesignSystem.Tests
             sparkline.SetSamples(new[] { 1f, 3f, 1f });
             sparkline.ExtremumLabelFormatter = null;
             Assert.That(VisibleLabels(sparkline), Is.Empty);
+        }
+
+        /// <summary>
+        /// The label strip sets no `overflow: hidden`, and percent + a -50%
+        /// translate clamps nothing — so without this an extremum at or near an
+        /// end hangs half a label outside the card. Pins the arithmetic; the
+        /// resolved widths it runs against only exist under a real panel.
+        /// </summary>
+        [Test]
+        public void ClampLabelCenter_KeepsTheWholeLabelInsideTheStrip()
+        {
+            const float strip = 300f;
+            const float label = 40f;
+
+            // An interior extremum is untouched.
+            Assert.That(MdSparkline.ClampLabelCenter(0.5f, strip, label), Is.EqualTo(150f).Within(0.001f));
+
+            // Both ends pull in by half a label instead of hanging over the edge.
+            Assert.That(MdSparkline.ClampLabelCenter(0f, strip, label), Is.EqualTo(20f).Within(0.001f));
+            Assert.That(MdSparkline.ClampLabelCenter(1f, strip, label), Is.EqualTo(280f).Within(0.001f));
+
+            // …and so does one merely NEAR an end — the Home card's last low tide,
+            // which measured 3.5dp past the card's padding box.
+            Assert.That(MdSparkline.ClampLabelCenter(0.99f, strip, label), Is.EqualTo(280f).Within(0.001f));
+
+            // A label wider than the strip cannot satisfy both edges: centre it,
+            // so it spills equally rather than snapping hard left.
+            Assert.That(MdSparkline.ClampLabelCenter(0f, 30f, 60f), Is.EqualTo(15f).Within(0.001f));
         }
 
         [Test]

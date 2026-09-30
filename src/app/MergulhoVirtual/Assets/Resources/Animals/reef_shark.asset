@@ -23,7 +23,6 @@ MonoBehaviour:
   prefab: {fileID: 4916284721031662055, guid: d6a0597b260f38dbca8fffa45412dd8f, type: 3}
   viewerScale: {x: 1, y: 1, z: 1}
   viewerOffset: {x: 0, y: 0, z: 0}
-  photoCredit: 'Foto: SEFSC Pascagoula Laboratory; Collection of Brandi Noble, NOAA/NMFS/SEFSC
-    / Public domain (Wikimedia Commons)'
-  modelCredit: '"Model 54A - Caribbean Reef Shark" (https://skfb.ly/6RnNA) by DigitalLife3D
-    is licensed under Creative Commons Attribution-NonCommercial (http://creativecommons.org/licenses/by-nc/4.0/).'
+  photoCredit: "Foto: SEFSC Pascagoula Laboratory; Collection of Brandi Noble, NOAA/NMFS/SEFSC
+    / Dom\xEDnio p\xFAblico (Wikimedia Commons)"
+  modelCredit: 'Modelo: DigitalLife3D / CC BY-NC 4.0 (Sketchfab)'

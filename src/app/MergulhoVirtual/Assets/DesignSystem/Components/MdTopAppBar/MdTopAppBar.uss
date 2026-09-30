@@ -21,22 +21,55 @@
     color: var(--md-sys-color-on-surface);
 }
 
-/* In-row title: M3 title-large. Shown for small/center-aligned only. */
+/* In-row title: shown for small/center-aligned only.
+ * NO font metrics here on purpose — MdTopAppBar.cs puts `.md-typescale-title-large`
+ * on the label, so the brand's 20/700 is the single source. Stock M3's 22/400 is
+ * what used to be hard-coded here, which every consumer then had to re-patch
+ * locally (ReportScreen.uss still does). */
 .md-top-app-bar__title {
     flex-grow: 1;
     flex-shrink: 1;
     margin-left: 8px;
     margin-right: 8px;
-    font-size: 22px;
     color: var(--md-sys-color-on-surface);
-    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Regular.asset");
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
+/* CENTRED ON THE BAR, NOT ON THE GAP BETWEEN THE SLOTS
+ * In flow, `flex-grow: 1` + `middle-center` centres the title inside whatever is
+ * left over between the nav and action slots — so one leading icon against two
+ * trailing ones pushed the string ~13dp off the bar's own centre. Taking the title
+ * out of flow and insetting it by one 48dp icon slot on EACH side makes its centre
+ * the bar's centre whatever the slots hold. `top/bottom: 0` + `middle-center` does
+ * the vertical centring too, rather than relying on how Yoga aligns an absolutely
+ * positioned child.
+ * The actions slot is pinned to the right edge for the same reason: with the title
+ * out of flow, the row's `space-between` would otherwise put a lone actions slot at
+ * the LEFT whenever there is no navigation icon.
+ * Trade-off: the title's box runs to 48dp from each edge, so a long title under a
+ * SECOND trailing action would slide beneath it (M3's centre-aligned bar carries one
+ * trailing icon). It ellipsizes before the bar edge either way.
+ * Also: with title AND actions out of flow, a centre-aligned bar no longer measures
+ * its own width from its content. It must be stretched or given one — which is what
+ * a bar docked at the top of a screen (or the gallery's explicit 380) already is. */
 .md-top-app-bar--center-aligned .md-top-app-bar__title {
+    position: absolute;
+    left: 48px;
+    right: 48px;
+    top: 0;
+    bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
     -unity-text-align: middle-center;
+}
+
+.md-top-app-bar--center-aligned .md-top-app-bar__actions {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
 }
 
 .md-top-app-bar__actions {

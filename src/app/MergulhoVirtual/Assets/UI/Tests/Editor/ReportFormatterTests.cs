@@ -14,7 +14,8 @@ namespace MergulhoVirtual.UI.Tests
         [Test]
         public void StateLabel_HasItsOwnWordsForEveryState()
         {
-            Assert.That(ReportFormatter.StateLabel(SightingState.Queued), Is.EqualTo("Pendente"));
+            Assert.That(ReportFormatter.StateLabel(SightingState.Queued), Is.EqualTo("PENDENTE"),
+                "uppercase because the Figma frame renders the pill that way; UI Toolkit has no text-transform");
             Assert.That(ReportFormatter.StateLabel(SightingState.Retrying), Is.EqualTo("Tentando de novo"));
             Assert.That(ReportFormatter.StateLabel(SightingState.WaitingForNetwork), Is.EqualTo("Sem conexão"));
             Assert.That(ReportFormatter.StateLabel(SightingState.Failed), Is.EqualTo("Falhou"));

@@ -8,7 +8,7 @@
  * TokenDisciplineTests.ComponentUss_HasNoHardcodedColors scans the raw text.
  *
  * GEOMETRY (1 USS px = 1 dp = 1 Figma pt, §1.2)
- *   radius   pill (corner-full)
+ *   radius   stadium, pinned at runtime to half the resolved height
  *   small    padding 4/10, label 11px 600   — V2's "Pendente"
  *   medium   padding 6/12, label 12px 600   — V2's hero badges and risk pills
  *
@@ -36,9 +36,20 @@
     align-items: center;
     align-self: flex-start;
     flex-shrink: 0;
-    border-radius: var(--md-sys-shape-corner-full);
     overflow: hidden;
 }
+
+/* WHY THERE IS NO border-radius HERE, AND NO corner-full
+ *   A stadium needs radius == height/2 EXACTLY; UI Toolkit clamps the two radius
+ *   axes independently, so corner-full's huge value draws a lens on anything
+ *   wider than it is tall (see Tokens/_shape.uss). Every other pill in the
+ *   library has an authored height and can write the literal half. This one
+ *   cannot: a tag's height is its padding plus TextCore's line box for the label
+ *   face, which is a font metric, not a design value. So MvTag's constructor
+ *   calls MdShape.KeepStadium(this) and the radius is pinned from the resolved
+ *   height on every layout. The per-rung values below are only the pre-layout
+ *   fallback, deliberately a shade UNDER half so that if the helper ever fails
+ *   to run the tag degrades to a rounded rect rather than back to a lens. */
 
 /* Fill layer. Sits under the label, clipped to the pill by the root's
  * overflow:hidden; the only element `on-image` fades. */
@@ -62,6 +73,7 @@
 
 .mv-tag--small {
     padding: 4px 10px;
+    border-radius: 9px;
 }
 .mv-tag--small .mv-tag__label {
     font-size: 11px;
@@ -69,6 +81,7 @@
 
 .mv-tag--medium {
     padding: 6px 12px;
+    border-radius: 11px;
 }
 .mv-tag--medium .mv-tag__label {
     font-size: 12px;
@@ -118,10 +131,23 @@
 }
 
 /* Over a photo: navy at 80% (V2 uses 0.80 on Tela 4's hero badges and the
- * species-card nursery badge, 0.85 on Tela 1's hero badges — 0.80 wins on count). */
+ * species-card nursery badge, 0.85 on Tela 1's hero badges — 0.80 wins on count).
+ *
+ * 0.90 AUTHORED, BECAUSE 0.80 IS A FIGMA ALPHA AND UNITY BLENDS IN LINEAR SPACE.
+ * Figma composites in sRGB; Unity converts to linear, blends, converts back, and so
+ * lands lighter for the same alpha — over a pale photo the badge was rendering 46/255
+ * per channel too light, i.e. a washed-out grey-blue instead of a near-solid navy
+ * chip, which is exactly the legibility the badge exists for. The backdrop is a user
+ * photo (arbitrary), so pre-blending to an opaque composite is not available the way
+ * it is for the camera-* tokens; this stays a real alpha, raised to the value that
+ * reproduces the sRGB composite under linear blending (derived per channel over a
+ * 7-photo tone sweep and averaged: 0.86-0.93, worst-case error 46 -> 18). A navy
+ * overlay diverges more per channel than a neutral one, which is why the residual
+ * is larger here than on the pure-black picker scrim. 0.80 is the INPUT, not the
+ * value to restore. */
 .mv-tag--on-image .mv-tag__surface {
     background-color: var(--md-sys-color-primary);
-    opacity: 0.8;
+    opacity: 0.9;
 }
 .mv-tag--on-image .mv-tag__label {
     color: var(--md-sys-color-on-primary);

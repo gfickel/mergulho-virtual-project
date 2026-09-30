@@ -19,11 +19,16 @@ using InputSystemGyroscope = UnityEngine.InputSystem.Gyroscope;
 /// so HasSensors stays false and IsStill stays false — the gate is inert.
 ///
 /// NOTE: a hand-held phone is never perfectly still (hand tremor), so the
-/// thresholds are deliberately loose and smoothed with an EMA. Tune them on
-/// a real device at the real location via the AR tuning panel; the panel's
-/// telemetry shows SmoothedGyro/SmoothedAccel live, so set thresholds from
-/// what you actually measure rather than trusting the units blindly
-/// (gyro ≈ rad/s, accel ≈ g, but backends differ slightly per platform).
+/// thresholds are deliberately loose and smoothed with an EMA. They must be set
+/// from values measured on a real device at the real location rather than from
+/// the unit labels (gyro ≈ rad/s, accel ≈ g, but backends differ slightly per
+/// platform): read SmoothedGyro/SmoothedAccel — logging them, or via
+/// ArStabilizationController.BuildTelemetry() — then set the thresholds on this
+/// component in the Inspector and rebuild. There is no on-device tuning UI.
+///
+/// This component is a thin shell: sensor plumbing lives here, the decision
+/// itself lives in <see cref="StillnessCore"/> (Assets/Scripts/AR/Core) so it
+/// can be measured offline by Assets/Editor/ArSim without a phone.
 /// </summary>
 public class StillnessDetector : MonoBehaviour
 {
@@ -55,7 +60,7 @@ public class StillnessDetector : MonoBehaviour
     public float SmoothedGyro { get; private set; }
     public float SmoothedAccel { get; private set; }
 
-    float quietTimer;
+    readonly StillnessCore core = new StillnessCore();
     bool hasAccelSensor;
 
     void Start()
@@ -95,28 +100,22 @@ public class StillnessDetector : MonoBehaviour
         }
 #endif
 
-        SmoothedGyro  = Mathf.Lerp(SmoothedGyro, rot, emaAlpha);
-        SmoothedAccel = Mathf.Lerp(SmoothedAccel, acc, emaAlpha);
-
-        // Without a linear-acceleration sensor, fall back to gyro-only gating.
-        bool loud = rot > gyroStillThreshold * exitMultiplier
-                 || (hasAccelSensor && acc > accelStillThreshold * exitMultiplier);
-
-        bool quiet = SmoothedGyro < gyroStillThreshold
-                  && (!hasAccelSensor || SmoothedAccel < accelStillThreshold);
-
-        if (loud)
+        // Copied EVERY frame, not once: a value written to the public fields while
+        // the app runs (an Inspector edit during Play) has to take effect on the
+        // next frame exactly as it did before the extraction.
+        core.Config = new StillnessCore.Settings
         {
-            // Real motion started: react immediately.
-            quietTimer = 0f;
-            IsStill = false;
-        }
-        else if (quiet)
-        {
-            quietTimer += Time.deltaTime;
-            if (quietTimer >= enterStillTime)
-                IsStill = true;
-        }
-        // In the hysteresis band between quiet and loud: keep current state.
+            gyroStillThreshold = gyroStillThreshold,
+            accelStillThreshold = accelStillThreshold,
+            enterStillTime = enterStillTime,
+            exitMultiplier = exitMultiplier,
+            emaAlpha = emaAlpha,
+        };
+
+        core.Step(Time.deltaTime, rot, acc, hasAccelSensor);
+
+        SmoothedGyro = core.SmoothedGyro;
+        SmoothedAccel = core.SmoothedAccel;
+        IsStill = core.IsStill;
     }
 }

@@ -18,6 +18,27 @@ public class ConditionsService : MonoBehaviour
     public ConditionsSnapshot CurrentConditions { get; private set; }
     public event Action<ConditionsSnapshot> ConditionsChanged;
 
+    /// <summary>
+    /// True when the most recent attempt to reach Open-Meteo produced nothing
+    /// usable. Cleared by the next attempt that does.
+    ///
+    /// <para>Before this existed a total failure was invisible to every caller:
+    /// nothing was assigned and <see cref="ConditionsChanged"/> was not raised, so
+    /// the UI could not tell "still loading" from "we tried and could not".</para>
+    /// </summary>
+    public bool LastFetchFailed { get; private set; }
+
+    /// <summary>True while a fetch is in flight — lets a retry affordance show
+    /// that the tap did something.</summary>
+    public bool IsFetching { get; private set; }
+
+    /// <summary>
+    /// Raised whenever <see cref="IsFetching"/> or <see cref="LastFetchFailed"/>
+    /// changes. Deliberately separate from <see cref="ConditionsChanged"/>, which
+    /// carries a snapshot and must keep meaning "there is new data".
+    /// </summary>
+    public event Action FetchStateChanged;
+
     Coroutine refreshLoop;
     string activeBeach;
 
@@ -63,6 +84,39 @@ public class ConditionsService : MonoBehaviour
         refreshLoop = StartCoroutine(RefreshLoop(targetBeach));
     }
 
+    /// <summary>
+    /// Re-fetch the active beach's conditions now, instead of waiting out the rest
+    /// of <c>refreshIntervalSeconds</c>. This is what a "Tentar novamente" button
+    /// calls, so it must really restart the request — it stops the idle loop and
+    /// starts a new one, whose first action is a fetch.
+    ///
+    /// <para>No-op while one is already in flight (a double tap must not fire two
+    /// pairs of requests), and when the component is disabled.</para>
+    /// </summary>
+    public void Refresh()
+    {
+        if (!isActiveAndEnabled || IsFetching) return;
+
+        if (string.IsNullOrEmpty(activeBeach))
+        {
+            // Nothing resolved yet (no GPS fix, or the first resolve failed) —
+            // go through the normal path so the fallback beach is picked again.
+            OnPlaceChanged(gps != null ? gps.CurrentPlaceName : null);
+            return;
+        }
+
+        StopRefresh();
+        refreshLoop = StartCoroutine(RefreshLoop(activeBeach));
+    }
+
+    void SetFetchState(bool fetching, bool failed)
+    {
+        if (IsFetching == fetching && LastFetchFailed == failed) return;
+        IsFetching = fetching;
+        LastFetchFailed = failed;
+        FetchStateChanged?.Invoke();
+    }
+
     string ResolveFallbackBeach()
     {
         if (!string.IsNullOrEmpty(fallbackBeachName)) return fallbackBeachName;
@@ -99,8 +153,13 @@ public class ConditionsService : MonoBehaviour
         if (!centroid.HasValue)
         {
             Debug.LogWarning($"ConditionsService: no centroid for beach '{beachName}'.");
+            // A data problem, not a network one — but from the UI's side it is
+            // still "we have no conditions and nothing is on its way".
+            SetFetchState(false, true);
             yield break;
         }
+
+        SetFetchState(true, LastFetchFailed);
 
         // ReverseGeocoding maps lon→x, lat→y (see GetCentroid).
         float lon = centroid.Value.x;
@@ -131,6 +190,8 @@ public class ConditionsService : MonoBehaviour
         {
             marineReq.Dispose();
             forecastReq.Dispose();
+            // Superseded by a beach change, not a failure — leave the flag alone.
+            SetFetchState(false, LastFetchFailed);
             yield break;
         }
 
@@ -164,7 +225,11 @@ public class ConditionsService : MonoBehaviour
         marineReq.Dispose();
         forecastReq.Dispose();
 
-        if (!anySuccess) yield break;
+        if (!anySuccess)
+        {
+            SetFetchState(false, true);
+            yield break;
+        }
 
         // Preserve fields from the prior snapshot (same beach) that this fetch didn't fill —
         // partial-success fetches shouldn't lose previously-known values.
@@ -175,6 +240,7 @@ public class ConditionsService : MonoBehaviour
 
         CurrentConditions = snapshot;
         SaveCache(beachName, snapshot);
+        SetFetchState(false, false);
         ConditionsChanged?.Invoke(snapshot);
     }
 

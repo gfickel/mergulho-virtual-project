@@ -58,6 +58,20 @@ namespace MergulhoVirtual.UI.Tests
             public bool Submit(SightingDraft draft) => Accept;
             public IReadOnlyList<SightingRecord> ListPending() => Pending;
             public IReadOnlyList<SightingRecord> ListFailed() => Failed;
+            /// <summary>Moves the record from Failed to Pending, like the real
+            /// adapter does, so a test can assert the row actually changed state.</summary>
+            public readonly List<string> Retried = new List<string>();
+            public bool Retry(string id)
+            {
+                Retried.Add(id);
+                var record = Failed.Find(r => r != null && r.Id == id);
+                if (record == null) return false;
+                Failed.Remove(record);
+                record.State = SightingState.Queued;
+                record.AttemptCount = 0;
+                Pending.Add(record);
+                return true;
+            }
         }
 
         sealed class FakePicker : IPhotoPicker
@@ -423,6 +437,65 @@ namespace MergulhoVirtual.UI.Tests
 
             var label = screen.Q<Label>(className: "mv-report__beach-label");
             Assert.That(label.text, Is.EqualTo(ReportViewModel.NoBeachText));
+        }
+
+        // ---- Retrying a failed report ---------------------------------------
+
+        /// <summary>
+        /// A permanently-failed report is otherwise a dead end — the queue will
+        /// never touch it again. The button is the only way out, and it exists on
+        /// exactly the rows that need it.
+        /// </summary>
+        [Test]
+        public void OnlyTheFailedRow_DrawsARetryButton()
+        {
+            reports.Pending.Add(new SightingRecord
+            {
+                Id = "queued", SpeciesLabel = "Tubarão-limão", WhenUtc = Now, State = SightingState.Queued,
+            });
+            reports.Failed.Add(new SightingRecord
+            {
+                Id = "dead", SpeciesLabel = "Tubarão-tigre", WhenUtc = Now.AddMinutes(1),
+                State = SightingState.Failed, AttemptCount = 3,
+            });
+            Build();
+
+            var cards = PendingCards();
+            Assert.That(cards.Count, Is.EqualTo(2));
+
+            var failed = cards[0];  // newest first
+            var queued = cards[1];
+            var button = failed.Q<MdButton>(className: "mv-report__pending-retry");
+            Assert.That(button, Is.Not.Null);
+            Assert.That(button.Text, Is.EqualTo(ReportFormatter.RetryLabel));
+            Assert.That(queued.Q<MdButton>(className: "mv-report__pending-retry"), Is.Null);
+
+            // An inert card must keep letting taps fall through to the scroll view;
+            // only the one carrying a button becomes pickable.
+            Assert.That(failed.pickingMode, Is.EqualTo(PickingMode.Position));
+            Assert.That(queued.pickingMode, Is.EqualTo(PickingMode.Ignore));
+        }
+
+        [Test]
+        public void TappingRetry_RequeuesThatReport_AndTheRowStopsLookingFailed()
+        {
+            reports.Failed.Add(new SightingRecord
+            {
+                Id = "dead", SpeciesLabel = "Tubarão-tigre", WhenUtc = Now,
+                State = SightingState.Failed, AttemptCount = 3,
+            });
+            Build();
+
+            // What the button's handler does (EditMode has no panel to click in).
+            vm.RetryPending("dead");
+            screen.RenderPendingForTests();
+
+            Assert.That(reports.Retried, Is.EqualTo(new[] { "dead" }));
+            var card = PendingCards()[0];
+            Assert.That(card.ClassListContains("mv-report__pending-card--failed"), Is.False);
+            Assert.That(card.Q<MvTag>().Text, Is.EqualTo(ReportFormatter.QueuedLabel));
+            Assert.That(card.Q<MdButton>(className: "mv-report__pending-retry"), Is.Null,
+                "a queued report is already going to be retried — the button would promise nothing new");
         }
     }
 }

@@ -29,6 +29,60 @@
  *
  *  Green is the one hue in the system that is neither navy nor amber; it is
  *  mandated by the design (#34C759) and so carries its own tonal on-colors.
+ *
+ *  ---- Camera-overlay family (Slice 4, the AR HUD — §8.4) -------------------
+ *  Surfaces that float over the LIVE CAMERA rather than over a themed page, so
+ *  they are the one group whose values are identical in light and dark: the
+ *  backdrop is whatever the lens is pointing at, and it is never the theme.
+ *  Using inverse-surface for the info card would have been the obvious M3 role
+ *  (light = the exact brand value) but it FLIPS to a light grey in dark, which
+ *  would render the card white-on-camera; hence an explicit pair here.
+ *
+ *  THE FIVE HAIRLINE/FILL VALUES ARE PRE-BLENDED COMPOSITES, NOT ALPHAS.
+ *  Unity renders in LINEAR color space (ProjectSettings m_ActiveColorSpace: 1):
+ *  a USS color is converted to linear, blended, and converted back. Figma blends
+ *  directly in sRGB. So a translucent value transcribed from Figma composites
+ *  differently in Unity — always landing too LIGHT. Measured: white at 0.15 over
+ *  the info card rendered (108,109,110) where V2 shows (42,48,55). The per-channel
+ *  alphas that would undo that diverge (0.022 / 0.026 / 0.032 for that one case),
+ *  so no single alpha reproduces Figma. Where the backdrop is OPAQUE AND KNOWN —
+ *  which every one of these is, the AR card and the pill both being opaque — the
+ *  exact fix is to author the composite itself. That is what these are.
+ *
+ *  CONSEQUENCE, AND THE ONE THING THAT CAN SILENTLY ROT: each value is bonded to
+ *  ONE backdrop. Change camera-surface or camera-surface-dim and every composite
+ *  below has to be recomputed against the new backdrop — they will not follow on
+ *  their own the way an alpha would. That coupling is why they are named after
+ *  the surface they are drawn ON, not after how translucent they look.
+ *
+ *  token                     | value   | = Figma paint      over            | site
+ *  --------------------------|---------|--------------------|--------------|-----------------------
+ *  camera-surface            | #3A3F45 | opaque             | —            | back circle + beach pill
+ *  camera-surface-dim        | #050B14 | opaque             | —            | species info-card fill
+ *  on-camera-surface         | #FFFFFF | opaque             | —            | every glyph and label
+ *  camera-outline            | #2A3037 | white @ 0.15       | surface-dim  | info-card hairline
+ *  camera-outline-dim        | #54585D | white @ 0.13       | surface      | control hairlines (pill, back)
+ *  camera-divider            | #262B33 | white @ 0.13       | surface-dim  | the card's internal rule
+ *  camera-fill               | #1E232C | white @ 0.10       | surface-dim  | close-button disc fill
+ *  camera-fill-outline       | #40444C | white @ 0.15       | camera-fill  | close-button disc hairline
+ *
+ *  NAMING WART, KEPT ON PURPOSE: post-pre-blend `camera-outline-dim` is LIGHTER
+ *  than `camera-outline`, because "dim" named the smaller alpha (0.13 vs 0.15)
+ *  and the two sit on different backdrops. The names are kept so the app-side
+ *  MergulhoScreen.uss that consumes them does not have to move in the same
+ *  change; rename both to say where they are drawn once that file is free.
+ *
+ *  ---- Muted ink on the inverse surface (bottom navigation bar) --------------
+ *  Appendix A.1 maps the inactive tab's "white at 50%" to inverse-on-surface at
+ *  50%. Same linear-space problem, same fix: the bar is opaque inverse-surface,
+ *  so the composite is authored directly. Authored as an `opacity` it rendered
+ *  (183,184,185) in light against V2's (127,130,136) — the inactive tabs read
+ *  almost as bright as the active one. Unlike the camera family this one DOES
+ *  differ per theme, because both the ink and the bar flip.
+ *
+ *  token                     | light   | dark    | = inverse-on-surface @ 0.5 over inverse-surface
+ *  --------------------------|---------|---------|------------------------------------------------
+ *  inverse-on-surface-muted  | #7F8288 | #828891 | inactive nav-bar icon + label
  */
 :root {
     --md-sys-color-success: #34C759;
@@ -40,4 +94,19 @@
     --md-sys-color-on-warning: #152336;
     --md-sys-color-warning-container: #FFF7E6;
     --md-sys-color-on-warning-container: #152336;
+
+    /* Camera overlays (AR HUD) — see the header table. Same in both themes.
+     * PRE-BLENDED composites, not alphas: each is bonded to the backdrop named
+     * in that table. Recompute them if camera-surface(-dim) ever moves. */
+    --md-sys-color-camera-surface: #3A3F45;
+    --md-sys-color-camera-surface-dim: #050B14;
+    --md-sys-color-on-camera-surface: #FFFFFF;
+    --md-sys-color-camera-outline: #2A3037;
+    --md-sys-color-camera-outline-dim: #54585D;
+    --md-sys-color-camera-divider: #262B33;
+    --md-sys-color-camera-fill: #1E232C;
+    --md-sys-color-camera-fill-outline: #40444C;
+
+    /* Inactive bottom-nav ink — see the header table. Pre-blended, per theme. */
+    --md-sys-color-inverse-on-surface-muted: #7F8288;
 }

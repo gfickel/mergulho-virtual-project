@@ -1,0 +1,243 @@
+/* Conteúdo educativo — the educational-article index.
+ *
+ * ⚠ NO FIGMA FRAME EXISTS FOR THIS SCREEN. V2's frame inventory has no
+ * educational-content surface at all (the feature postdates the prototype), so
+ * nothing below is transcribed — it is DESIGNED against the language Início and
+ * Praia detalhe established, and it wants a designer's review. Where a value had a
+ * precedent it was copied outright rather than re-decided: 16dp side gutters, white
+ * `surface` cards with a 1px `outline-variant` border, corner-large-increased (20)
+ * on a content card, title-medium section headings, muted label-small credits.
+ *
+ * TOKENS ONLY: TokenDisciplineTests scans every .uss under Assets/UI as RAW TEXT, so
+ * a colour literal fails the suite even inside a comment — hex is written 0xRRGGBB
+ * here by house convention. 1 USS px = 1 dp (§1.2).
+ *
+ * Accepted fidelity losses, the same list as every other screen:
+ *  - No box-shadow (§3.6): each card carries a 1px outline-variant border instead.
+ *  - No `gap`: gaps are margins, and "skip the first child" is a modifier class the
+ *    screen adds in code (USS has no :first-child).
+ *  - No `aspect-ratio`: the cover is a fixed height — see .mv-conteudos__card-media.
+ *  - Label padding/margin is zeroed app-wide in Tokens/_typography.uss, so every
+ *    margin below is one this file authored.
+ */
+
+.mv-conteudos {
+    flex-grow: 1;
+}
+
+/* Opaque page surface. The root above it stays transparent so the strip reserved for
+ * the navigation bar never paints over it or blocks its taps. Unlike Praia detalhe
+ * and Espécie there is no full-bleed hero, so this container takes the TOP safe-area
+ * inset as padding and its background still paints under the status bar. */
+.mv-conteudos__content {
+    flex-grow: 1;
+    background-color: var(--md-sys-color-background);
+}
+
+.mv-conteudos__scroll {
+    flex-grow: 1;
+}
+
+.mv-conteudos__body {
+    /* Scroll content sizes to its children; without this the body is a shrinkable
+     * flex child and a short viewport compresses the cards instead of scrolling. */
+    flex-shrink: 0;
+    padding-top: 8px;
+    padding-left: 16px;
+    padding-right: 16px;
+    /* Breathing room only — the navigation bar's own clearance is the shell's
+     * padding on the root. Matches Espécie's tail. */
+    padding-bottom: 40px;
+}
+
+/* ---- Header ---- */
+
+.mv-conteudos__header {
+    flex-direction: column;
+    margin-bottom: 24px;
+}
+
+/* The 48dp touch target sits ON the body's 16dp gutter, with MdIconButton's 40dp
+ * visual centred inside it — the same trade MvHeroHeader documents for its floating
+ * back button (deviation 2), so the two back affordances sit on the same grid. */
+.mv-conteudos__nav-row {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.mv-conteudos__title-row {
+    flex-direction: row;
+    /* flex-start, not center: identical for a one-line headline, and it keeps the
+     * glyph beside the FIRST line if the headline ever wraps. */
+    align-items: flex-start;
+}
+
+.mv-conteudos__title-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+    margin-right: 10px;
+    /* 2dp of optical lead-in: the 28px glyph's ink box is taller than the 24px cap
+     * height beside it, so aligning the boxes puts the mark visibly high. */
+    margin-top: 2px;
+    color: var(--md-sys-color-secondary);
+}
+
+/* The headline is the LAST child of its row and the only flexible one, so it may
+ * wrap rather than shrink into a neighbour — the flex-row footgun the house rule
+ * guards against needs two competing labels, and there is one label here. */
+.mv-conteudos__title {
+    flex-shrink: 1;
+    white-space: normal;
+    color: var(--md-sys-color-primary);
+}
+
+.mv-conteudos__subtitle {
+    margin-top: 8px;
+    white-space: normal;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-conteudos__count {
+    margin-top: 10px;
+    white-space: normal;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ---- Category groups ---- */
+
+.mv-conteudos__groups {
+    flex-direction: column;
+}
+
+.mv-conteudos__group {
+    flex-direction: column;
+}
+
+.mv-conteudos__group--gutter {
+    margin-top: 28px;
+}
+
+/* Same treatment as every other section heading in the app (Praia detalhe, Espécie):
+ * title-medium in `primary`, 12dp above its content. */
+.mv-conteudos__group-heading {
+    margin-bottom: 12px;
+    white-space: normal;
+    color: var(--md-sys-color-primary);
+}
+
+/* ---- Cards ---- */
+
+/* MdCard supplies the outlined surface, `overflow: hidden` (which is what makes the
+ * cover's top corners follow the card, and the state layer's corners too) and a 16dp
+ * padding this rule removes: the cover is full-bleed, so the inset moves to the text
+ * block below it. Radius is lifted from MdCard's corner-medium to the 20dp the Início
+ * feature cards use, which is this app's content-card rung. */
+.mv-conteudos__card {
+    padding: 0;
+    border-radius: var(--md-sys-shape-corner-large-increased);
+}
+
+.mv-conteudos__card--gutter {
+    margin-top: 16px;
+}
+
+/* 200dp ≈ 16:9 at the 390dp design width (the card's content box is 358, and
+ * 358/16×9 = 201). UI Toolkit has no `aspect-ratio`, so the height is fixed and the
+ * ratio drifts with the viewport: 1.79:1 at 390dp, 1.64:1 at 360dp. That is
+ * invisible because the Image is ScaleAndCrop — a slightly taller box crops slightly
+ * less off the top and bottom, it never letterboxes. */
+.mv-conteudos__card-media {
+    height: 200px;
+    flex-shrink: 0;
+    /* Shows only in the beat before a sprite is decoded; the block is not built at
+     * all when there is no sprite to put in it. Same media-well token as Praia
+     * detalhe's species photo and Espécie's video poster. */
+    background-color: var(--md-sys-color-surface-container-high);
+}
+
+.mv-conteudos__card-image {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.mv-conteudos__card-body {
+    flex-direction: column;
+    padding: 16px;
+}
+
+.mv-conteudos__card-title {
+    white-space: normal;
+    color: var(--md-sys-color-primary);
+}
+
+.mv-conteudos__card-summary {
+    margin-top: 6px;
+    white-space: normal;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.mv-conteudos__card-meta {
+    flex-direction: row;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.mv-conteudos__card-meta-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-right: 6px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* nowrap + no shrink: it shares a row with the glyph, it is bounded by construction
+ * ("N min de leitura", at most three digits), and a wrap would strand a word beside
+ * the clock. */
+.mv-conteudos__card-meta-label {
+    flex-shrink: 0;
+    white-space: nowrap;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* NO OPACITY. A credit is a licence CONDITION, not decoration — the same rule that
+ * had to be applied to Praia detalhe's and Espécie's credit lines after they were
+ * dimmed to 0.8 and measured at 3.29:1 / 2.68:1. `on-surface-variant` on the card
+ * surface passes AA on its own. */
+.mv-conteudos__card-credit {
+    margin-top: 10px;
+    white-space: normal;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Press/hover/focus tint — the M3 state-layer pattern (_state.uss), identical to the
+ * Início feature cards, because the whole card is one tap target. */
+.mv-conteudos__card .md-state-layer {
+    background-color: var(--md-sys-color-primary);
+}
+
+.mv-conteudos__card:hover .md-state-layer {
+    opacity: var(--md-sys-state-hover-opacity);
+}
+
+.mv-conteudos__card:focus .md-state-layer {
+    opacity: var(--md-sys-state-focus-opacity);
+}
+
+.mv-conteudos__card:active .md-state-layer {
+    opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* ---- Empty / could-not-load state ---- */
+
+/* MvStateView centres its content in whatever height it is given and bottom-anchors
+ * its footer; inside this scrolling column there is no free space to grow into, so a
+ * min-height is what keeps the block from collapsing into a cramped three lines
+ * under the header. The footer is hidden either way — neither state is retryable, so
+ * ArticlesViewModel.StateActionLabel is always null. */
+.mv-conteudos__state {
+    min-height: 320px;
+    flex-shrink: 0;
+}

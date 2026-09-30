@@ -1,6 +1,7 @@
 /* M3 FAB — https://m3.material.io/components/floating-action-button/specs
  * Root = transparent ≥48dp touch target; __container = the visible FAB.
- * Sizes: small 40dp (corner 12), regular 56dp (corner 16), large 96dp (corner 28).
+ * Sizes: small 40dp (corner 12), regular 56dp (corner 16), large 96dp (corner 24 —
+ * corner-extra-large, which the V2 retune moved from M3's 28; Tokens/_shape.uss).
  */
 
 .md-fab {

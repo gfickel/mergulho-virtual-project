@@ -70,6 +70,7 @@ namespace MergulhoVirtual.DesignSystem.Gallery
             BuildMediaCarouselSection(scroll);
             BuildOptionCardSection(scroll);
             BuildMediaPickerSection(scroll);
+            BuildStateViewSection(scroll);
             BuildIconsSection(scroll);
         }
 
@@ -742,6 +743,21 @@ namespace MergulhoVirtual.DesignSystem.Gallery
             row.style.flexDirection = FlexDirection.Column;
             row.style.alignItems = Align.FlexStart;
 
+            // Width sweep. A tag has no authored height, so its stadium radius is
+            // pinned at runtime from the resolved height (MdShape.KeepStadium).
+            // The wider the tag, the more obviously a per-axis-clamped radius
+            // would bulge into a lens — so this row is the regression to eyeball.
+            var widthRow = new VisualElement();
+            widthRow.AddToClassList("gallery-row");
+            widthRow.Add(new MvTag { Text = "A", Variant = MvTagVariant.Primary });
+            widthRow.Add(new MvTag { Text = "Recifal", Variant = MvTagVariant.Primary });
+            widthRow.Add(new MvTag
+            {
+                Text = "Correnteza forte na maré vazante",
+                Variant = MvTagVariant.Primary,
+            });
+            row.Add(widthRow);
+
             foreach (MvTagSize size in System.Enum.GetValues(typeof(MvTagSize)))
             {
                 var sizeRow = new VisualElement();
@@ -1134,6 +1150,93 @@ namespace MergulhoVirtual.DesignSystem.Gallery
                 HintText = "JPEG ou PNG, até 20MB",
             };
             Case("custom EmptyTitle / HintText", custom);
+
+            row.Add(status);
+        }
+
+        void BuildStateViewSection(VisualElement parent)
+        {
+            var row = Section(parent, "MvStateView",
+                "Error / offline / empty · glyph + title + body + one action · full-height and inline · no action = no button.");
+            row.style.flexDirection = FlexDirection.Column;
+            row.style.alignItems = Align.Stretch;
+            // .gallery-row is `flex-wrap: wrap`. In a COLUMN whose children refuse
+            // to shrink (MvStateView is flex-shrink: 0 so a screen cannot squash a
+            // state into nothing), the overflow wraps into a SECOND COLUMN, which
+            // the 390dp-wide section screenshot then clips — MvMediaPicker's
+            // section shows the same artefact. Stacking is what this section means.
+            row.style.flexWrap = Wrap.NoWrap;
+
+            var status = new Label("-");
+            status.AddToClassList("md-typescale-label-medium");
+
+            void Caption(string text)
+            {
+                var label = new Label(text);
+                label.AddToClassList("md-typescale-body-small");
+                row.Add(label);
+            }
+
+            // 1 + 2. The two designed frames (79:1304 / 81:1403), at a height that
+            //        shows the button bottom-anchored the way a screen gives it.
+            foreach (var (variant, caption) in new[]
+                     {
+                         (MvStateViewVariant.Error, "Error (79:1304) — full height, button bottom-anchored"),
+                         (MvStateViewVariant.Offline, "Offline (81:1403) — identical but for the glyph"),
+                     })
+            {
+                var view = new MvStateView
+                {
+                    Variant = variant,
+                    Title = "Algo deu errado por aqui",
+                    Body = "Não conseguimos carregar as informações.",
+                    ActionText = "Tentar novamente",
+                };
+                view.style.height = 320;
+                view.ActionInvoked += () => status.text = $"ActionInvoked from '{caption}'";
+                row.Add(view);
+                Caption(caption);
+            }
+
+            // 3. Inline: no definite height to grow into, so the block collapses to
+            //    its content and the button follows the body. Same component.
+            var inline = new MvStateView
+            {
+                Variant = MvStateViewVariant.Empty,
+                Title = "Nenhum avistamento pendente",
+                Body = "Os envios aparecem aqui até chegarem ao servidor.",
+                ActionText = "Atualizar",
+            };
+            inline.ActionInvoked += () => status.text = "ActionInvoked from 'inline empty'";
+            var card = new MdCard { Variant = MdCardVariant.Outlined };
+            card.Add(inline);
+            row.Add(card);
+            Caption("Empty, inline inside a card — auto height, button directly under the body");
+
+            // 4. No action at all: a state with nothing honest to retry draws no
+            //    button rather than a dead one.
+            var noAction = new MvStateView
+            {
+                Variant = MvStateViewVariant.Empty,
+                Icon = "check_circle",
+                Title = "Tudo enviado",
+                Body = "Nada na fila.",
+            };
+            row.Add(noAction);
+            Caption("No ActionText — the whole footer is hidden (custom glyph overrides the variant default)");
+
+            // 5. Long pt-BR copy wraps rather than clipping.
+            var wrapping = new MvStateView
+            {
+                Variant = MvStateViewVariant.Offline,
+                Title = "Sem conexão com a internet",
+                Body = "Não foi possível atualizar as condições do mar. Verifique sua conexão e " +
+                       "tente novamente — os avistamentos já registrados continuam na fila.",
+                ActionText = "Tentar novamente",
+            };
+            wrapping.ActionInvoked += () => status.text = "ActionInvoked from 'wrapping'";
+            row.Add(wrapping);
+            Caption("Long copy wraps (no line-height in UI Toolkit — Appendix B)");
 
             row.Add(status);
         }

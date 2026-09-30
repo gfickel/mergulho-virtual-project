@@ -121,7 +121,12 @@ public class FPSCounter : MonoBehaviour
     private static double AvgRecorder(ProfilerRecorder r)
     {
         if (!r.Valid) return 0;
-        int count = r.Capacity;
+        // Count, not Capacity: Capacity is the ring buffer's size, Count is how
+        // many samples it actually holds. Until the buffer fills, GetSample(i)
+        // past Count throws IndexOutOfRangeException — one per frame for the
+        // first second or so of every run, which a development build paints
+        // on-screen.
+        int count = r.Count;
         if (count == 0) return 0;
         double sum = 0;
         int n = 0;

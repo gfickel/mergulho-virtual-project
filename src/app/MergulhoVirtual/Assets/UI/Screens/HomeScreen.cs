@@ -36,6 +36,11 @@ namespace MergulhoVirtual.UI
         readonly Label waveValue, tideValue, moonValue, windValue, waterValue, freshnessLabel;
         readonly MdSparkline sparkline;
 
+        /// <summary>The five rows, the freshness line and the chart — everything the
+        /// conditions state view stands in for when there is nothing to show.</summary>
+        readonly VisualElement[] conditionsData;
+        readonly MvStateView conditionsState;
+
         bool subscribed;
 
         /// <summary>
@@ -78,7 +83,7 @@ namespace MergulhoVirtual.UI
 
             var conditions = BuildConditionsCard(
                 out waveValue, out tideValue, out moonValue, out windValue, out waterValue,
-                out freshnessLabel, out sparkline);
+                out freshnessLabel, out sparkline, out conditionsData, out conditionsState);
             body.Add(conditions);
 
             // 2 rows × 2 cards, 173×138 each, gap 12 (the cards flex to fill, which
@@ -107,6 +112,14 @@ namespace MergulhoVirtual.UI
             // is a deliberate addition, full-width in the same card language so it reads
             // as its own section rather than as an orphaned fifth grid cell.
             if (vm.WideFeature != null) body.Add(MakeFeatureCard(vm.WideFeature, wide: true));
+
+            // "Conteúdo educativo" — also NOT in the Figma frame, and for the same
+            // reason as the card above it: the feature gets no bottom-bar tab (V2 has
+            // four destinations and that is fixed), so it needs a discoverable entry
+            // point, and this is the established language for one. It follows Sobre
+            // rather than leading it because Sobre is the older entry and the grid
+            // above already sets the reading order.
+            if (vm.LearnFeature != null) body.Add(MakeFeatureCard(vm.LearnFeature, wide: true));
 
             RegisterCallback<DetachFromPanelEvent>(_ => Unsubscribe());
 
@@ -199,7 +212,8 @@ namespace MergulhoVirtual.UI
         /// </summary>
         VisualElement BuildConditionsCard(
             out Label wave, out Label tide, out Label moon, out Label wind, out Label water,
-            out Label freshness, out MdSparkline chart)
+            out Label freshness, out MdSparkline chart,
+            out VisualElement[] dataBlock, out MvStateView state)
         {
             var card = new VisualElement();
             card.AddToClassList("mv-home__card");
@@ -222,19 +236,30 @@ namespace MergulhoVirtual.UI
             titleGroup.AddManipulator(new Clickable(() => NavigationRequested?.Invoke(AppRoutes.Praias)));
             header.Add(titleGroup);
 
-            var link = new Label(HomeViewModel.TideTableLinkText) { focusable = true };
+            // Two elements, not one, and the split is the whole point: the design's
+            // underline is a 1px BOTTOM BORDER on the label (UI Toolkit has no
+            // text-decoration — same fidelity trade as §3.6's shadows), so the label
+            // cannot also be the 48dp touch target. Growing its own box either pushes
+            // the rule ~17dp clear of the text or drops the ink ~15dp below "Hoje",
+            // which shares this row. The wrapper takes the height and the Clickable
+            // and paints nothing; the label keeps its rule and stops being pickable.
+            // Measured before: ~14dp of hit box against the library's 48dp minimum.
+            var linkHit = new VisualElement { focusable = true };
+            linkHit.AddToClassList("mv-conditions__link-hit");
+            linkHit.AddManipulator(new Clickable(() => TideTableRequested?.Invoke()));
+
+            var link = new Label(HomeViewModel.TideTableLinkText) { pickingMode = PickingMode.Ignore };
             link.AddToClassList("md-typescale-label-small");
             link.AddToClassList("mv-conditions__link");
-            // UI Toolkit has no text-decoration; the design's underline is a 1px
-            // bottom border on the label (same fidelity trade as §3.6's shadows).
-            link.AddManipulator(new Clickable(() => TideTableRequested?.Invoke()));
-            header.Add(link);
+            linkHit.Add(link);
+            header.Add(linkHit);
 
-            wave = AddConditionsRow(card, "Onda");
-            tide = AddConditionsRow(card, "Maré");
-            moon = AddConditionsRow(card, "Lua");
-            wind = AddConditionsRow(card, "Vento");
-            water = AddConditionsRow(card, "Água");
+            var rows = new VisualElement[5];
+            wave = AddConditionsRow(card, "Onda", out rows[0]);
+            tide = AddConditionsRow(card, "Maré", out rows[1]);
+            moon = AddConditionsRow(card, "Lua", out rows[2]);
+            wind = AddConditionsRow(card, "Vento", out rows[3]);
+            water = AddConditionsRow(card, "Água", out rows[4]);
 
             freshness = new Label();
             freshness.AddToClassList("md-typescale-label-small");
@@ -249,12 +274,33 @@ namespace MergulhoVirtual.UI
             chart.AddToClassList("mv-conditions__sparkline");
             card.Add(chart);
 
+            // §8.7's state, inline inside the card rather than over the screen: the
+            // header above it is still true and still drills into Praias, and the
+            // rest of Início is unaffected by the sea forecast being unreachable.
+            // The block is built once and hidden; it carries no copy of its own, so
+            // every string below comes from the ViewModel (StateViewCopy).
+            state = new MvStateView();
+            state.AddToClassList("mv-conditions__state");
+            state.ActionInvoked += () =>
+            {
+                vm.RetryConditions();
+                RenderData();
+            };
+            state.style.display = DisplayStyle.None;
+            card.Add(state);
+
+            dataBlock = new VisualElement[rows.Length + 2];
+            Array.Copy(rows, dataBlock, rows.Length);
+            dataBlock[rows.Length] = freshness;
+            dataBlock[rows.Length + 1] = chart;
+
             return card;
         }
 
-        static Label AddConditionsRow(VisualElement parent, string rowName)
+        static Label AddConditionsRow(VisualElement parent, string rowName, out VisualElement rowElement)
         {
             var row = new VisualElement { pickingMode = PickingMode.Ignore };
+            rowElement = row;
             row.AddToClassList("mv-conditions__row");
 
             var nameLabel = new Label(rowName) { pickingMode = PickingMode.Ignore };
@@ -322,6 +368,24 @@ namespace MergulhoVirtual.UI
 
         void RenderData()
         {
+            // Nothing fetched and the service says it tried: the rows would be five
+            // em dashes over an empty chart, which reads as "the sea is blank"
+            // rather than "we could not load it". Swap in the state view instead.
+            bool unavailable = vm.ConditionsUnavailable;
+            foreach (var element in conditionsData)
+                element.style.display = unavailable ? DisplayStyle.None : DisplayStyle.Flex;
+            conditionsState.style.display = unavailable ? DisplayStyle.Flex : DisplayStyle.None;
+
+            if (unavailable)
+            {
+                conditionsState.Variant = vm.IsOffline ? MvStateViewVariant.Offline : MvStateViewVariant.Error;
+                conditionsState.Title = vm.ConditionsStateTitle;
+                conditionsState.Body = vm.ConditionsStateBody;
+                conditionsState.ActionText = vm.ConditionsStateAction;
+                conditionsState.ActionEnabled = vm.ConditionsRetryEnabled;
+                return;
+            }
+
             waveValue.text = vm.WaveText;
             tideValue.text = vm.TideText;
             moonValue.text = vm.MoonText;

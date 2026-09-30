@@ -183,6 +183,96 @@ public class JobSerializationTests
         Assert.AreEqual(env.data, back.data);
     }
 
+    /// <summary>
+    /// The three fields the network-vs-server backoff split added must round-trip,
+    /// or a job that failed on a dead uplink comes back off disk looking like one
+    /// the server rejected and gets the hour-long schedule.
+    /// </summary>
+    [Test]
+    public void Envelope_RoundtripPreservesTheBackoffSplitFields()
+    {
+        var env = new JobEnvelope
+        {
+            type = "ReportSighting",
+            id = "abc123",
+            attemptCount = 7,
+            nextAttemptAtUtcTicks = 638000000000000000L,
+            createdAtUtcTicks = 637000000000000000L,
+            lastError = "watchdog: stalled 45s with no bytes transferred",
+            data = "{}",
+            lastFailureWasNetwork = true,
+            backoffStep = 2,
+            networkFailureStep = 3,
+        };
+
+        var back = JsonUtility.FromJson<JobEnvelope>(JsonUtility.ToJson(env));
+
+        Assert.IsTrue(back.lastFailureWasNetwork);
+        Assert.AreEqual(2, back.backoffStep);
+        Assert.AreEqual(3, back.networkFailureStep);
+    }
+
+    /// <summary>
+    /// An envelope written by the build that predates the split has none of those
+    /// keys. JsonUtility leaves a missing field at its default, and false/0 is
+    /// exactly "has never failed" — which is the only reason envelope fields may be
+    /// added but never renamed or removed.
+    /// </summary>
+    [Test]
+    public void Envelope_AFileFromBeforeTheSplitLoadsWithTheNewFieldsAtTheirDefaults()
+    {
+        const string legacy =
+            "{\"type\":\"ReportSighting\",\"id\":\"abc123\",\"attemptCount\":4," +
+            "\"nextAttemptAtUtcTicks\":638000000000000000," +
+            "\"createdAtUtcTicks\":637000000000000000," +
+            "\"lastError\":\"500 Internal Server Error\",\"data\":\"{}\"}";
+
+        var back = JsonUtility.FromJson<JobEnvelope>(legacy);
+
+        Assert.AreEqual("abc123", back.id, "the pre-split fields still load");
+        Assert.AreEqual(4, back.attemptCount);
+        Assert.IsFalse(back.lastFailureWasNetwork);
+        Assert.AreEqual(0, back.backoffStep);
+        Assert.AreEqual(0, back.networkFailureStep);
+    }
+
+    /// <summary>
+    /// The 401 rule is keyed on this flag rather than on AttemptCount, so it has to
+    /// survive the app being killed mid-queue — otherwise a relaunch hands the job
+    /// a second "first" 401 and it retries forever.
+    /// </summary>
+    [Test]
+    public void ReportSightingJob_RoundtripPreservesTheTokenRefreshFlag()
+    {
+        var original = new ReportSightingJob
+        {
+            Url = "https://mergulhovirtual.dev/api/v1/avistamentos",
+            ImagePath = "/data/sightings/abc123.jpg",
+            IdempotencyKey = "abc123",
+            TokenRefreshAttempted = true,
+        };
+
+        var roundtripped = new ReportSightingJob();
+        roundtripped.DeserializeData(original.SerializeData());
+
+        Assert.IsTrue(roundtripped.TokenRefreshAttempted);
+    }
+
+    [Test]
+    public void ReportSightingJob_PayloadFromTheShippedBuildHasNotAttemptedATokenRefresh()
+    {
+        const string legacy =
+            "{\"url\":\"https://mergulhovirtual.dev/api/v1/avistamentos\"," +
+            "\"imagePath\":\"/data/sightings/abc123.jpg\"," +
+            "\"idempotencyKey\":\"abc123\"}";
+
+        var job = new ReportSightingJob();
+        job.DeserializeData(legacy);
+
+        Assert.IsFalse(job.TokenRefreshAttempted,
+            "a job queued before the flag existed must still get its one refresh");
+    }
+
     [Test]
     public void Envelope_DateTimeRoundtripIsLossless()
     {

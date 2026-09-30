@@ -135,11 +135,14 @@
     color: var(--md-sys-color-on-surface-variant);
 }
 
+/* No opacity. `on-surface-variant` at 11px already measures 4.90:1 on the card;
+ * the 0.8 that used to be here dropped it to 3.29:1, under WCAG AA's 4.5:1 — and
+ * this line is a CC BY-SA attribution on all 17 beaches, i.e. a licence
+ * condition, not decoration. */
 .mv-praia__credit {
     margin-top: 12px;
     white-space: normal;
     color: var(--md-sys-color-on-surface-variant);
-    opacity: 0.8;
 }
 
 /* ---- Stats card ---- */
@@ -309,15 +312,43 @@
     justify-content: space-between;
 }
 
+/* WHICH OF THE TWO YIELDS WHEN THE ROW IS TOO NARROW — the binomial, always.
+ *
+ * `white-space: normal` + the flex default `flex-shrink: 1` is the same trap the
+ * Reportar section heading hit (see ReportScreen.uss): a row child that may wrap
+ * shrinks to a fraction of its text and wraps mid-word. Here it was worse than
+ * cosmetic, because `align-items: flex-end` flushes the binomial to the name's
+ * LAST line — so a two-line name left a stranded fragment sitting beside the
+ * scientific name, reading as if it belonged to it.
+ *
+ * Content is 324dp wide at 390 and 294dp at 360 (card padding 16 + 1px border a
+ * side). Four of the five species fit at both widths; "Tubarao-bico-fino"
+ * (18/700, 161.6dp) + 8 + "Carcharhinus acronotus" (13/400, 147.2dp) = 316.8dp
+ * fits 390 and overruns 360 by 22.8dp.
+ *
+ * So the common name is pinned whole (`flex-shrink: 0` + `nowrap`, the house
+ * pattern) and the binomial is the one that gives: it is decorative, the common
+ * name carries the meaning, and the full scientific name is one tap away on the
+ * Especie screen. At 360 that leaves the binomial 124.4dp and it ellipsises to
+ * "Carcharhinus acro..." — genus intact, which is the identifying half. 390 is
+ * untouched: every species still renders both names in full there.
+ *
+ * The cost of pinning the name is that a FUTURE species whose common name alone
+ * exceeds ~286dp would overflow the card rather than wrap. The longest today is
+ * 161.6dp, so there is ~124dp of headroom; if that is ever spent, wrap the row
+ * (`flex-wrap: wrap`) rather than restoring `white-space: normal` here. */
 .mv-praia__species-name {
-    flex-shrink: 1;
+    flex-shrink: 0;
     margin-right: 8px;
-    white-space: normal;
+    white-space: nowrap;
     color: var(--md-sys-color-primary);
 }
 
 .mv-praia__species-binomial {
-    flex-shrink: 0;
+    flex-shrink: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     color: var(--md-sys-color-on-surface-variant);
 }
 
@@ -328,10 +359,22 @@
 }
 
 /* V2 underlines this and pins it right; UI Toolkit has no text-decoration, so
- * the underline is a 1px bottom border (same trade as the Home tide link). */
+ * the underline is a 1px bottom border (same trade as the Home tide link).
+ *
+ * TOUCH TARGET: this is the ONLY route to the Espécie screen and it was a ~19dp
+ * target (a 14px line box plus the rule). The underline is a border on the
+ * label's own box, so the box can only grow UPWARD without the rule drifting off
+ * the text — hence `min-height` + `lower-right`, which parks the ink and the rule
+ * at the bottom of a 48dp box. The negative margin then takes back the 29dp of
+ * empty space that growth added, so the VISIBLE gap to the behaviour paragraph
+ * is still the design's 12dp: -17 + 29 = 12. Same idiom as ReportScreen's retry
+ * button. The cost is that the target overlaps the paragraph's last line, which
+ * is inert text. */
 .mv-praia__species-link {
     align-self: flex-end;
-    margin-top: 12px;
+    min-height: 48px;
+    margin-top: -17px;
+    -unity-text-align: lower-right;
     padding-bottom: 1px;
     border-bottom-width: 1px;
     border-bottom-color: var(--md-sys-color-primary);
@@ -359,7 +402,10 @@
     align-items: center;
     padding-left: 18px;
     padding-right: 18px;
-    border-radius: var(--md-sys-shape-corner-full);
+    /* Stadium = half of the 52dp height. NOT corner-full: UI Toolkit clamps each
+     * radius axis independently, so a huge radius draws a lens on anything wider
+     * than it is tall. See DesignSystem/Tokens/_shape.uss. */
+    border-radius: 26px;
     border-width: 2px;
     border-color: var(--md-sys-color-error-dim);
     background-color: var(--md-sys-color-error);

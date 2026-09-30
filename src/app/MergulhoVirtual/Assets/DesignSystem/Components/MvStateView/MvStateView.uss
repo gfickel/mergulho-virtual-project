@@ -1,0 +1,143 @@
+/* MvStateView — full-bleed error / offline / empty state.
+ * Spec: DESIGN_IMPLEMENTATION.md §6 row 6, §8.7.
+ * Figma: `Screen 14 - SOS` 79:1304 (error) and 81:1403 (offline) — 390x880,
+ * centred illustration group 261x286 with a 46x46 status icon whose vector is
+ * 38x38, a 336x50 text frame (title 18/700, body 14/400, gap 8, xCENTER) and a
+ * bottom-anchored 358x47 filled button at r14 with a 16/700 label.
+ *
+ * NOTE: no hex literals anywhere in this file, comments included —
+ * TokenDisciplineTests.ComponentUss_HasNoHardcodedColors scans the raw text.
+ *
+ * WIDTH AND OUTER PADDING ARE THE CALLER'S — same rule as MvAlertBar
+ *   V2's 358dp button is the 390dp screen minus its 16dp gutters, i.e. a property
+ *   of the page, not of this view. The view stretches into whatever column it is
+ *   given and its button stretches with it, so a screen sets its own gutters once
+ *   and a card-sized host gets a correctly narrower state for free.
+ *
+ * ONE LAYOUT, TWO PLACEMENTS
+ *   __content is flex-grow 1 and centred; __footer is flex-shrink 0. In a parent
+ *   with a definite height (a screen body) the content takes the slack and the
+ *   button lands at the bottom — the Figma frame. In an auto-height parent (a
+ *   card, a scroll column) there is no slack to take, so the block collapses to
+ *   its natural height and the button follows the body at __footer's margin. No
+ *   modifier class, no second code path.
+ *
+ * WHY flex-shrink IS PINNED TO 0 ON BOTH CHILDREN
+ *   Yoga's default flex-shrink is 1, and a panel whose docRoot resolves to height
+ *   0 (the themeless PlayMode test panel, a not-yet-laid-out screen) then collapses
+ *   explicit child heights to nothing. MdBottomSheet's tests hit exactly this. The
+ *   view is measured in screenshots, so it pins the value rather than inheriting it.
+ *
+ * THE STATUS GLYPH'S GREY IS on-surface-variant AT REDUCED EMPHASIS
+ *   V2 paints it in a light grey that is not in the palette (Appendix A.1 maps the
+ *   design's two body greys to on-surface-variant and stops there). Rather than
+ *   introduce a third grey token for one decorative glyph, the slot takes the body
+ *   grey and drops to 0.62 opacity: composited over the page background that lands
+ *   within ~6/255 per channel of the designed swatch, and — unlike a fixed token —
+ *   it keeps the same *relationship* to the background in the dark theme instead of
+ *   needing a hand-picked dark counterpart. `opacity` is on the icon alone, so the
+ *   title and body keep their full-strength ink.
+ *
+ * THE ILLUSTRATION SLOT IS EMPTY BY DESIGN
+ *   V2's line-art shark is a raster in the Figma file with no export in this repo,
+ *   so the slot is sized by whatever the caller sets and hidden while nothing is
+ *   (MvStateView.SetIllustration). Nothing is substituted for it.
+ */
+
+.mv-state-view {
+    flex-direction: column;
+    flex-grow: 1;
+    flex-shrink: 0;
+    flex-basis: auto;
+}
+
+/* Centred block: glyph, illustration, title, body. */
+.mv-state-view__content {
+    flex-grow: 1;
+    flex-shrink: 0;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 46dp slot, 38dp glyph — the Figma instance and its vector, 1:1 (§1.2). */
+.mv-state-view__icon {
+    height: 46px;
+    font-size: 38px;
+    flex-shrink: 0;
+    -unity-text-align: middle-center;
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.62;
+}
+
+/* Sized by the asset the caller supplies; scaled down to fit a narrow phone
+ * rather than overflowing it. */
+.mv-state-view__illustration {
+    margin-top: 16px;
+    flex-shrink: 0;
+    max-width: 100%;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+/* title-medium metrics (18px / 700 / ls 0) — the typescale class is not applied
+ * because the component styles its own parts, as every other Mv* does. */
+.mv-state-view__title {
+    margin-top: 24px;
+    font-size: 18px;
+    letter-spacing: 0;
+    white-space: normal;
+    -unity-text-align: middle-center;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset");
+    /* V2 paints this in the brand navy; as ink on a page that is `on-surface`,
+     * the same collapse MvOptionCard makes for its label. */
+    color: var(--md-sys-color-on-surface);
+}
+
+/* body-large metrics (14px / 400 / ls 0). Wraps: pt-BR failure copy grows and
+ * UI Toolkit has no line-height (Appendix B). */
+.mv-state-view__body {
+    margin-top: 8px;
+    font-size: 14px;
+    letter-spacing: 0;
+    white-space: normal;
+    -unity-text-align: middle-center;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Regular.asset");
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ---- Footer ----
+ * Hidden outright when there is no action (MvStateView.ActionText). The margin is
+ * the gap that matters in the inline placement; in the full-height placement the
+ * centred content has already taken the slack and it is invisible. */
+.mv-state-view__footer {
+    flex-shrink: 0;
+    margin-top: 24px;
+}
+
+/* MdButton hugs its label at 40dp and pill radius by default; V2's action is a
+ * full-width 47dp bar at r14 with a 16/700 label — the same override
+ * ReportScreen.uss makes for the submit button. */
+.mv-state-view__action {
+    align-self: stretch;
+}
+
+/* `align-self: stretch` above only widens MdButton's transparent 48dp ROOT; the
+ * visible pill is the __container, which hugs its label inside a row that centers
+ * it. Growing the container is what actually produces V2's full-width bar. */
+.mv-state-view__action .md-button__container {
+    flex-grow: 1;
+    height: 47px;
+    /* Not a stadium: V2 draws r14 here. Half-height would be 23.5. */
+    border-radius: var(--md-sys-shape-corner-medium-increased);
+}
+
+.mv-state-view__action .md-button__label {
+    font-size: 16px;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset");
+}
+
+/* ---- Variants ----
+ * The two designed frames differ by glyph alone, so the modifiers carry no paint
+ * today. They exist so a caller can target one (`.mv-state-view--offline .…`) and
+ * so tests can assert exactly one is present, the MvAlertBar/MvOptionCard pattern.
+ */

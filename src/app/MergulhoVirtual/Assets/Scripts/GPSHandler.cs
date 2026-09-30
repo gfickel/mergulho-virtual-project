@@ -78,7 +78,15 @@ public class GPSHandler : MonoBehaviour
 
     GPSLocation GetLocation()
     {
-    #if UNITY_EDITOR
+    // Stubbed coordinate, arguments are (longitude, latitude) — lon->x, lat->y is the
+    // project-wide convention (ReverseGeocoding, places.json). Do not swap them.
+    // (-3.85, -32.44) sits inside Praia da Cacimba do Padre's OSM outline, so the app
+    // boots into a real beach instead of the null-beach state.
+    // UNITY_STANDALONE is included for the Windows review build: there Input.location
+    // never leaves Initializing, so Start() burns its 20 s timeout, gpsOk stays false
+    // and CurrentPlaceName is null. That is a supported state, but not the one a
+    // designer reviewing the screens should land in.
+    #if UNITY_EDITOR || UNITY_STANDALONE
         return new GPSLocation(-32.44f, -3.85f);
     #else
         return new GPSLocation(Input.location.lastData.longitude, Input.location.lastData.latitude);

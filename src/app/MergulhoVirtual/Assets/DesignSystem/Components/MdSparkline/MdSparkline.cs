@@ -41,6 +41,9 @@ namespace MergulhoVirtual.DesignSystem
         readonly VisualElement _labelStrip;
         readonly Layer[] _layers;
         readonly List<Label> _labelPool = new();
+        // Each pooled label's x as a fraction of the strip, parallel to _labelPool.
+        // Kept because the clamp below needs re-applying on every layout change.
+        readonly List<float> _labelFractions = new();
         readonly List<int> _highs = new();
         readonly List<int> _lows = new();
 
@@ -98,6 +101,9 @@ namespace MergulhoVirtual.DesignSystem
 
             _labelStrip = new VisualElement { name = "labels", pickingMode = PickingMode.Ignore };
             _labelStrip.AddToClassList(LabelStripClassName);
+            // The clamp is a function of the strip's width, so it has to re-run
+            // whenever the strip is resized (rotation, a different card width).
+            _labelStrip.RegisterCallback<GeometryChangedEvent>(_ => PositionAllLabels());
             Add(_labelStrip);
         }
 
@@ -164,10 +170,12 @@ namespace MergulhoVirtual.DesignSystem
                         string text = _labelFormatter(i, isHigh);
                         if (string.IsNullOrEmpty(text))
                             continue;
-                        var label = GetOrCreateLabel(active++);
+                        int slot = active++;
+                        var label = GetOrCreateLabel(slot);
                         label.text = text;
                         label.style.display = DisplayStyle.Flex;
-                        label.style.left = Length.Percent(100f * i / (_samples.Length - 1));
+                        _labelFractions[slot] = (float)i / (_samples.Length - 1);
+                        PositionLabel(slot);
                     }
                 }
             }
@@ -179,15 +187,70 @@ namespace MergulhoVirtual.DesignSystem
         {
             while (_labelPool.Count <= index)
             {
+                int slot = _labelPool.Count;
                 var label = new Label { pickingMode = PickingMode.Ignore };
                 label.AddToClassList(LabelClassName);
-                // Centered on its extremum's x; left is set per label.
+                // Centered on its extremum's x, then clamped into the strip;
+                // `left` is written by PositionLabel.
                 label.style.position = Position.Absolute;
                 label.style.translate = new Translate(Length.Percent(-50f), 0f);
+                // A label's own width only resolves after layout and changes with
+                // its text, so it re-clamps itself whenever its box changes. This
+                // converges: the second pass computes the same x and writes it back.
+                label.RegisterCallback<GeometryChangedEvent>(_ => PositionLabel(slot));
                 _labelStrip.Add(label);
                 _labelPool.Add(label);
+                _labelFractions.Add(0f);
             }
             return _labelPool[index];
+        }
+
+        /// <summary>
+        /// Where a label's CENTRE may sit along the strip so its whole box stays
+        /// inside it, given the strip's width and the label's own.
+        /// <para>
+        /// Percent positioning plus a -50% translate does not clamp anything: an
+        /// extremum near either end hangs half a label past the plot, and nothing
+        /// on this path sets `overflow: hidden`, so on the Home card it escaped the
+        /// padding box outright. An extremum AT index 0 or n-1 would put half the
+        /// label outside the card. (FindExtremes only returns interior indices
+        /// today — this does not rely on that staying true.)
+        /// </para>
+        /// <para>A label wider than the strip cannot satisfy both edges; it is
+        /// centred, which spills equally instead of hard left.</para>
+        /// </summary>
+        internal static float ClampLabelCenter(float fraction, float stripWidth, float labelWidth)
+        {
+            float half = labelWidth * 0.5f;
+            float max = stripWidth - half;
+            if (max < half)
+                return stripWidth * 0.5f;
+            return Mathf.Clamp(fraction * stripWidth, half, max);
+        }
+
+        /// <summary>Applies one pooled label's x. Falls back to the unclamped
+        /// percent while layout is unresolved (no panel, zero-width strip, hidden
+        /// label); the geometry callbacks re-run it once the widths are real.</summary>
+        void PositionLabel(int index)
+        {
+            if (index < 0 || index >= _labelPool.Count)
+                return;
+            var label = _labelPool[index];
+            float fraction = _labelFractions[index];
+            float strip = _labelStrip.contentRect.width;
+            float width = label.resolvedStyle.width;
+            if (float.IsNaN(strip) || strip <= 0f || float.IsNaN(width) || width <= 0f)
+            {
+                label.style.left = Length.Percent(100f * fraction);
+                return;
+            }
+            label.style.left = ClampLabelCenter(fraction, strip, width);
+        }
+
+        void PositionAllLabels()
+        {
+            for (int i = 0; i < _labelPool.Count; i++)
+                PositionLabel(i);
         }
 
         void ComputeRange(out float min, out float range)

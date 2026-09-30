@@ -6,6 +6,10 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
+    /* Both axes: the root is the touch target, and a two-letter label ("OK") makes
+     * the 40dp pill ~42dp wide — under the minimum on the axis nobody checks.
+     * MdFab and MdIconButton already floor both; this one only floored height. */
+    min-width: 48px;
     min-height: 48px;
     align-self: flex-start;
 }
@@ -19,7 +23,10 @@
     align-items: center;
     justify-content: center;
     height: 40px;
-    border-radius: var(--md-sys-shape-corner-full);
+    /* Stadium = half of the 40dp height. NOT corner-full: UI Toolkit clamps each
+     * radius axis independently, so a huge radius makes this an ellipse, not a
+     * pill. See Tokens/_shape.uss. Keep this at height/2. */
+    border-radius: 20px;
     padding-left: 24px;
     padding-right: 24px;
     overflow: hidden;

@@ -106,11 +106,26 @@ namespace MergulhoVirtual.UI
             return string.Format(CultureInfo.InvariantCulture, "próx. {0} {1:HH:mm}", word, toLocal(atUtc));
         }
 
-        /// <summary>"1.4 m · subindo" / "1.4 m · descendo" for the "Maré agora" stat; "—" when invalid.</summary>
+        /// <summary>
+        /// "1.4 m · subindo" / "1.4 m · descendo" for the "Maré agora" stat; "—" when invalid.
+        /// <para>
+        /// THE SPACE AFTER THE SEPARATOR IS U+00A0 — do not "clean" the <c>\u00A0</c>
+        /// escape back to a plain space. The stat card is half the row, so its content
+        /// box is 139dp at 390 and 124dp at 360; at the card's 16/700 the two strings
+        /// measure 116.9dp and 131.1dp, so "descendo" still wraps on a 360dp phone.
+        /// With a normal space the wrap landed AFTER the separator — "1.4 m ·" alone on
+        /// line one, which reads as a stray character rather than a continuation.
+        /// Binding the separator to the word it introduces moves the only remaining
+        /// break to the space before it, so the wrap reads "1.4 m" / "· descendo".
+        /// Advance width is unchanged (U+00A0 is the same width as U+0020 in Inter),
+        /// so nothing that already fitted on one line moves. See ConditionsFormatter.Tide
+        /// for the same idiom and the evidence that UI Toolkit honours U+00A0.
+        /// </para>
+        /// </summary>
         public static string TideNow(TideData t)
         {
             if (!t.Valid) return NoValue;
-            return string.Format(CultureInfo.InvariantCulture, "{0:0.0} m · {1}",
+            return string.Format(CultureInfo.InvariantCulture, "{0:0.0} m ·\u00A0{1}",
                 t.CurrentHeightM, t.Rising ? "subindo" : "descendo");
         }
 

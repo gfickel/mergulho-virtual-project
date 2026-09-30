@@ -8,7 +8,8 @@
  * TokenDisciplineTests.ComponentUss_HasNoHardcodedColors scans the raw text.
  *
  * GEOMETRY (1 USS px = 1 dp = 1 Figma pt, §1.2)
- *   card    height 93, r16, padding 16, column, cross-axis centered
+ *   card    height 93 (authored as a min-height — see the label rule), r16,
+ *           padding 16, column, cross-axis centered
  *   icon    32dp slot holding a 24dp glyph (V2 nests a 24x24 icon frame inside a
  *           32x32 box; Material Symbols draw inside their em box, so font-size 24
  *           in a 32dp-tall slot reproduces both numbers)
@@ -42,7 +43,8 @@
     flex-basis: 0;
     /* Let it shrink below its content on a narrow phone rather than overflow. */
     min-width: 0;
-    height: 93px;
+    /* A floor, not a fixed height — the label wraps; see the label rule below. */
+    min-height: 93px;
     flex-direction: column;
     align-items: center;
     padding: 16px;
@@ -81,12 +83,15 @@
     margin-top: 12px;
     font-size: 14px;
     letter-spacing: 0;
-    /* One line: the card is a fixed 93dp and a second line would not fit inside
-     * it. A label too long for a narrow phone ellipsizes rather than clipping
-     * mid-glyph — the MdListItem / MvMediaCarousel treatment. */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    /* WRAPS, and the card's height is a FLOOR because of it. V2's 93dp fits one
+     * line at the authored 174dp width, but the two strings are real words
+     * ("Turista" / "Condutor" or longer) and at a larger OS font scale, or on a
+     * 360dp phone, one line stops fitting — an ellipsized "Desabilit…" is a worse
+     * answer than a second line, and clipping a wrapped line behind the card's
+     * `overflow: hidden` would be worse still. Hence `min-height` on the card
+     * rather than `height`: a wrapped label grows it, and the sibling card follows
+     * because their row stretches. */
+    white-space: normal;
     max-width: 100%;
     -unity-text-align: middle-center;
     -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-SemiBold.asset");

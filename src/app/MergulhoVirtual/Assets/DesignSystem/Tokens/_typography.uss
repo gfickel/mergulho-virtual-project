@@ -23,9 +23,26 @@
  *    `-unity-font-definition` INHERITS — without it a body label nested inside a bold
  *    title would silently render bold.
  *
+ * TWO ADDED RUNGS: `title-large-increased` (24) and `title-small-increased` (16)
+ *  Appendix A.2 specifies those two rows as RANGES — title-large "20-24 / 700",
+ *  title-small "15-16 / 600-700" — and the retune above picked one end of each (20 and
+ *  15). Every V2 element specced at the other end therefore had to re-author its size
+ *  in a screen or component stylesheet, and 16 is in fact the most frequently authored
+ *  text size in the whole codebase. So the missing ends get classes.
+ *
+ *  ADDED, NEVER RE-POINTED. `title-large` is still 20 and `title-small` is still 15;
+ *  moving either would silently restyle every Md* component that inherits the brand
+ *  through those names, which is the one thing this file must never do. The suffix
+ *  follows `_shape.uss`'s `corner-*-increased` precedent (M3-2025-expressive style)
+ *  rather than starting a parallel vocabulary.
+ *
+ *  Each `-increased` rung moves the SIZE ONLY — same 700 face as its base rung — so
+ *  the two V2 sites that want 16 at the 600 face (SOS rows, the beach-selector name)
+ *  still override `-unity-font-definition`, exactly as they do today.
+ *
  * V2 sizes with no class of their own (screen USS overrides the nearest class):
- *   24/700 hero beach name (Tela 9) · 16/700 primary button · 16/600 SOS rows and the
- *   beach-selector name · 13/700 small pill buttons · 10/600 micro tags.
+ *   16/600 SOS rows and the beach-selector name · 13/700 small pill buttons ·
+ *   10/600 micro tags.
  */
 
 :root {
@@ -90,9 +107,16 @@
  * labels (15/700, V2's workhorse heading). */
 .md-typescale-title-large  { font-size: 20px; letter-spacing: 0;
     -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset"); }
+/* Added rung — A.2's title-large upper end. V2: the hero beach name (Tela 9). */
+.md-typescale-title-large-increased { font-size: 24px; letter-spacing: 0;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset"); }
 .md-typescale-title-medium { font-size: 18px; letter-spacing: 0;
     -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset"); }
 .md-typescale-title-small  { font-size: 15px; letter-spacing: 0;
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset"); }
+/* Added rung — A.2's title-small upper end. V2: the primary button label and the
+ * MvStateView action label, both 16/700. */
+.md-typescale-title-small-increased { font-size: 16px; letter-spacing: 0;
     -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset"); }
 
 /* Body — body copy, list rows and inputs (14/400) down to the smallest supporting copy. */

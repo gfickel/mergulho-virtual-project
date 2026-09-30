@@ -1,0 +1,212 @@
+/* Mergulho (AR HUD) — DESIGN_IMPLEMENTATION.md §8.4 (Tela 8, 31:3979).
+ *
+ * TOKENS ONLY: TokenDisciplineTests scans every .uss under Assets/UI exactly like the
+ * design-system components — a color literal (in a rule OR in a comment) or an
+ * undefined var() fails the suite. Sizes transcribe literally from Figma
+ * (§1.2: 1 USS px = 1 dp = 1 Figma pt).
+ *
+ * THE BACKDROP IS A LIVE CAMERA, WHICH CHANGES TWO THINGS
+ *  1. Nothing here paints a page surface. Every container is transparent; only the
+ *     control strip and the species card have a fill, so the rest of the screen is
+ *     the AR scene's and taps reach it. (Transparency is the DEFAULT in UI Toolkit —
+ *     there is no rule below that sets it, which is the point.)
+ *  2. The colors come from the `camera-*` extension tokens in Tokens/_brand-*.uss,
+ *     which are identical in light and dark: what is behind these surfaces is
+ *     whatever the lens is pointing at, and it is never the theme. Tela 8's controls
+ *     are a dark grey pill, NOT the white pill of the Praia detalhe hero — same
+ *     component, deliberately different skin, so the overrides below are the
+ *     screen's job.
+ *
+ * Accepted fidelity losses, all pre-agreed:
+ *  - No box-shadow (§3.6): V2 puts shadow:28 under the card and shadow:10 under the
+ *    controls. Each also carries a 1px white hairline, which is what actually
+ *    separates it from the camera; the border is rendered and the shadow dropped.
+ *  - THE CARD IS OPAQUE, and V2's is not. In Figma it is a frosted panel: the frame
+ *    carries opacity 0.77 AND a 24dp BACKGROUND_BLUR (§3.6 describes it as "an
+ *    opaque fill", which the file contradicts). UI Toolkit has no backdrop filter,
+ *    and 77% over an UNBLURRED live camera is strictly worse than either — the blur
+ *    is what makes the mock legible, and without it a busy frame reads straight
+ *    through the text. Figma's frame opacity would also fade the text and the
+ *    hairline with it. So the fill stays opaque; a translucent card is only worth
+ *    revisiting if a blur ever becomes available.
+ *  - No italic face: the binomial's slant is synthesised (see its rule below).
+ *  - No `gap` in USS: Figma gaps become margins, and "skip the first child" is a
+ *    modifier class added in code (USS has no :first-child).
+ *  - No text-transform: V2 uppercases the three spec labels with a Figma text-case
+ *    transform while the text nodes themselves are title case. Uppercasing in the
+ *    view would mean a screen manufacturing a user-visible string, so they ship as
+ *    SpeciesCardFormatter spells them — the same call the Praias sheets document.
+ *  - Hero gutters are 16dp, not Tela 8's 22dp, and the control strip sits ~12dp
+ *    lower than the frame: both come from MvHeroHeader's own documented deviations
+ *    (48dp touch targets, gutters on the screen grid), and matching Praia detalhe's
+ *    top bar exactly is worth more than matching one frame's nudge.
+ *
+ * Unity's default Label padding/margin is zeroed app-wide in Tokens/_typography.uss,
+ * so every margin below is one this file authored.
+ */
+
+.mv-mergulho {
+    flex-grow: 1;
+}
+
+/* ---- Top control strip (back circle + beach pill) ---- */
+
+/* MvHeroHeader is 340dp because it is normally a cover photo. Here it carries
+ * nothing but the controls, so it is trimmed to a strip — the value only has to
+ * clear TopInset + the component's 32dp margin + its 48dp touch target (127dp at
+ * the reference 47dp inset), and the element paints nothing either way. */
+.mv-mergulho__hero {
+    height: 160px;
+}
+
+/* Tela 8's controls: dark translucent-looking fill, thin white hairline, white
+ * content. Three classes (0,3,0) so they beat MvHeroHeader.uss's own (0,2,0) rules
+ * whatever order the theme happens to import in. */
+.mv-mergulho__hero .mv-hero-header__back .md-icon-button__container {
+    background-color: var(--md-sys-color-camera-surface);
+    border-color: var(--md-sys-color-camera-outline-dim);
+    color: var(--md-sys-color-on-camera-surface);
+}
+
+.mv-mergulho__hero .mv-hero-header__back .md-state-layer {
+    background-color: var(--md-sys-color-on-camera-surface);
+}
+
+.mv-mergulho__hero .mv-hero-header__selector-container {
+    background-color: var(--md-sys-color-camera-surface);
+    border-color: var(--md-sys-color-camera-outline-dim);
+    color: var(--md-sys-color-on-camera-surface);
+}
+
+.mv-mergulho__hero .mv-hero-header__selector .md-state-layer {
+    background-color: var(--md-sys-color-on-camera-surface);
+}
+
+/* ---- Dock: the flexible space the card hangs at the bottom of ---- */
+
+.mv-mergulho__dock {
+    flex-grow: 1;
+    justify-content: flex-end;
+}
+
+/* ---- Species info card (342x176, V, pad 16, gap 12) ---- */
+
+/* Stretched with 24dp side margins rather than pinned to 342dp, so a 360dp phone
+ * narrows the card instead of overflowing. 23dp clears the navigation bar, whose
+ * own reservation is the root's padding-bottom (Tela 8: card bottom 767, bar top
+ * 790). */
+.mv-mergulho__card {
+    align-self: stretch;
+    margin-left: 24px;
+    margin-right: 24px;
+    margin-bottom: 23px;
+    padding: 16px;
+    background-color: var(--md-sys-color-camera-surface-dim);
+    border-width: 1px;
+    border-color: var(--md-sys-color-camera-outline);
+    border-radius: var(--md-sys-shape-corner-large-increased);
+}
+
+/* 32dp right inset so a long common name wraps before the close disc instead of
+ * running under it. V2's title node is the full 310dp and overlaps the disc; it
+ * gets away with it because "Tubarão Tigre" is short. */
+.mv-mergulho__title-block {
+    padding-right: 32px;
+    margin-bottom: 12px;
+}
+
+.mv-mergulho__title {
+    white-space: normal;
+    color: var(--md-sys-color-on-camera-surface);
+}
+
+/* body-medium metrics (13/400) bumped to V2's 500 face, italic — the one italic
+ * string in the whole design, and the convention for a scientific binomial. The
+ * shipped Inter set has no italic face, so this is TextCore's synthesised slant;
+ * the Praia detalhe species card sets its binomial upright and should follow this
+ * when MdChip/MdCard get their restyle pass. */
+.mv-mergulho__binomial {
+    margin-top: 4px;
+    white-space: normal;
+    color: var(--md-sys-color-on-camera-surface);
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Medium.asset");
+    -unity-font-style: italic;
+}
+
+/* `camera-divider`, not `camera-outline-dim`. Both were white @0.13 while the
+ * camera tokens were alphas, so either worked; they are PRE-BLENDED composites
+ * now and each one is bonded to a single backdrop (see the table in
+ * Tokens/_brand-*.uss). `camera-outline-dim` (0x54585D) is that alpha over the
+ * pill's `camera-surface`, and painting it on this near-black card would draw a
+ * rule four times brighter than V2's. `camera-divider` (0x262B33) is the same
+ * alpha over `camera-surface-dim`, which is what the card is filled with. */
+.mv-mergulho__rule {
+    height: 1px;
+    margin-bottom: 12px;
+    background-color: var(--md-sys-color-camera-divider);
+}
+
+/* ---- Spec rows (label left, value right, gap 10) ---- */
+
+/* flex-start rather than Figma's centre: identical for the one-line rows the frame
+ * draws, and it keeps the label on the first line when a long value wraps. */
+.mv-mergulho__spec {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.mv-mergulho__spec--gutter {
+    margin-top: 10px;
+}
+
+/* label-medium metrics (12/600) bumped to V2's 700 face, with the design's one-off
+ * 0.5 tracking (Appendix A.2 lists these labels among the few strings in the whole
+ * design with non-zero letter-spacing). */
+.mv-mergulho__spec-label {
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+    color: var(--md-sys-color-on-camera-surface);
+    -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset");
+}
+
+.mv-mergulho__spec-value {
+    flex-shrink: 1;
+    margin-left: 12px;
+    white-space: normal;
+    -unity-text-align: upper-right;
+    color: var(--md-sys-color-on-camera-surface);
+}
+
+/* ---- Close button (28dp disc, 12dp from the card's top-right) ---- */
+
+/* MdIconButton keeps its 48dp touch target; only the visible disc shrinks to 28.
+ * Absolute so it overlays the padded content, as in the frame — hence top/right of
+ * 2 = the frame's 12 minus the 10dp the target overhangs the disc by. */
+.mv-mergulho__close {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+}
+
+/* `camera-fill-outline` for the hairline, not `camera-outline`: the disc's own
+ * backdrop is `camera-fill`, not the card. Same pre-blending bond as the rule
+ * above — `camera-outline` (0x2A3037) is white @0.15 over `camera-surface-dim`
+ * and would all but vanish on the lighter disc, while `camera-fill-outline`
+ * (0x40444C) is that alpha over `camera-fill`, which is what is actually there. */
+.mv-mergulho__close.md-icon-button--standard .md-icon-button__container {
+    width: 28px;
+    height: 28px;
+    background-color: var(--md-sys-color-camera-fill);
+    border-width: 1px;
+    border-color: var(--md-sys-color-camera-fill-outline);
+    color: var(--md-sys-color-on-camera-surface);
+}
+
+.mv-mergulho__close .md-icon {
+    font-size: 16px;
+}
+
+.mv-mergulho__close .md-state-layer {
+    background-color: var(--md-sys-color-on-camera-surface);
+}

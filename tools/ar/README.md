@@ -5,9 +5,12 @@
 > versions differ from these prototypes: StillnessDetector was rewritten for the new
 > Input System (this project disables legacy `Input.gyro`), GPS fixes come from a raw
 > Android GNSS `LocationManager` subscription (`GnssProvider.cs`) instead of
-> `Input.location`, heading is auto-refined from the GPS track while walking, and all
-> tuning lives in an on-device panel persisted to JSON. This folder is kept as design
-> notes; the field-tuning procedure below still applies.
+> `Input.location`, and heading is auto-refined from the GPS track while walking.
+> The app briefly had an on-device tuning panel persisted to JSON; **both were removed on
+> 2026-09-29**, so every parameter is now set on the component in the Inspector and needs a
+> rebuild. This folder is kept as design notes; the *measurement* half of the field procedure
+> below still applies, but "raise X on the spot" now means "log the telemetry at the beach, then
+> change X and rebuild" — see CLAUDE.md, "What field tuning costs now".
 
 Three scripts that work together to stop ocean waves from fooling ARKit/ARCore tracking, while preserving full 6DOF (walking around still works).
 

@@ -21,7 +21,9 @@
 .md-bottom-sheet__handle {
     width: 32px;
     height: 4px;
-    border-radius: var(--md-sys-shape-corner-full);
+    /* Stadium = half of the 4dp height. NOT corner-full: at 32x4 that clamps to
+     * rx=16, ry=2 -- a lens. See Tokens/_shape.uss. */
+    border-radius: 2px;
     background-color: var(--md-sys-color-on-surface-variant);
     opacity: 0.4;
     align-self: center;

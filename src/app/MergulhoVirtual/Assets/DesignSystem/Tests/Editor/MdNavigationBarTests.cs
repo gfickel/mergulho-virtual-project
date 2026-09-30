@@ -245,21 +245,33 @@ namespace MergulhoVirtual.DesignSystem.Tests
         }
 
         [Test]
-        public void Uss_InactiveDestination_IsWhiteAtFiftyPercentWithNoPill()
+        public void Uss_InactiveDestination_IsMutedInkWithNoPill()
         {
             var rules = Rules();
-            // "white at 50%" = inverse-on-surface at 50% opacity (Appendix A.1), never a literal.
+            // Appendix A.1 wants "white at 50%" = (127,130,136). It used to be written as
+            // inverse-on-surface + `opacity: 0.5` — which is the sRGB dialect the spec is
+            // in, and NOT what Unity draws: the project renders in Linear color space, so
+            // that pair composited to (183,184,185) and the inactive tabs read nearly as
+            // bright as the active one, erasing the selected-state signal.
+            // `inverse-on-surface-muted` is that blend PRE-COMPUTED, so the ink is exact
+            // and state is carried by a color swap rather than an alpha. Do not
+            // "simplify" this back to an opacity.
             AssertDeclares(rules, ".md-nav-bar__icon",
                 "font-size: 24px",
-                "color: var(--md-sys-color-inverse-on-surface)",
-                "opacity: 0.5");
+                "color: var(--md-sys-color-inverse-on-surface-muted)");
             AssertDeclares(rules, ".md-nav-bar__label",
                 "font-size: 11px",                 // label-small metrics...
                 "letter-spacing: 0",
-                "Inter-Medium.asset",              // ...at the 500 face (V2 inactive)
-                "color: var(--md-sys-color-inverse-on-surface)",
-                "opacity: 0.5",
+                "Inter-SemiBold.asset",            // ...at the 600 face (8 of 12 V2 frames)
+                "color: var(--md-sys-color-inverse-on-surface-muted)",
                 "margin-top: 4px");                // V2 `gap: 4`; USS has no `gap`
+            // The overflow-centring fix: "Avistamentos" is ~71dp in a 64dp tab, and Yoga
+            // clamps an over-wide flex child to flex-start instead of centring it, so tab
+            // 4 alone rendered ~3.75dp left of its own icon. Pinning the box to the tab
+            // and centring the string inside it puts the overhang on both sides.
+            AssertDeclares(rules, ".md-nav-bar__label",
+                "width: 100%",
+                "-unity-text-align: middle-center");
             // No pill when inactive: the indicator box is there (unconditionally — see the
             // deviation note in the USS header) but transparent, so nothing is drawn.
             AssertDeclares(rules, ".md-nav-bar__indicator",
@@ -279,12 +291,14 @@ namespace MergulhoVirtual.DesignSystem.Tests
                 "border-radius: var(--md-sys-shape-corner-large)");   // = 16dp after Slice 0
             AssertDeclares(rules, ".md-nav-bar__item--active .md-nav-bar__indicator",
                 "background-color: var(--md-sys-color-secondary)");
+            // No `opacity: 1` override on either: the inactive state is a muted COLOR
+            // token now, not a dimmed one, so there is no alpha for the active state to
+            // undo. See the inactive test for why the opacity pair had to go.
             AssertDeclares(rules, ".md-nav-bar__item--active .md-nav-bar__icon",
-                "color: var(--md-sys-color-on-secondary)",
-                "opacity: 1");
+                "color: var(--md-sys-color-on-secondary)");
             AssertDeclares(rules, ".md-nav-bar__item--active .md-nav-bar__label",
-                "Inter-SemiBold.asset",   // label-small's own 600 face
-                "opacity: 1");
+                "Inter-SemiBold.asset",   // same 600 face as inactive; color carries state
+                "color: var(--md-sys-color-inverse-on-surface)");
             // The ripple on the amber pill must be the on-color, not the white one.
             AssertDeclares(rules, ".md-nav-bar__item--active .md-state-layer",
                 "background-color: var(--md-sys-color-on-secondary)");

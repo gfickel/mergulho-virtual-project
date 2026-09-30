@@ -15,9 +15,11 @@ using UnityEngine.Video;
 /// chrome — these controls are built here against its API (time/length/Play/
 /// Pause, seek by assigning videoPlayer.time).
 ///
-/// Playback stops and releases the texture on disable, so leaving the detail
-/// screen kills the stream. Reusable beyond Animals — anything with a URL can
-/// Bind(). The card template + wiring is built by AnimalsScreenBuilder.
+/// Playback stops and releases the texture on disable, so leaving the screen
+/// kills the stream. Anything with a URL can Bind(). Its one remaining caller is
+/// the About screen's Instagram card, built and wired by InstagramWidgetBuilder —
+/// the Animais video cards that used to share it went with Slice 6, and UI Toolkit
+/// screens use IVideoPlayback / UiServiceAdapters.VideoPlaybackAdapter instead.
 /// </summary>
 [RequireComponent(typeof(VideoPlayer))]
 public class VideoPlayerController : MonoBehaviour

@@ -67,6 +67,28 @@ namespace MergulhoVirtual.UiShots
             new Subject("home-tall",      ShotKind.Screen, "HomeScreen")    { HeightDp = 1400 },
             new Subject("home-dismissed", ShotKind.Screen, "HomeScreen")    { VmMethod = "DismissWelcome" },
             new Subject("praias",         ShotKind.Screen, "PraiasScreen"),
+
+            // §8.7's states, where they are actually wired: the Início conditions
+            // card with nothing fetched and the service reporting a failed attempt.
+            // Offline vs. generic error is the connectivity fixture, nothing else.
+            new Subject("home-conditions-error",   ShotKind.Screen, "HomeScreen")
+                { VmMethod = "DismissWelcome", ConditionsUnavailable = true },
+            new Subject("home-conditions-offline", ShotKind.Screen, "HomeScreen")
+                { VmMethod = "DismissWelcome", ConditionsUnavailable = true, Offline = true },
+
+            // Mergulho (Tela 8). Two states, and BOTH are worth keeping: the bare
+            // one is what the HUD looks like until a tap lands on an animal (and
+            // what every species looks like today, since the three spec fields are
+            // blank on every AnimalDef), the card one is the frame to compare
+            // against. It opens the tiger shark because Tela 8 draws the tiger
+            // shark — and UiShotFixtures fills that one species' spec rows with the
+            // frame's own sample strings so the table has something to lay out.
+            // Nothing paints a background here: what shows through the transparent
+            // parts of these PNGs is the panel's clear colour, and on a device it
+            // is the live camera.
+            new Subject("mergulho",       ShotKind.Screen, "MergulhoScreen"),
+            new Subject("mergulho-card",  ShotKind.Screen, "MergulhoScreen")
+                { VmMethod = "ShowSpecies", VmArgs = new object[] { "tiger_shark" } },
             // The Praia detalhe subjects drive BeachDetailViewModel.ShowBeach,
             // which is the first ViewModel the constructor graph builds. Two
             // beaches on purpose: Sancho is about as full as the content file
@@ -100,13 +122,112 @@ namespace MergulhoVirtual.UiShots
                 },
             },
 
+            // Espécie (Decision D1). There is NO FIGMA FRAME for this screen, so these
+            // shots are not a comparison — they ARE the design review, and there are
+            // three because the page has three genuinely different shapes.
+            //   especie          lemon_shark: the fullest page in the catalog — the only
+            //                    species with videos, so the only one that shows that
+            //                    section at all.
+            //   especie-no-video hammerhead: what the other FOUR species look like, and
+            //                    the longest description, so it is the wrap test.
+            //   especie-playing  the video card doing something. Reachable only through
+            //                    the ViewModel (ToggleVideo), which is the reason that
+            //                    state lives there rather than in the screen.
+            // The 3D viewport and the video frame are stand-in gradients from
+            // UiShotFixtures — no rig and no H.264 decoder exist in batchmode. They show
+            // the framing, not the animal.
+            new Subject("especie", ShotKind.Screen, "EspecieScreen")
+            {
+                HeightDp = 1900,
+                VmMethod = "ShowSpecies",
+                VmArgs = new object[] { "lemon_shark" },
+            },
+            new Subject("especie-no-video", ShotKind.Screen, "EspecieScreen")
+            {
+                HeightDp = 1300,
+                VmMethod = "ShowSpecies",
+                VmArgs = new object[] { "hammerhead" },
+            },
+            new Subject("especie-playing", ShotKind.Screen, "EspecieScreen")
+            {
+                HeightDp = 1900,
+                VmCalls = new[]
+                {
+                    new VmCall("ShowSpecies", "lemon_shark"),
+                    new VmCall("ToggleVideo", 0),
+                },
+            },
+
+            // Conteúdo educativo (the educational-article feature). There is NO FIGMA
+            // FRAME for either screen, so these shots are not a comparison — they ARE
+            // the design review. Four subjects, because the content has four genuinely
+            // different shapes and no single article exercises them all:
+            //   conteudos          the index: four categories, one article each, three
+            //                      with a cover and one without.
+            //   conteudo           tubarões: the ONLY article with a video block and
+            //                      with speciesRef — five of them in a row, which is the
+            //                      run the tight-gutter rule and the per-species name
+            //                      lookup exist for. Also an info callout, an attributed
+            //                      quote, a captioned+credited figure and L2/L3 headings.
+            //   conteudo-sem-capa  como-registrar: the article with NO hero, i.e. the
+            //                      back-button-row path instead of the 240dp hero. Also
+            //                      carries the HTML-escaped-entity paragraph the credit
+            //                      convention section spells out, which is the one thing
+            //                      here only a render can answer.
+            //   conteudo-praticas  mergulho-responsável: the remaining block types —
+            //                      numberedList, a warning AND a success callout, two
+            //                      beachRefs, and the one figure in the whole corpus
+            //                      with NEITHER a caption NOR a credit (so the gating
+            //                      that drops both lines is visible).
+            // The video card's poster is a stand-in gradient from UiShotFixtures — no
+            // H.264 decoder exists in batchmode — so it shows the framing, not the clip.
+            new Subject("conteudos", ShotKind.Screen, "ArticlesScreen") { HeightDp = 1900 },
+            new Subject("conteudo", ShotKind.Screen, "ArticleScreen")
+            {
+                HeightDp = 2600,
+                VmMethod = "Show",
+                VmArgs = new object[] { "tubaroes-de-noronha" },
+            },
+            new Subject("conteudo-sem-capa", ShotKind.Screen, "ArticleScreen")
+            {
+                HeightDp = 2400,
+                VmMethod = "Show",
+                VmArgs = new object[] { "como-registrar-um-avistamento" },
+            },
+            new Subject("conteudo-praticas", ShotKind.Screen, "ArticleScreen")
+            {
+                HeightDp = 2500,
+                VmMethod = "Show",
+                VmArgs = new object[] { "mergulho-responsavel" },
+            },
+
             // --- The app shell: router + MdNavigationBar + a screen ----------
             // This is the one that is directly comparable to a whole V2 frame,
             // because it includes the bottom bar the standalone shots omit.
             new Subject("shell-home",    ShotKind.Shell, "HomeScreen")    { Route = AppRoutes.Home },
+            // The one directly comparable to Tela 8 — the card AND the bottom bar.
+            new Subject("shell-mergulho", ShotKind.Shell, "MergulhoScreen")
+            {
+                Route = AppRoutes.Mergulho,
+                VmMethod = "ShowSpecies",
+                VmArgs = new object[] { "tiger_shark" },
+            },
             new Subject("shell-praias",  ShotKind.Shell, "PraiasScreen") { Route = AppRoutes.Praias },
             new Subject("shell-praia-detalhe", ShotKind.Shell, "PraiaDetalheScreen") { Route = AppRoutes.PraiaDetalhe },
             new Subject("shell-report",  ShotKind.Shell, "ReportScreen") { Route = AppRoutes.Avistamentos },
+            // Espécie with the bar, which is what a pushed sub-screen really looks like
+            // (the bar stays up). Navigate rather than Push, so no tab reads as selected
+            // — the same small inaccuracy shell-praia-detalhe has.
+            new Subject("shell-especie", ShotKind.Shell, "EspecieScreen")
+            {
+                Route = AppRoutes.Especie,
+                VmMethod = "ShowSpecies",
+                VmArgs = new object[] { "lemon_shark" },
+            },
+            // The article index with the bar up — what a pushed sub-screen really looks
+            // like. Navigate rather than Push, so no tab reads as selected: the same
+            // small inaccuracy shell-praia-detalhe and shell-especie carry.
+            new Subject("shell-conteudos", ShotKind.Shell, "ArticlesScreen") { Route = AppRoutes.Conteudos },
 
             // --- Design-system gallery --------------------------------------
             // "gallery" is the device-frame view; "gallery-sections" additionally
@@ -159,6 +280,12 @@ namespace MergulhoVirtual.UiShots
                     if (!matches) continue;
                     try
                     {
+                        // Per-subject fixture switches (the registry holds one fake
+                        // per interface, so the failure states are a flag, not a
+                        // second instance). Cleared in the finally below.
+                        UiShotFixtures.ConditionsUnavailable = subject.ConditionsUnavailable;
+                        UiShotFixtures.Offline = subject.Offline;
+
                         switch (subject.Kind)
                         {
                             case ShotKind.Screen:
@@ -179,6 +306,11 @@ namespace MergulhoVirtual.UiShots
                     {
                         skipped++;
                         Debug.LogWarning($"[ui-shots] SKIPPED {subject.Id}-{Name(theme)}: {Unwrap(e).Message}");
+                    }
+                    finally
+                    {
+                        UiShotFixtures.ConditionsUnavailable = false;
+                        UiShotFixtures.Offline = false;
                     }
                 }
             }
@@ -441,13 +573,18 @@ namespace MergulhoVirtual.UiShots
             // byte-stable across machines and days.
             if (type == typeof(Func<DateTime>)) return (Func<DateTime>)(() => UiShotFixtures.FixedNowUtc);
             if (type == typeof(Func<DateTime, DateTime>)) return (Func<DateTime, DateTime>)UiShotFixtures.ToNoronhaLocal;
-            // Two sprite loaders now (beach covers and species photos), told
-            // apart by parameter name — they are the same delegate type, so the
-            // name is the only signal, and the beach loader stays the default.
+            // THREE sprite loaders now (beach covers, species photos and article
+            // images), told apart by parameter name — they are the same delegate type,
+            // so the name is the only signal, and the beach loader stays the default.
+            // The article one is NOT interchangeable with the others: an article
+            // authors a complete Resources path, so prefixing it with a folder makes
+            // every figure resolve to null and disappear from the PNG with no warning.
             if (type == typeof(Func<string, Sprite>))
             {
-                return parameter.Name != null &&
-                       parameter.Name.IndexOf("species", StringComparison.OrdinalIgnoreCase) >= 0
+                string name = parameter.Name ?? "";
+                if (name.IndexOf("article", StringComparison.OrdinalIgnoreCase) >= 0)
+                    return (Func<string, Sprite>)UiShotFixtures.LoadArticleSprite;
+                return name.IndexOf("species", StringComparison.OrdinalIgnoreCase) >= 0
                     ? (Func<string, Sprite>)UiShotFixtures.LoadSpeciesSprite
                     : (Func<string, Sprite>)UiShotFixtures.LoadBeachSprite;
             }
@@ -815,7 +952,17 @@ namespace MergulhoVirtual.UiShots
             /// </summary>
             public VmCall[] VmCalls;
 
-            public Subject(string id, ShotKind kind, string screenTypeName = null)
+            /// <summary>
+        /// Flip the conditions fixture to "nothing loaded, the fetch failed" for
+        /// this subject only — the §8.7 error state, wired into the Início card.
+        /// </summary>
+        public bool ConditionsUnavailable;
+
+        /// <summary>Report no network link, which turns the failure above into the
+        /// offline variant.</summary>
+        public bool Offline;
+
+        public Subject(string id, ShotKind kind, string screenTypeName = null)
             {
                 Id = id;
                 Kind = kind;

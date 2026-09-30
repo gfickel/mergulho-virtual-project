@@ -11,11 +11,11 @@
  *   scrim     primary at 0.35 (default) / 0.25 (`--compact`)
  *   controls  top row 32dp below the hero top, 16dp gutters
  *   back      40dp circle, surface fill, 1px outline-variant, 20dp glyph
- *   selector  42dp pill, surface fill, 1px outline-variant, 20dp pin + 16/600
- *             ls 0.1 name + 24dp chevron, 16dp inner gutters
+ *   selector  42dp pill, surface fill, 1px outline-variant, 20dp pin + 15/600
+ *             ls 0.1 name + 24dp chevron, 14dp inner gutters (see deviation 4)
  *   badges    pinned 23dp (21dp compact) above the hero bottom, 16dp gutters, gap 8
  *
- * THREE DELIBERATE DEVIATIONS FROM THE FIGMA COORDINATES
+ * FOUR DELIBERATE DEVIATIONS FROM THE FIGMA COORDINATES
  *  1. V2 puts the back circle at x=25 and the pill at x=76..371, i.e. a 346dp group
  *     with 25/19 side margins that lines up with nothing. Here both hero gutters are
  *     16dp — the same gutter as the badge row above them (x=16 in Figma) and as the
@@ -27,12 +27,41 @@
  *     pattern). That lowers the visual top edge by 3dp against V2's y=32.
  *  3. V2's pill is a fixed 295dp; here it flexes into whatever the row leaves, so a
  *     360dp phone shrinks the pill instead of overflowing the screen.
+ *  4. The label is 15/600 and the chrome around it is trimmed 10dp below V2's
+ *     (inner gutters 16 -> 14, pin gap 8 -> 6, chevron gap 12 -> 8). WHY: this pill
+ *     is the ONLY string on the AR HUD, and deviation 3 means a narrow phone pays
+ *     for the flex. The fixed chrome is 88dp (border 2 + padding 28 + pin 20 +
+ *     pin gap 6 + chevron 24 + chevron gap 8), so the label slot is 210dp at 390
+ *     and 180dp at 360. At V2's 16/600 the longest displayName in places.json
+ *     ("Praia da Cacimba do Padre") measures 209.6dp and the runner-up
+ *     ("Enseada dos Tubaroes") 177.3dp — i.e. the catalogue never fitted the frame
+ *     it was drawn in, and 360 truncated a SECOND name. At 15/600 the longest is
+ *     196.6dp: all 17 names fit at 390 with >=13dp to spare, and 16 of 17 at 360.
+ *     Only Cacimba do Padre still ellipsises at 360, to "Praia da Cacimba do P...",
+ *     a prefix no other name shares. Trimming the chevron gap is free for short
+ *     names because the label has flex-grow and pushes the chevron to the edge
+ *     regardless; only a label long enough to fill the slot ever sees it.
  *
  * THE SCRIM IS A LAYER, NOT A TRANSLUCENT COLOR LITERAL
  *   `background-color: var(--md-sys-color-primary)` + `opacity` on a child that has
  *   nothing but background. Writing the translucency into the color itself is
  *   banned by TokenDisciplineTests (which scans comments too), and
  *   fading the ROOT would fade the photo and the controls with it.
+ *
+ * THE SCRIM ALPHAS ARE LINEAR-SPACE CORRECTED, SO THEY DO NOT MATCH THE SPEC NUMBER
+ *   §8.2/§8.3 author the scrim as brand navy at 0.25 (240dp) / 0.35 (340dp). Those are
+ *   FIGMA alphas, and Figma blends in sRGB. Unity renders in LINEAR color space
+ *   (ProjectSettings m_ActiveColorSpace: 1) — sRGB in, convert to linear, blend,
+ *   convert back — which always lands LIGHTER than Figma for the same alpha. Over a
+ *   mid-tone beach photo the authored 0.35 was rendering up to 31/255 per channel too
+ *   light: the hero photo came out visibly unscrimmed and the white controls on it lost
+ *   contrast. The backdrop here is a USER PHOTO, i.e. arbitrary and unknowable, so the
+ *   exact fix (pre-blending to the opaque composite, as the camera-* tokens do) is not
+ *   available — these stay real alphas, raised to the value that reproduces the Figma
+ *   composite under linear blending. Derived per-channel over a 7-photo tone sweep and
+ *   averaged; worst-case channel error drops 31 -> 11 (340dp) and 23 -> 8 (240dp).
+ *   Note the direction: a DARK overlay needs a HIGHER alpha, a light one a much lower
+ *   one. Do not "restore" these to the spec numbers — the spec numbers are the input.
  *
  * WHY THE BADGE ROW IS ABSOLUTELY POSITIONED
  *   It must hug the hero's bottom edge whether or not the top row exists. Flex
@@ -65,11 +94,13 @@
     right: 0;
     bottom: 0;
     background-color: var(--md-sys-color-primary);
-    opacity: 0.35;
+    /* Figma authors 0.35; 0.505 is what reproduces it in linear space. See header. */
+    opacity: 0.505;
 }
 
 .mv-hero-header--compact .mv-hero-header__scrim {
-    opacity: 0.25;
+    /* Figma authors 0.25; 0.38 is the linear-space equivalent. See header. */
+    opacity: 0.38;
 }
 
 /* Controls plane. Separate from the photo so the host's status-bar inset
@@ -129,9 +160,12 @@
     flex-direction: row;
     align-items: center;
     height: 42px;
-    padding-left: 16px;
-    padding-right: 16px;
-    border-radius: var(--md-sys-shape-corner-full);
+    /* 14, not V2's 16 — see deviation 4 in the header. */
+    padding-left: 14px;
+    padding-right: 14px;
+    /* Stadium = half of the 42dp height. NOT corner-full: this element is ~295dp
+     * wide, where a huge radius resolves to a lens. See Tokens/_shape.uss. */
+    border-radius: 21px;
     border-width: 1px;
     border-color: var(--md-sys-color-outline-variant);
     background-color: var(--md-sys-color-surface);
@@ -145,18 +179,23 @@
 
 .mv-hero-header__selector-icon {
     font-size: 20px;
-    margin-right: 8px;
+    /* 6, not V2's 8 — see deviation 4 in the header. */
+    margin-right: 6px;
     flex-shrink: 0;
 }
 
-/* title-small metrics bumped to V2's 16px, 600 face, ls 0.1 (one of the three
- * strings in the whole design with non-zero tracking — see _typography.uss). */
+/* V2 draws this at 16/600; it is 15 here so the longest beach names fit the slot
+ * the flexed pill leaves on a 360dp phone — see deviation 4 in the header. The 600
+ * face and the ls 0.1 are V2's (one of the three strings in the whole design with
+ * non-zero tracking — see _typography.uss) and are kept. The size is authored here
+ * rather than through a .md-typescale-* class because no rung of the scale is
+ * 15/600 — title-small is 15/700. */
 .mv-hero-header__selector-label {
     margin: 0;
     padding: 0;
     flex-grow: 1;
     flex-shrink: 1;
-    font-size: 16px;
+    font-size: 15px;
     letter-spacing: 0.1px;
     white-space: nowrap;
     overflow: hidden;
@@ -166,7 +205,8 @@
 
 .mv-hero-header__selector-chevron {
     font-size: 24px;
-    margin-left: 12px;
+    /* 8, not V2's 12 — see deviation 4 in the header. */
+    margin-left: 8px;
     flex-shrink: 0;
 }
 

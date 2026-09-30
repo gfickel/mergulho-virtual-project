@@ -107,7 +107,9 @@
 }
 
 /* body-small metrics (12px / ls 0). Shown in BOTH states — 12dp under the grid,
- * 8dp under the call to action. */
+ * 8dp under the call to action — and aligned DIFFERENTLY in each: V2 flushes it
+ * to the grid's left edge on the filled card (the base rule here) and centres it
+ * under the call to action in the dashed box (the override below). */
 .mv-media-picker__hint {
     margin: 0;
     padding: 0;
@@ -115,13 +117,14 @@
     font-size: 12px;
     letter-spacing: 0;
     white-space: normal;
-    -unity-text-align: middle-center;
+    -unity-text-align: middle-left;
     -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Regular.asset");
     color: var(--md-sys-color-on-surface-variant);
 }
 
 .mv-media-picker__empty .mv-media-picker__hint {
     margin-top: 8px;
+    -unity-text-align: middle-center;
 }
 
 /* ---- Filled state ---- */
@@ -177,9 +180,26 @@
     opacity: 1;
 }
 
-/* V2's pure black at 25%. `scrim` is the only pure-black role and is identical in both
- * themes; the alpha is an `opacity` on this layer alone, so the glyph above it
- * stays opaque (a literal rgba would fail TokenDisciplineTests anyway). */
+/* V2's pure black at 25% (§8 "remove 28x28, pure black at 0.25, r14"). `scrim` is the
+ * only pure-black role and is identical in both themes; the alpha is an `opacity` on
+ * this layer alone, so the glyph above it stays opaque (a literal translucent color
+ * would fail TokenDisciplineTests anyway).
+ *
+ * 0.47 AUTHORED, NOT 0.25 — LINEAR-SPACE CORRECTION, AND IT GOES UP NOT DOWN.
+ * The 0.25 is a Figma alpha and Figma blends in sRGB; Unity renders in LINEAR color
+ * space (ProjectSettings m_ActiveColorSpace: 1), so the same alpha composites LIGHTER
+ * — the disc was rendering up to 28/255 per channel too pale, which is precisely the
+ * contrast the white glyph needs to survive a bright photo. Counter-intuitively a DARK
+ * overlay needs its alpha RAISED (a light one needs it cut ~3.5x); the correction is
+ * not a uniform "reduce".
+ *
+ * WHY THIS STAYS AN ALPHA WHILE THE camera-* TOKENS DID NOT: those sit on opaque,
+ * known surfaces, so the exact composite can be authored as a color. This one sits on
+ * an arbitrary USER PHOTO, so there is nothing to pre-blend against and a real alpha
+ * is the only correct form. 0.47 is the per-channel corrected alpha averaged over a
+ * 7-photo tone sweep; it reproduces the Figma composite to within 2/255 everywhere on
+ * that sweep (the old 0.25 was off by up to 28). 0.25 is the INPUT, not a value to
+ * restore. */
 .mv-media-picker__remove-fill {
     position: absolute;
     left: 0;
@@ -187,6 +207,7 @@
     right: 0;
     bottom: 0;
     background-color: var(--md-sys-color-scrim);
+    opacity: 0.47;
 }
 
 /* `primary-fixed` is the near-white end of M3's *-fixed family, whose defining

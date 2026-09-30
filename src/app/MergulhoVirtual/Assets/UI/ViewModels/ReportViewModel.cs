@@ -52,6 +52,18 @@ namespace MergulhoVirtual.UI
         /// Loading it is the screen's job (the ViewModel stays engine-free).</summary>
         public readonly string PhotoPath;
 
+        /// <summary>
+        /// Whether this row offers a retry — true only for
+        /// <see cref="SightingState.Failed"/>. A queued or backing-off report is
+        /// already going to be retried by the queue, so a button there would
+        /// promise what is happening anyway; a failed one is otherwise a dead end.
+        /// </summary>
+        public bool CanRetry => State == SightingState.Failed;
+
+        /// <summary>Label of the retry action. Constant, but read from the row so
+        /// the screen never writes a user-visible string.</summary>
+        public string RetryText => ReportFormatter.RetryLabel;
+
         public ReportPendingRow(
             string id, string titleText, string statusText, SightingState state,
             string captionText, string photoPath)
@@ -104,7 +116,17 @@ namespace MergulhoVirtual.UI
         public const string PhotoSectionTitle = "Adicionar foto ou vídeo";
         public const string PhotoEmptyActionText = "Selecione arquivos do dispositivo";
         public const string PhotoLimitText = "Limite de tamanho: 20MB";
-        public const string IdentitySectionTitle = "Se identifique (opcional)";
+        /// <summary>
+        /// The heading proper. V2 draws the parenthetical in a different role
+        /// (regular weight, muted) inside the same Figma text node — mixed character
+        /// styling, which a UI Toolkit Label cannot carry — so it is a second string
+        /// the screen places beside this one. See <see cref="IdentitySectionOptionalNote"/>.
+        /// </summary>
+        public const string IdentitySectionTitle = "Se identifique";
+
+        /// <summary>The muted "(opcional)" that follows <see cref="IdentitySectionTitle"/>.
+        /// Its own string because it is its own text role, not because it is its own field.</summary>
+        public const string IdentitySectionOptionalNote = "(opcional)";
         public const string NamePlaceholder = "Seu nome";
         public const string EmailPlaceholder = "Seu melhor email";
         public const string ProfileSectionTitle = "Selecione seu perfil";
@@ -593,12 +615,38 @@ namespace MergulhoVirtual.UI
 
         public int PendingCount => pendingRows.Count;
 
+        /// <summary>
+        /// The shell's periodic tick. Named to match the other ViewModels so
+        /// <c>AppUiHost.Update</c> can drive them all the same way.
+        /// <para>
+        /// This is load-bearing, not cosmetic symmetry. <see cref="ISightingReports.Changed"/>
+        /// fires only on Success and PermanentFailure, never on a transient retry — so
+        /// without a timer a row's state, attempt count and "Tentando de novo" /
+        /// "Sem conexão" label stay frozen at whatever <c>OnEnter</c> computed, and a
+        /// queue that is working normally reads as a stuck one.
+        /// </para>
+        /// </summary>
+        public void NotifyTimePassed() => RefreshPending();
+
         /// <summary>Re-reads the feed and notifies. Wired to
         /// <see cref="ISightingReports.Changed"/>; also safe to call on a timer.</summary>
         public void RefreshPending()
         {
             RebuildPending();
             Changed?.Invoke();
+        }
+
+        /// <summary>
+        /// Puts a failed report back in the queue and re-reads the feed, so the row
+        /// moves from "Falhou" to "Pendente" in the same frame as the tap. Returns
+        /// what the service said — false means there was no failed report with that
+        /// id any more, and the rebuild below shows whatever is actually there.
+        /// </summary>
+        public bool RetryPending(string id)
+        {
+            bool taken = reports != null && reports.Retry(id);
+            RefreshPending();
+            return taken;
         }
 
         void RebuildPending()

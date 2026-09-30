@@ -119,34 +119,73 @@
  * case back on 234. */
 .mv-conditions {
     min-height: 234px;
-    padding: 12px;
+    /* 12 top/bottom is the frame's declared padding and measures correct; the
+     * SIDES are 24. The frame declares pad:12, but every child inside it is a
+     * 310dp row centred (xCENTER) in the 358dp box — so the design's content
+     * actually starts 16 (page gutter) + 24 = 40dp from the screen edge, and
+     * transcribing the declared 12 alone hugged the text to the card's border,
+     * uniquely on this card. */
+    padding: 12px 24px;
     background-color: var(--md-sys-color-primary);
 }
 
+/* 12, not the transcription's 6. The card's own vertical rhythm is 8, and the
+ * measured ink-to-ink gap from "Hoje" down to the "Onda" row came out at 11.5dp
+ * against the frame's 20.5 — the heading read as part of the row block rather
+ * than as a heading over it. The sparkline's flex-grow absorbs the difference,
+ * so the card keeps its 234 (min-height, so it can still grow if a row wraps). */
 .mv-conditions__header {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 6px;
+    margin-bottom: 12px;
 }
 
+/* This is the live navigation into Praias — a bare element carrying a Clickable,
+ * on a navy card with no state layer to confirm the hit — so it carries the
+ * library's 48dp minimum like every other interactive surface (it measured
+ * ~21.5dp, its content height). `align-items: center` already centres the title
+ * and the chevron inside the taller box; `justify-content` is the ROW axis here
+ * and would do nothing. */
 .mv-conditions__title-group {
     flex-direction: row;
     align-items: center;
+    min-height: 48px;
 }
 
 .mv-conditions__title {
     color: var(--md-sys-color-on-primary);
 }
 
+/* 26, not 18. Material Symbols' em box carries padding the Figma vector does
+ * not, so an 18px glyph draws 5.5x9dp of ink where V2's chevron is 7.5x12. */
 .mv-conditions__chevron {
-    font-size: 18px;
+    font-size: 26px;
     margin-left: 2px;
     color: var(--md-sys-color-on-primary);
 }
 
-/* V2 underlines this link; UI Toolkit has no text-decoration, so the underline
- * is a 1px bottom border. */
+/* The 48dp touch target for the link, and the reason the link is two elements.
+ *
+ * V2 underlines the link; UI Toolkit has no text-decoration, so the underline is
+ * a 1px bottom border on the LABEL's own box — which is what makes the target
+ * unreachable from USS alone: any height beyond the text's line box pushes the
+ * rule off the text, and growing it upward instead drops the ink ~15dp below
+ * "Hoje", which shares this row under `align-items: center`. So the label keeps
+ * its 14dp box and the rule that sits on it, and this wrapper — which paints
+ * nothing — carries the height and the Clickable.
+ *
+ * `justify-content: center` is the COLUMN axis here, so it re-centres the label's
+ * ink in the taller box: the ink lands exactly where it did when the bare label
+ * was centred by the header's `align-items`, i.e. the hit box grows and nothing
+ * moves. `align-items: flex-end` keeps the label flush with the header's right
+ * edge, where `justify-content: space-between` puts it. */
+.mv-conditions__link-hit {
+    min-height: 48px;
+    justify-content: center;
+    align-items: flex-end;
+}
+
 .mv-conditions__link {
     font-size: 10px;
     color: var(--md-sys-color-on-primary);
@@ -172,10 +211,17 @@
     color: var(--md-sys-color-on-primary);
 }
 
+/* 0.49, authored 0.7 — LINEAR-SPACE CORRECTION, see the block below the rows.
+ * V2 draws this line at 0xB0B9C8 on the navy card, which is white at 0.69 blended
+ * the way Figma blends (sRGB); 0.7 was a faithful transcription of that. Unity
+ * blends in linear and rendered it 0xDADBDB — measured in .shots/home-light.png —
+ * so the one line on the card that is meant to recede read almost as bright as
+ * the rows above it. 0.49 is the alpha that reproduces 0xB0B9C8 under linear
+ * blending (renders 0xBCBDBF). */
 .mv-conditions__freshness {
     margin-top: 8px;
     color: var(--md-sys-color-on-primary);
-    opacity: 0.7;
+    opacity: 0.49;
 }
 
 /* Descendant selectors (specificity 0,2,0) so they beat MdSparkline.uss's own
@@ -185,14 +231,23 @@
  * pale blue in dark), so nothing painted on it may come from a *-fixed-* token: a
  * "fixed" token is the same value in both themes, and `primary-fixed-dim` happens
  * to be exactly the dark-theme card colour — which is how the curve, the low-tide
- * dots and the "Atualizado" line vanished in dark. Two roles DO flip with the card
- * and are the only ones used here:
- *   · text  -> `on-primary`      (white on the navy card, deep navy on the pale one)
- *   · chart -> `inverse-primary` (pale blue on the navy card, deep navy on the pale
- *     one) — the soft blue the design draws the curve in, and still a contrasting
- *     mark after the flip.
- * Only the amber high-tide markers are absolute: `secondary` is brand amber in
- * both themes and reads on either surface. */
+ * dots and the "Atualizado" line vanished in dark.
+ *
+ * THE CHART INK IS `on-primary`, NOT `inverse-primary` (changed 2026-09-29).
+ * MdSparkline's own defaults paint the fill, the line and the low dots in
+ * `primary` — i.e. the ink role of the surface it expects to sit on — with
+ * `tertiary` for the high dots. This card INVERTS that surface, so the structural
+ * equivalent of the component's default is `on-primary`, and it is also the one
+ * role Appendix A.1 maps for "0xFFFFFF on navy". `inverse-primary` was a stock-M3
+ * role carrying a hue (0xB9C7E0, pale desaturated blue) that appears nowhere in
+ * the brand mapping; the Figma frame is no argument for it either, because the
+ * whole card interior is a pasted bitmap (`image 13`) that §8.1 flags as
+ * "rebuild", and every VECTOR mark the designer drew on this card is either
+ * 0xFFFFFF or amber. So:
+ *   · text + chart -> `on-primary` (white on the navy card, deep navy on the pale
+ *     one) — flips with the card, exactly as `inverse-primary` did.
+ *   · high-tide dots -> `secondary`, brand amber in both themes, matching the
+ *     amber marker V2 draws as a vector beside the bitmap. */
 .mv-conditions .mv-conditions__sparkline {
     /* Takes whatever the rows left over, so the card lands on 234 (and the curve
      * keeps roughly its Figma share of the card) without being pinned to a height
@@ -207,18 +262,37 @@
     height: 14px;
 }
 
+/* 0.025, authored 0.14 — the worst of the linear-space alphas on this card, and
+ * the reason the sweep happened. 0xB9C7E0 at 0.14 over the navy card renders
+ * 0x4D5667, measured over 34k pixels of .shots/home-light.png: an effective 0.34,
+ * so the area under the curve read as a flat grey slab rather than a wash, and
+ * the curve had nothing to stand out from.
+ *
+ * Two independent lines of evidence put the replacement at 0.025 of `on-primary`:
+ *   · correcting the AUTHORED intent — 0xB9C7E0@0.14 composites to 0x2C3A4E the way
+ *     Figma blends; white reaching that luminance under linear blending is 0.025;
+ *   · matching the FIGMA BITMAP — the pixels under the curve in `image 13` average
+ *     luminance 0.038–0.041 against the card's 0.016, and white at 0.025 renders
+ *     0.041 (0x323946).
+ * A flat fill cannot reproduce the bitmap's gradient (strong under the line,
+ * gone by the axis), so it is set to the gradient's mean weight. An exact match
+ * would mean pre-blending to an opaque 0x2C3A4E, which no token expresses — see
+ * the report; lowering the alpha is the sanctioned fallback. */
 .mv-conditions .md-sparkline__fill {
-    color: var(--md-sys-color-inverse-primary);
-    opacity: 0.14;
+    color: var(--md-sys-color-on-primary);
+    opacity: 0.025;
 }
 
 .mv-conditions .md-sparkline__line {
-    color: var(--md-sys-color-inverse-primary);
+    color: var(--md-sys-color-on-primary);
 }
 
+/* 0.19, authored 0.4. Same correction: 0.4 rendered 0xAAACAE, a 67%-grey rule
+ * nearly as strong as the curve it is supposed to sit behind. 0.19 renders
+ * 0x7A7D81 — what 0.4 means in the sRGB dialect the number was written in. */
 .mv-conditions .md-sparkline__baseline {
     color: var(--md-sys-color-on-primary);
-    opacity: 0.4;
+    opacity: 0.19;
 }
 
 .mv-conditions .md-sparkline__high-dots {
@@ -226,9 +300,15 @@
 }
 
 .mv-conditions .md-sparkline__low-dots {
-    color: var(--md-sys-color-inverse-primary);
+    color: var(--md-sys-color-on-primary);
 }
 
+/* 0.75 is LEFT ALONE, deliberately, and it is the one alpha on this card that is
+ * not corrected. It renders 0xE1E1E2; the same labels in the Figma bitmap peak at
+ * 0xE5ECF2. The rendered result already IS the design, so "correcting" 0.75 to
+ * 0.57 would move it away from V2, not toward it — the number was authored by
+ * eye, not transcribed, and only transcribed numbers carry the sRGB dialect the
+ * correction undoes. */
 .mv-conditions .md-sparkline__label {
     color: var(--md-sys-color-on-primary);
     opacity: 0.75;
@@ -245,9 +325,15 @@
     margin-top: 12px;
 }
 
+/* `justify-content: center` matches Figma's inner Header frame (AL:V ... CENTER).
+ * It is moot for three of the four cards, which fill the box; "Mergulho Virtual"
+ * stays on one line where Figma wraps it to two, and without this its 30dp of
+ * slack all piles up under the text and the card reads top-heavy beside its
+ * neighbours. The state layer is position: absolute, so it is not centred. */
 .mv-feature-card {
     flex-grow: 1;
     flex-basis: 0;
+    justify-content: center;
     min-height: 138px;
     padding: 12px;
     background-color: var(--md-sys-color-surface);
@@ -332,4 +418,66 @@
 
 .mv-feature-card:active .md-state-layer {
     opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* ---- Conditions card: the "we could not load it" state (§8.7) ----
+ *
+ * MvStateView paints itself for a page surface — `on-surface` ink, a `primary`
+ * filled button. This card is `primary` itself, so every one of those defaults
+ * would be navy-on-navy. Repainted here with the same two roles the sparkline
+ * uses, and for the same reason: `on-primary` and `primary` are the pair that
+ * FLIPS with the card between themes, where a *-fixed-* token would not.
+ *
+ * The button inverts the card instead of sitting on it — an `on-primary` fill
+ * with `primary` ink is the only high-contrast filled button available on this
+ * surface, and it stays high-contrast after the theme flip.
+ *
+ * Selectors are deliberately 3 classes deep: MdButton's own variant rules are
+ * two classes, and matching that would leave the outcome to stylesheet order. */
+
+.mv-conditions__state {
+    /* Takes the room the five rows and the chart gave up, so the card keeps its
+     * 234dp and the action lands at the bottom the way §8.7 draws it. */
+    margin-top: 4px;
+}
+
+/* 0.27 / 0.57, authored 0.5 / 0.75 — the linear-space correction again. The
+ * block is a three-step ramp (icon quietest, body, title at full) and under
+ * linear blending 0.5 / 0.75 / 1.0 rendered 0xBCBDBF / 0xE1E1E2 / 0xFFFFFF, i.e.
+ * 0.74 / 0.90 / 1.0 in sRGB terms — the ramp all but collapsed into white. The
+ * corrected pair renders 0x8F9194 / 0xC7C8C9, which is what 0.5 and 0.75 were
+ * written to mean. The body still measures ~9:1 on the navy card. */
+.mv-conditions .mv-conditions__state .mv-state-view__icon {
+    color: var(--md-sys-color-on-primary);
+    opacity: 0.27;
+}
+
+.mv-conditions .mv-conditions__state .mv-state-view__title {
+    color: var(--md-sys-color-on-primary);
+}
+
+.mv-conditions .mv-conditions__state .mv-state-view__body {
+    color: var(--md-sys-color-on-primary);
+    opacity: 0.57;
+}
+
+.mv-conditions .mv-conditions__state .md-button__container {
+    background-color: var(--md-sys-color-on-primary);
+    color: var(--md-sys-color-primary);
+}
+
+.mv-conditions .mv-conditions__state .md-state-layer {
+    background-color: var(--md-sys-color-primary);
+}
+
+/* 0.45 is LEFT ALONE. It is a DISABLED-state opacity, not a transcribed colour:
+ * the M3 state system owns that vocabulary (`_state.uss`, and the library's own
+ * `on-surface-disabled-*` pair), so correcting it here would fork the disabled
+ * look of one button away from every other. It also dims the whole subtree, the
+ * `primary` label included — correcting it to 0.23 would take the container to
+ * 0x85878B and leave a navy label at the edge of legibility on it. If the linear
+ * rule should reach the disabled states, it belongs in the state tokens. */
+.mv-conditions .mv-conditions__state .md-button:disabled .md-button__container {
+    background-color: var(--md-sys-color-on-primary);
+    opacity: 0.45;
 }

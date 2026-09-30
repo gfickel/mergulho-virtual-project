@@ -61,6 +61,7 @@ namespace MergulhoVirtual.UI
         readonly IConditionsService conditions;
         readonly ITideService tides;
         readonly IOnboardingState onboarding;
+        readonly IConnectivity connectivity;
         readonly Func<DateTime> utcNow;
         readonly Func<DateTime, DateTime> toLocalTime;
         bool disposed;
@@ -76,6 +77,22 @@ namespace MergulhoVirtual.UI
         /// </summary>
         public HomeFeature WideFeature { get; }
 
+        /// <summary>
+        /// The "Conteúdo educativo" entry, below <see cref="WideFeature"/>. Like that
+        /// one it is <b>NOT in the V2 Figma frame</b> — V2 predates the educational-
+        /// content feature entirely, and the feature needs a discoverable entry point
+        /// because it gets no bottom-bar tab (the bar has four destinations and that is
+        /// fixed). Same deliberate-addition rule as the Praia detalhe description card:
+        /// added in the existing card language rather than as a new visual pattern.
+        ///
+        /// <para>A separate property rather than a fifth <see cref="GridFeatures"/> cell
+        /// or a change to <see cref="WideFeature"/>: the grid is a 2×2 the frame draws
+        /// and a fifth cell would orphan a half-row, and re-pointing WideFeature would
+        /// silently delete the Sobre entry. Additive, so nothing that already reads
+        /// those two moves.</para>
+        /// </summary>
+        public HomeFeature LearnFeature { get; }
+
         /// <summary>First-run welcome card (Tela 6) visibility.</summary>
         public bool ShowWelcome { get; private set; }
 
@@ -89,12 +106,14 @@ namespace MergulhoVirtual.UI
             IConditionsService conditions,
             ITideService tides,
             IOnboardingState onboarding = null,
+            IConnectivity connectivity = null,
             Func<DateTime> utcNow = null,
             Func<DateTime, DateTime> toLocalTime = null)
         {
             this.conditions = conditions;
             this.tides = tides;
             this.onboarding = onboarding;
+            this.connectivity = connectivity;
             this.utcNow = utcNow ?? (() => DateTime.UtcNow);
             this.toLocalTime = toLocalTime ?? (d => d.ToLocalTime());
 
@@ -117,6 +136,13 @@ namespace MergulhoVirtual.UI
 
             WideFeature = new HomeFeature(AppRoutes.Sobre, "Sobre o projeto",
                 "Conheça a iniciativa e acompanhe as últimas publicações.", "info");
+
+            // The educational-content entry — see LearnFeature's remarks for why it is
+            // its own property and why it is not in the Figma frame. The title is
+            // ArticleFormatter's own EntryPointLabel rather than a second spelling, so
+            // the card and the screen it opens cannot drift apart.
+            LearnFeature = new HomeFeature(AppRoutes.Conteudos, ArticleFormatter.EntryPointLabel,
+                "Artigos sobre a vida marinha, as praias e o projeto.", "menu_book");
 
             if (this.conditions != null) this.conditions.Changed += OnConditionsChanged;
             if (this.tides != null) this.tides.Changed += OnTideChanged;
@@ -145,6 +171,50 @@ namespace MergulhoVirtual.UI
             ShowWelcome = false;
             onboarding?.DismissWelcome();
             WelcomeChanged?.Invoke();
+        }
+
+        // ---- Conditions failure state (MvStateView, §8.7) --------------------
+
+        /// <summary>
+        /// True when the card has nothing to show AND the service has told us it
+        /// tried and could not. Both halves matter: a null snapshot on its own is
+        /// also the state before the first fetch returns, and reporting an error
+        /// while the request is still in flight would be a lie.
+        ///
+        /// <para>A cached-but-stale snapshot is deliberately NOT this state — the
+        /// rows are real data and the "Atualizado: há Nm" line is already the honest
+        /// signal for their age.</para>
+        /// </summary>
+        public bool ConditionsUnavailable =>
+            conditions != null && conditions.Current == null && conditions.LastFetchFailed;
+
+        /// <summary>
+        /// The device reports no network link. Chooses the state view's variant and
+        /// wording; with no <see cref="IConnectivity"/> wired it is false, i.e. the
+        /// generic failure, which is the claim that is always safe.
+        /// </summary>
+        public bool IsOffline => connectivity != null && !connectivity.IsOnline;
+
+        public string ConditionsStateTitle => StateViewCopy.Title(IsOffline);
+
+        public string ConditionsStateBody => StateViewCopy.ConditionsBody(IsOffline);
+
+        public string ConditionsStateAction => StateViewCopy.RetryAction;
+
+        /// <summary>False while a fetch is in flight, so the retry button can show
+        /// that the tap was taken.</summary>
+        public bool ConditionsRetryEnabled => conditions == null || !conditions.IsFetching;
+
+        /// <summary>
+        /// Re-runs the conditions fetch. A real request, not a repaint: the result
+        /// arrives later through <see cref="IConditionsService.Changed"/>.
+        /// </summary>
+        public void RetryConditions()
+        {
+            conditions?.Refresh();
+            // Repaint now so the button reflects IsFetching without waiting for the
+            // service to tell us something changed.
+            DataChanged?.Invoke();
         }
 
         // ---- Conditions rows ------------------------------------------------

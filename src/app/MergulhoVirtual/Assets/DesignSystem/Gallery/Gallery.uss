@@ -31,9 +31,12 @@
     margin-bottom: 4px;
 }
 
+/* `white-space: normal` is the wrap: these run long and were reaching the frame
+ * edge in most sections, which costs the gallery its job as the debugging surface. */
 .gallery-section__desc {
     color: var(--md-sys-color-on-surface-variant);
     margin-bottom: 12px;
+    white-space: normal;
 }
 
 .gallery-row {

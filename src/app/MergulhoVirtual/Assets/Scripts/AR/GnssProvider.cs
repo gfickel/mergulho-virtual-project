@@ -89,35 +89,91 @@ public class GnssProvider : MonoBehaviour
             if (location == null) return;
             try
             {
-                var fix = new GnssFix
-                {
-                    latitude = location.Call<double>("getLatitude"),
-                    longitude = location.Call<double>("getLongitude"),
-                    horizontalAccuracy = location.Call<bool>("hasAccuracy")
-                        ? location.Call<float>("getAccuracy") : 99f,
-                    timestampMs = location.Call<long>("getTime"),
-                    hasSpeed = location.Call<bool>("hasSpeed"),
-                    hasBearing = location.Call<bool>("hasBearing"),
-                };
-                if (fix.hasSpeed) fix.speedMps = location.Call<float>("getSpeed");
-                if (fix.hasBearing) fix.bearingDeg = location.Call<float>("getBearing");
-                try
-                {
-                    // The GPS provider usually attaches the used-satellite count.
-                    using (var extras = location.Call<AndroidJavaObject>("getExtras"))
-                    {
-                        if (extras != null)
-                            fix.satellites = extras.Call<int>("getInt", "satellites", 0);
-                    }
-                }
-                catch { /* extras are best-effort */ }
-
-                lock (sync) { pending = fix; hasPending = true; }
+                // API 31 (Android 12) added a BATCHED overload alongside the
+                // single-Location one — onLocationChanged(List<Location>) — and
+                // Unity's AndroidJavaProxy dispatches by method NAME and arg
+                // count only, never by signature. Both overloads therefore land
+                // here, and Android 12+ calls the batched one, so this check has
+                // to come before anything reads Location's own members:
+                // getLatitude() on an ArrayList throws NoSuchMethodError once per
+                // fix. That is what left native GNSS dead on every modern phone —
+                // silently, because the subscribe itself still succeeds, so
+                // UsingNativeGnss stays true and Update() never falls back to
+                // Input.location.
+                if (TryReadBatch(location)) return;
+                ReadFix(location);
             }
             finally
             {
                 location.Dispose();
             }
+        }
+
+        /// <summary>
+        /// Consumes the API 31+ <c>List&lt;Location&gt;</c> form of the callback.
+        /// </summary>
+        /// <returns>
+        /// True when the argument was a batch (and has been handled); false when
+        /// it is a plain Location and the caller should read it directly.
+        /// </returns>
+        bool TryReadBatch(AndroidJavaObject arg)
+        {
+            bool isList;
+            try
+            {
+                using (var listClass = new AndroidJavaClass("java.util.List"))
+                    isList = listClass.Call<bool>("isInstance", arg);
+            }
+            catch
+            {
+                // Degenerate case only — treat it as a plain Location, i.e. the
+                // pre-fix behaviour, rather than dropping the fix entirely.
+                return false;
+            }
+
+            if (!isList) return false;
+
+            var size = arg.Call<int>("size");
+            // Only the newest fix is worth reading: TryTake holds a single
+            // pending fix and Update() consumes one per frame, so replaying the
+            // whole batch would arrive at exactly this state anyway.
+            if (size > 0)
+            {
+                using (var newest = arg.Call<AndroidJavaObject>("get", size - 1))
+                {
+                    if (newest != null) ReadFix(newest);
+                }
+            }
+            return true;
+        }
+
+        /// <summary>Reads one android.location.Location into the pending slot.</summary>
+        void ReadFix(AndroidJavaObject location)
+        {
+            var fix = new GnssFix
+            {
+                latitude = location.Call<double>("getLatitude"),
+                longitude = location.Call<double>("getLongitude"),
+                horizontalAccuracy = location.Call<bool>("hasAccuracy")
+                    ? location.Call<float>("getAccuracy") : 99f,
+                timestampMs = location.Call<long>("getTime"),
+                hasSpeed = location.Call<bool>("hasSpeed"),
+                hasBearing = location.Call<bool>("hasBearing"),
+            };
+            if (fix.hasSpeed) fix.speedMps = location.Call<float>("getSpeed");
+            if (fix.hasBearing) fix.bearingDeg = location.Call<float>("getBearing");
+            try
+            {
+                // The GPS provider usually attaches the used-satellite count.
+                using (var extras = location.Call<AndroidJavaObject>("getExtras"))
+                {
+                    if (extras != null)
+                        fix.satellites = extras.Call<int>("getInt", "satellites", 0);
+                }
+            }
+            catch { /* extras are best-effort */ }
+
+            lock (sync) { pending = fix; hasPending = true; }
         }
 
         // LocationListener's other members — must exist so the java.lang.reflect

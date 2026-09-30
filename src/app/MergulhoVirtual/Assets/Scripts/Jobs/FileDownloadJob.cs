@@ -36,6 +36,7 @@ public class FileDownloadJob : Job
         catch (Exception e)
         {
             LastError = "prep: " + e.Message;
+            LastFailureWasNetwork = false; // local disk, not the radio
             setResult(JobResult.TransientFailure);
             yield break;
         }
@@ -44,17 +45,39 @@ public class FileDownloadJob : Job
         {
             req.downloadHandler = new DownloadHandlerFile(partial) { removeFileOnAbort = true };
 
-            yield return req.SendWebRequest();
+            // Never a bare SendWebRequest(): with no timeout, a half-open socket
+            // holds the queue's single execution slot forever. See Job.Send. A
+            // download that keeps delivering bytes is never interrupted — only one
+            // that has stopped delivering them.
+            var outcome = new RequestOutcome();
+            yield return Send(req, outcome);
+
+            if (outcome.Aborted)
+            {
+                LastError = "watchdog: " + outcome.Reason;
+                LastFailureWasNetwork = true;
+                setResult(JobResult.TransientFailure);
+                yield break;
+            }
 
             if (req.result != UnityWebRequest.Result.Success)
             {
                 LastError = $"{(int)req.responseCode} {req.error}";
                 if (req.result == UnityWebRequest.Result.ConnectionError)
+                {
+                    // The radio, not the server.
+                    LastFailureWasNetwork = true;
                     setResult(JobResult.TransientFailure);
-                else if (req.responseCode >= 500 || req.responseCode == 408 || req.responseCode == 429 || req.responseCode == 0)
-                    setResult(JobResult.TransientFailure);
+                }
                 else
-                    setResult(JobResult.PermanentFailure);
+                {
+                    // A server answered, whatever it said.
+                    LastFailureWasNetwork = false;
+                    if (req.responseCode >= 500 || req.responseCode == 408 || req.responseCode == 429 || req.responseCode == 0)
+                        setResult(JobResult.TransientFailure);
+                    else
+                        setResult(JobResult.PermanentFailure);
+                }
                 yield break;
             }
         }
@@ -66,6 +89,7 @@ public class FileDownloadJob : Job
             catch (Exception e)
             {
                 LastError = "hash: " + e.Message;
+                LastFailureWasNetwork = false; // local disk, not the radio
                 setResult(JobResult.TransientFailure);
                 yield break;
             }
@@ -73,6 +97,9 @@ public class FileDownloadJob : Job
             {
                 LastError = $"sha256 mismatch (got {actual})";
                 try { File.Delete(partial); } catch { }
+                // A truncated or corrupted body: the bytes arrived, so this is not
+                // a connectivity problem and must not get the gentle schedule.
+                LastFailureWasNetwork = false;
                 setResult(JobResult.TransientFailure);
                 yield break;
             }
@@ -80,16 +107,26 @@ public class FileDownloadJob : Job
 
         try
         {
-            if (File.Exists(DestPath)) File.Delete(DestPath);
-            File.Move(partial, DestPath);
+            // The same one-operation overwrite JobQueue.WriteJob uses, deliberately
+            // spelled the same way: Delete-then-Move leaves a window with neither
+            // file, and having two different answers to "overwrite a file atomically"
+            // three files apart is how the wrong one gets copied into the next job
+            // type. File.Move's overwrite overload does not exist in the netstandard
+            // 2.1 surface Unity 6000.3 compiles and runs against; File.Replace with a
+            // null backup is a bare rename(2) on both runtimes we ship, and needs the
+            // destination to exist — which a first download is not.
+            if (File.Exists(DestPath)) File.Replace(partial, DestPath, null);
+            else File.Move(partial, DestPath);
         }
         catch (Exception e)
         {
             LastError = "finalize: " + e.Message;
+            LastFailureWasNetwork = false; // local disk, not the radio
             setResult(JobResult.TransientFailure);
             yield break;
         }
 
+        LastFailureWasNetwork = false;
         setResult(JobResult.Success);
     }
 

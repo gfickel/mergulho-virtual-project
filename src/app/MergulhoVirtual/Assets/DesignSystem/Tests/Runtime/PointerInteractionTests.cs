@@ -738,5 +738,46 @@ namespace MergulhoVirtual.DesignSystem.Tests
             foreach (var texture in textures)
                 Object.Destroy(texture);
         }
+
+        /// <summary>
+        /// MvStateView's only interactive part is its action button, and the root
+        /// deliberately ignores picking. This pins both: the tap reaches the
+        /// button and comes back out as ActionInvoked, and a tap anywhere else on
+        /// the view raises nothing.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator MvStateView_ActionClick_RaisesActionInvoked()
+        {
+            var view = new MvStateView
+            {
+                Title = "Algo deu errado por aqui",
+                Body = "Nao conseguimos carregar as informacoes.",
+                ActionText = "Tentar novamente",
+            };
+            int invoked = 0;
+            view.ActionInvoked += () => invoked++;
+            yield return Mount(view);
+
+            // Themeless panel: no USS geometry, so pin the footer chain and give
+            // the button an explicit rect below the (0-height) content block.
+            var footer = view.Q<VisualElement>(className: MvStateView.FooterClassName);
+            footer.style.flexShrink = 0;
+            var action = view.Q<MdButton>(className: MvStateView.ActionClassName);
+            action.style.position = Position.Absolute;
+            action.style.left = 0;
+            action.style.top = 0;
+            action.style.width = 180;
+            action.style.height = 47;
+            action.style.flexShrink = 0;
+            yield return null;
+
+            TestPointer.Click(action);
+            Assert.That(invoked, Is.EqualTo(1));
+
+            // The root ignores picking, so a tap that misses the button is inert
+            // rather than being swallowed by the state view.
+            TestPointer.ClickAt(view, new Vector2(view.worldBound.xMax - 2f, view.worldBound.yMax - 2f));
+            Assert.That(invoked, Is.EqualTo(1), "only the action button is interactive");
+        }
     }
 }

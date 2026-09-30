@@ -101,6 +101,47 @@
     color: var(--md-sys-color-primary);
 }
 
+/* "Se identifique (opcional)" — ONE Figma text node with mixed character styling,
+ * which a Label cannot express, so the screen draws it as two labels in a row
+ * (ReportScreen.MakeSection). The row's layout lives here rather than inline: a
+ * screen sets content, a stylesheet sets appearance.
+ *
+ * `align-items: flex-end` because UI Toolkit has no baseline alignment and the
+ * two labels are different sizes (15/700 and 12/400) — flushing their bottoms is
+ * the closest approximation of the shared baseline Figma draws. The heading's own
+ * 10dp margin-bottom has to move to the ROW for that to work, or it would push
+ * the heading 10dp above the note; it is reset on the nested title below. */
+.mv-report__section-heading {
+    flex-direction: row;
+    align-items: flex-end;
+    margin-bottom: 10px;
+}
+
+/* `flex-shrink: 0` + `nowrap` are load-bearing, not tidying. The base
+ * `.mv-report__section-title` carries `white-space: normal` (headings elsewhere are
+ * block-level and may wrap), and a flex child defaults to `flex-shrink: 1` — so the
+ * moment the title became a ROW child it shrank to a fraction of its text width and
+ * wrapped "Se identifique" onto two lines, the second of which overflowed the row's
+ * height and collided with the "Seu nome" field below it. Pin both labels at their
+ * content width; these two strings are short by construction. */
+.mv-report__section-heading .mv-report__section-title {
+    margin-bottom: 0;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.mv-report__section-heading .mv-report__section-optional {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* Regular grey (0x6B7280 in V2) against the heading's bold navy — the whole reason
+ * the parenthetical is its own element instead of inheriting 15/700 navy. */
+.mv-report__section-optional {
+    margin-left: 5px;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
 /* Shared card language: white surface, 1px border, radius 16. */
 .mv-report__card {
     background-color: var(--md-sys-color-surface);
@@ -129,17 +170,36 @@
     color: var(--md-sys-color-on-surface-variant);
 }
 
-/* ---- Chip rows (species wraps to two lines, size fits one) ---- */
+/* ---- Chip rows (species wraps to two lines; size fits one at 390, two at 360) ----
+ *
+ * THE SIZE ROW WRAPPING ON A 360dp PHONE IS ACCEPTED, NOT OVERLOOKED. Each chip is
+ * its label + 26 (12 padding + 1 border a side) + 8 margin, so the three size chips
+ * ("Menor que 1m" 95.0, "1m - 2m" 53.4, "Maior que 3m" 92.9 at label-large 14/600)
+ * ask for 343.4dp of row. The content box is 358dp at 390 — it fits, as drawn — and
+ * 328dp at 360, so "Maior que 3m" drops to a second line. Nothing is lost: the row
+ * already declares flex-wrap, the negative margin below keeps the two rows at the
+ * frame's 8dp gap, and the page grows 17dp.
+ *
+ * It is left alone because every way to close a 15.4dp gap costs more than it buys.
+ * The chip inset is V2's own (Figma state layer pad 6/12/6/12) and was only just
+ * brought down from M3's 16; 12 -> 10 saves 12dp and still wraps (331.4 > 328), so
+ * buying the fit needs 9dp a side — 3dp off spec on every chip in the app, to keep
+ * one row unbroken on one width. Trimming the 8dp gap has the same problem: it has
+ * to reach 2dp before the row fits. Revisit only if the labels themselves change. */
 
 .mv-report__chip-row {
     flex-direction: row;
     flex-wrap: wrap;
 }
 
-/* The 8dp Figma gap, horizontally. Vertically the chips' 48dp targets already leave
- * 8dp above and below the visible 32dp chip, so a wrapped row needs no extra margin. */
+/* The 8dp Figma gap, horizontally. Vertically it has to be NEGATIVE: the chips'
+ * 48dp targets leave 8dp above AND below the visible 32dp chip, so two stacked
+ * rows already sit 16dp apart on their own — twice the frame's 8. The -8 takes
+ * one of those back. It also lands on the last row, which is right: it trims the
+ * same phantom 8dp off the section's bottom gap. */
 .mv-report__chip {
     margin-right: 8px;
+    margin-bottom: -8px;
 }
 
 /* ---- Behaviour checklist (4 rows, 52dp, 1px dividers) ---- */
@@ -150,8 +210,11 @@
     justify-content: space-between;
     min-height: 52px;
     padding-left: 14px;
-    /* 14 in the frame, minus the checkbox's own 4dp target inset on this side. */
-    padding-right: 10px;
+    /* 14 in the frame, minus the checkbox's own target inset on this side. That
+     * inset is 15, not 4: MdCheckbox is a 48dp root centring an 18dp box, so
+     * (48 - 18) / 2 = 15 of it is already empty. 14 - 15 rounds to 1, which puts
+     * the box's edge at the frame's 16dp from the card edge (1 + 15). */
+    padding-right: 1px;
     border-bottom-width: 1px;
     border-bottom-color: var(--md-sys-color-outline-variant);
 }
@@ -196,10 +259,16 @@
 
 /* The frame's placeholder metrics (14 / 400). The label floats onto the border when
  * the field is focused or filled — the M3 behaviour the design system ships, kept in
- * preference to a placeholder that vanishes and takes the field's meaning with it. */
+ * preference to a placeholder that vanishes and takes the field's meaning with it.
+ *
+ * SIZE ONLY — no `color` here. MdTextField.uss already paints the resting label
+ * `on-surface-variant` (the same value this rule used to restate) from a
+ * single-class selector, and turns it `primary` on `.md-text-field--focused`.
+ * That focused rule is two classes, exactly like this one, and screen sheets
+ * attach after the theme — so restating the resting colour here silently won the
+ * tie and the label never turned navy on focus. */
 .mv-report__field .md-text-field__label {
     font-size: 14px;
-    color: var(--md-sys-color-on-surface-variant);
 }
 
 .mv-report__field.md-text-field--floating .md-text-field__label {
@@ -246,7 +315,13 @@
     align-self: stretch;
 }
 
+/* `align-self: stretch` above only widens MdButton's transparent 48dp ROOT; the
+ * visible bar is the __container, which hugs its label inside a row that centers
+ * it. Growing the container is what actually produces V2's 358dp-wide bar — the
+ * same local override MvStateView.uss makes for its action. It stays local: a
+ * growing container is wrong for every hugging button in the app. */
 .mv-report__submit .md-button__container {
+    flex-grow: 1;
     height: 47px;
     border-radius: var(--md-sys-shape-corner-medium-increased);
 }
@@ -271,9 +346,11 @@
 
 /* ---- Pending feed ---- */
 
-.mv-report__pending-section {
-    margin-top: 8px;
-}
+/* NOTE, deliberately: .mv-report__pending-section carries NO margin-top. The
+ * frame's 8dp here is the feed's own internal padding — it belongs UNDER the
+ * rule, not above it. Applied above, it put the divider 32.5dp below the submit
+ * button against the frame's 24; it now lives in the divider's bottom margin
+ * (20 + 8 = 28). */
 
 /* Tela 11's inset rule between the button and the feed (Tela 12 omits it). */
 .mv-report__divider {
@@ -281,7 +358,8 @@
     flex-shrink: 0;
     margin-left: 16px;
     margin-right: 16px;
-    margin-bottom: 20px;
+    /* 20 of rule-to-first-card, plus the feed's own 8dp of internal padding. */
+    margin-bottom: 28px;
     background-color: var(--md-sys-color-outline-variant);
 }
 
@@ -325,4 +403,18 @@
 .mv-report__pending-caption {
     white-space: normal;
     color: var(--md-sys-color-on-surface-variant);
+}
+
+/* A failed row's way out: an outlined button under the caption, hugging its
+ * label at the row's leading edge (MdButton's default `align-self: flex-start`).
+ *
+ * The root stays at the library's 48dp — pinning it to 40 here collapsed the
+ * touch target onto the visible pill, and the -4 bottom margin was then
+ * compensating for an overhang that no longer existed. With the override gone
+ * the 48dp root overhangs its 40dp pill by 4dp on each side, so the margins carry
+ * the visible geometry: 4 + 4 = the design's 8dp gap above, and -4 takes back the
+ * overhang the card would otherwise pad below. */
+.mv-report__pending-retry {
+    margin-top: 4px;
+    margin-bottom: -4px;
 }

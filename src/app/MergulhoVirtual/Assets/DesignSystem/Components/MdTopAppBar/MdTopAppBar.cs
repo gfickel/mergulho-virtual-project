@@ -100,6 +100,10 @@ namespace MergulhoVirtual.DesignSystem
 
             _title = new Label { name = "title", pickingMode = PickingMode.Ignore };
             _title.AddToClassList(TitleClassName);
+            // The brand's title-large (20/700) — V2's screen title. MdTopAppBar.uss
+            // deliberately declares no font metrics of its own for this label, so the
+            // type scale is the single source and a re-tune moves the bar with it.
+            _title.AddToClassList("md-typescale-title-large");
 
             _actions = new VisualElement { name = "actions", pickingMode = PickingMode.Ignore };
             _actions.AddToClassList(ActionsClassName);

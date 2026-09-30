@@ -240,7 +240,15 @@
     -unity-font-definition: url("/Assets/DesignSystem/Fonts/Inter-Bold.asset");
 }
 
-/* The 48dp touch-target root stays 48dp — only the visible pill shrinks to 36. */
+/* The 48dp touch-target root stays 48dp — only the visible pill shrinks to 36.
+ *
+ * `align-self: center` is not redundant with the card's `align-items: center`:
+ * MdButton.uss declares `align-self: flex-start` on its own root (deliberately —
+ * a button must not stretch), and a child's align-self beats the parent's
+ * align-items, which pinned the 48dp root to the top of the 71dp content box and
+ * left the pill (71 - 48) / 2 = 11.5dp above centre. Fixed here rather than in
+ * the component, which is right for every other button in the app. */
 .mv-praias__cta-button {
     flex-shrink: 0;
+    align-self: center;
 }

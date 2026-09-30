@@ -73,6 +73,9 @@ mono_crash.*
 *.unitypackage
 *.unitypackage.meta
 *.app
+# `make win-build` writes the Windows review player here (`make apk` too): hundreds
+# of MB that must never be committed, and never added to Git LFS either.
+Builds/
 
 # Crashlytics generated file
 crashlytics-build.properties

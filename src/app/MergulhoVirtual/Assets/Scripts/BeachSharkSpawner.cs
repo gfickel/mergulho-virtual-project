@@ -51,6 +51,14 @@ public class BeachSharkSpawner : MonoBehaviour
             if (prefab == null) continue;
             GameObject instance = Instantiate(prefab, parent);
             instance.name = prefab.name;
+            // Makes the instance tappable and tells ObjectInteraction which
+            // species it is. The prefab NAME is the key: the five shark prefabs
+            // and the five AnimalDef assets under Resources/Animals share their
+            // file names ("tiger_shark"), which is the same key
+            // beaches_content.json and ISpeciesCatalog use. Attach also fits a
+            // collider, because the Prefab Variants of the Sketchfab FBXs have
+            // none — see ArSpeciesTarget.
+            ArSpeciesTarget.Attach(instance, prefab.name);
             spawned.Add(instance);
         }
     }

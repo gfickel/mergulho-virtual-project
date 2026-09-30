@@ -129,6 +129,12 @@ mail
 person
 medical_services
 
+# Educational content (the in-app article library — docs/articles-authoring.md).
+# The Início entry card and the Conteúdos index header. Nothing in the existing 95
+# reads as "articles to read": `help`, `list` and `explore` all mean something else,
+# and a wrong-but-plausible glyph is exactly what the D7 note below forbids.
+menu_book
+
 # Data / stats
 bar_chart
 

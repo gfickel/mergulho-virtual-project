@@ -21,6 +21,5 @@ MonoBehaviour:
   prefab: {fileID: 5638115886152878644, guid: 20fd84b49cbc5dd46aa3fccf3bb18d33, type: 3}
   viewerScale: {x: 1, y: 1, z: 1}
   viewerOffset: {x: 0, y: 0, z: 0}
-  photoCredit: Albert kok - CC BY-SA 3.0 (https://en.wikipedia.org/wiki/Tiger_shark#/media/File:Tiger_shark.jpg)
-  modelCredit: '"Tiger Shark" (https://skfb.ly/68MBG) by Ra_in_coat is licensed under
-    Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).'
+  photoCredit: 'Foto: Albert kok / CC BY-SA 3.0 (Wikimedia Commons)'
+  modelCredit: 'Modelo: Ra_in_coat / CC BY 4.0 (Sketchfab)'

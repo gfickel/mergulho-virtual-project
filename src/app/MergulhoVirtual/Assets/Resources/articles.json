@@ -1,0 +1,327 @@
+{
+  "schemaVersion": 1,
+  "_generated": "tools/build_articles.py — do not hand-edit; edit content/articles/*.md and run `make articles`",
+  "articles": [
+    {
+      "id": "bem-vindo-ao-mergulho-virtual",
+      "title": "Bem-vindo ao Mergulho Virtual",
+      "summary": "O que este aplicativo faz, o que ele não faz, e como ele foi pensado para acompanhar uma visita ao arquipélago.",
+      "category": "O projeto",
+      "heroImage": "Beaches/praia_da_cacimba_do_padre",
+      "heroCredit": "Foto: Eduardo Bom / CC BY-SA 3.0 (Wikimedia Commons)",
+      "order": 10,
+      "updated": "2026-09-29",
+      "wordCount": 324,
+      "blocks": [
+        {
+          "type": "callout",
+          "text": "Este texto é um exemplo de preenchimento, escrito por quem implementou o aplicativo. Ele não foi revisado por um biólogo e não substitui a orientação oficial do Parque Nacional Marinho de Fernando de Noronha.",
+          "tone": "error"
+        },
+        {
+          "type": "paragraph",
+          "text": "O <b>Mergulho Virtual</b> mostra a vida marinha de Fernando de Noronha usando a câmera do próprio celular. Ele foi feito para acompanhar a visita, não para substituir o mergulho: a ideia é dar contexto ao que aparece na água e guardar um registro do que foi visto."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "O que o aplicativo faz"
+        },
+        {
+          "type": "bulletList",
+          "items": [
+            "Mostra as condições do mar na praia onde você está, a partir da tábua de marés publicada pela Marinha do Brasil.",
+            "Coloca modelos tridimensionais de animais marinhos sobre a imagem da câmera, para dar noção de forma e de proporção.",
+            "Reúne em um só lugar o que o projeto tem sobre cada praia do arquipélago.",
+            "Permite enviar o registro de um avistamento, com foto, para a equipe do projeto."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "O que ele não faz"
+        },
+        {
+          "type": "paragraph",
+          "text": "O aplicativo <i>não</i> identifica animais automaticamente a partir da sua foto, não emite alertas e não tem nenhuma função de navegação. Para saber o que pode e o que não pode ser feito em cada praia, a resposta está com os condutores locais e com a administração do parque — não aqui."
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "text": "Sobre as fotos e os modelos"
+        },
+        {
+          "type": "paragraph",
+          "text": "As fotografias e os modelos tridimensionais vêm de acervos abertos e trazem sempre o crédito de quem os fez, ao lado da imagem. Isso é uma <i>condição de licença</i>, e não uma gentileza: onde a imagem aparece, o crédito aparece também."
+        },
+        {
+          "type": "image",
+          "src": "Beaches/praia_da_cacimba_do_padre",
+          "caption": "A Praia da Cacimba do Padre, com o Morro Dois Irmãos ao fundo.",
+          "credit": "Foto: Eduardo Bom / CC BY-SA 3.0 (Wikimedia Commons)"
+        },
+        {
+          "type": "quote",
+          "text": "Um arquipélago pequeno, visitado por muita gente, só continua parecido consigo mesmo se cada visita deixar o menor rastro possível."
+        },
+        {
+          "type": "paragraph",
+          "text": "Para começar, escolha uma praia na aba <b>Praias</b> — ou deixe o GPS escolher por você. O projeto na internet fica em <a href=\"https://mergulhovirtual.dev\"><u>mergulhovirtual.dev</u></a>."
+        },
+        {
+          "type": "beachRef",
+          "name": "Praia da Cacimba do Padre"
+        }
+      ]
+    },
+    {
+      "id": "tubaroes-de-noronha",
+      "title": "Os tubarões de Fernando de Noronha",
+      "summary": "Quais espécies este aplicativo traz em três dimensões, e como olhá-las de perto sem sair da praia.",
+      "category": "Espécies",
+      "heroImage": "Animals/tiger_shark",
+      "heroCredit": "Foto: Albert kok / CC BY-SA 3.0 (Wikimedia Commons)",
+      "order": 20,
+      "updated": "2026-09-29",
+      "wordCount": 288,
+      "blocks": [
+        {
+          "type": "callout",
+          "text": "Este texto é um exemplo de preenchimento, escrito por quem implementou o aplicativo. Ele não foi revisado por um biólogo e não substitui a orientação oficial do Parque Nacional Marinho de Fernando de Noronha.",
+          "tone": "error"
+        },
+        {
+          "type": "paragraph",
+          "text": "Tubarão é a palavra que faz a maior parte das pessoas pensar em cinema antes de pensar em mar. O aplicativo tenta desfazer um pouco disso pelo caminho mais simples que existe: colocar o animal do tamanho certo na frente de quem está olhando."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "As espécies deste aplicativo"
+        },
+        {
+          "type": "paragraph",
+          "text": "Cinco espécies estão modeladas em três dimensões. Toque em qualquer uma para abrir a ficha, girar o modelo e ler o crédito de quem o construiu."
+        },
+        {
+          "type": "speciesRef",
+          "key": "hammerhead"
+        },
+        {
+          "type": "speciesRef",
+          "key": "tiger_shark"
+        },
+        {
+          "type": "speciesRef",
+          "key": "lemon_shark"
+        },
+        {
+          "type": "speciesRef",
+          "key": "nurse_shark"
+        },
+        {
+          "type": "speciesRef",
+          "key": "reef_shark"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "text": "Como usar o modelo tridimensional"
+        },
+        {
+          "type": "paragraph",
+          "text": "Arraste com <b>um dedo</b> para girar o animal e use <b>dois dedos</b> para aproximar ou afastar. Os modelos foram trazidos para escala de metros, então o tamanho na tela é comparável de uma espécie para a outra."
+        },
+        {
+          "type": "callout",
+          "text": "Os modelos servem para dar noção de forma e de proporção. Eles não são um guia de identificação — a silhueta de um modelo tridimensional e a de um animal visto de relance na água são coisas diferentes.",
+          "tone": "info"
+        },
+        {
+          "type": "video",
+          "url": "https://storage.googleapis.com/conteudos-educacionais/videos/reelsvideo.io_1780764982422.mp4",
+          "title": "Tubarão-limão em ação"
+        },
+        {
+          "type": "image",
+          "src": "Animals/hammerhead",
+          "caption": "Um tubarão-martelo fotografado em mar aberto.",
+          "credit": "Foto: Albert kok / CC BY-SA 4.0 (Wikimedia Commons)"
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "O que este texto não diz"
+        },
+        {
+          "type": "paragraph",
+          "text": "Não há aqui nenhuma informação sobre quantos animais existem, em que época do ano aparecem ou como se comportam. Esses são exatamente os pontos em que um texto errado atrapalha mais do que a ausência de texto — então ficam em branco até que alguém que estude o assunto os escreva."
+        },
+        {
+          "type": "quote",
+          "text": "Nada do que está escrito aqui vale mais do que a orientação de quem conduz o mergulho, na hora, no lugar.",
+          "attribution": "Equipe do Mergulho Virtual"
+        }
+      ]
+    },
+    {
+      "id": "mergulho-responsavel",
+      "title": "Mergulho responsável",
+      "summary": "Combinados simples de convivência com um lugar que recebe muita gente e continua sendo de quem vive nele.",
+      "category": "Boas práticas",
+      "heroImage": "Beaches/baia_dos_porcos",
+      "heroCredit": "Foto: Adelano Lázaro / CC BY-SA 4.0 (Wikimedia Commons)",
+      "order": 30,
+      "updated": "2026-09-29",
+      "wordCount": 295,
+      "blocks": [
+        {
+          "type": "callout",
+          "text": "Este texto é um exemplo de preenchimento, escrito por quem implementou o aplicativo. Ele não foi revisado por um biólogo e não substitui a orientação oficial do Parque Nacional Marinho de Fernando de Noronha.",
+          "tone": "error"
+        },
+        {
+          "type": "paragraph",
+          "text": "Fernando de Noronha é uma unidade de conservação, e quase tudo o que se pode fazer na água tem uma regra por trás. Este texto não é essa regra: é apenas o combinado de convivência que o projeto pede a quem usa o aplicativo."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Antes de entrar na água"
+        },
+        {
+          "type": "numberedList",
+          "items": [
+            "Confirme com o condutor local, ou na administração do parque, o que é permitido na praia escolhida.",
+            "Deixe mochila, calçado e equipamento fora da faixa de vegetação.",
+            "Entre e saia pelos caminhos já abertos, sem atravessar a restinga.",
+            "Ao sair, leve de volta tudo o que trouxe — inclusive o que não é seu."
+          ]
+        },
+        {
+          "type": "callout",
+          "text": "Não toque, não alimente e não persiga nenhum animal. Uma aproximação que parece inofensiva para quem está de férias pode ser repetida centenas de vezes por dia pelo resto do grupo.",
+          "tone": "warning"
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Na água"
+        },
+        {
+          "type": "bulletList",
+          "items": [
+            "Protetor solar, óleo e repelente ficam para depois do banho de mar.",
+            "Corais, ouriços e conchas ficam onde estão, vivos ou não.",
+            "O melhor lugar para ver um animal é de longe e de lado, nunca por cima nem no caminho dele.",
+            "Se o grupo se espalhou, junte-se a ele antes de continuar."
+          ]
+        },
+        {
+          "type": "callout",
+          "text": "Registrar um avistamento no aplicativo é a forma mais simples de contribuir: a foto e a praia já bastam, e o registro fica disponível para a equipe do projeto.",
+          "tone": "success"
+        },
+        {
+          "type": "image",
+          "src": "Beaches/praia_do_sancho"
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Onde a regra vale mais do que o combinado"
+        },
+        {
+          "type": "paragraph",
+          "text": "Algumas praias têm acesso controlado, horário definido ou entrada acompanhada. O aplicativo mostra o que o projeto conseguiu reunir sobre cada uma, mas a informação que decide é a da administração do parque, sempre."
+        },
+        {
+          "type": "beachRef",
+          "name": "Baía dos Porcos"
+        },
+        {
+          "type": "beachRef",
+          "name": "Sueste Beach"
+        }
+      ]
+    },
+    {
+      "id": "como-registrar-um-avistamento",
+      "title": "Como registrar um avistamento",
+      "summary": "O que acontece com a foto que você envia, e por que o envio funciona mesmo sem sinal.",
+      "category": "Como usar o app",
+      "order": 40,
+      "updated": "2026-09-29",
+      "wordCount": 375,
+      "blocks": [
+        {
+          "type": "callout",
+          "text": "Este texto é um exemplo de preenchimento, escrito por quem implementou o aplicativo. Ele não foi revisado por um biólogo e não substitui a orientação oficial do Parque Nacional Marinho de Fernando de Noronha.",
+          "tone": "error"
+        },
+        {
+          "type": "paragraph",
+          "text": "A aba <b>Avistamentos</b> existe para uma coisa só: transformar uma foto que já está no seu celular em um registro que a equipe do projeto pode ler depois."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Os passos"
+        },
+        {
+          "type": "numberedList",
+          "items": [
+            "Abra a aba Avistamentos e toque em adicionar uma foto.",
+            "Escolha a foto na galeria do celular. A foto original é enviada como está, sem recorte nem recompressão.",
+            "Se quiser, marque a espécie, o tamanho aproximado e o que o animal estava fazendo. Tudo isso é opcional.",
+            "Toque em enviar. O aplicativo volta para a tela inicial e cuida do resto."
+          ]
+        },
+        {
+          "type": "callout",
+          "text": "O envio não depende de sinal no momento em que você toca em enviar. O registro fica guardado no próprio celular e sobe sozinho quando a conexão voltar — inclusive se você fechar o aplicativo no meio.",
+          "tone": "info"
+        },
+        {
+          "type": "paragraph",
+          "text": "A praia vem do GPS, ou da praia que você escolheu à mão na aba Praias. Se nenhuma das duas estiver disponível, o registro é enviado sem praia, o que é melhor do que ser enviado com a praia errada."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "text": "Sobre a foto"
+        },
+        {
+          "type": "paragraph",
+          "text": "O aplicativo envia a foto <b>original</b>, com os dados que a câmera gravou dentro dela. É isso que permite recuperar depois a hora exata e, quando o celular registrou, a posição."
+        },
+        {
+          "type": "bulletList",
+          "items": [
+            "Uma foto tremida ainda é útil: a data e o lugar valem por si.",
+            "Duas fotos do mesmo animal são dois registros; envie a melhor.",
+            "Uma foto tirada em outro dia continua valendo, mas o registro carrega a hora do envio, não a da foto."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "text": "O crédito da imagem"
+        },
+        {
+          "type": "paragraph",
+          "text": "O crédito de uma foto do acervo do projeto segue sempre o mesmo formato: Foto: <noparse><</noparse>autor> / <noparse><</noparse>licença> (<noparse><</noparse>fonte>). Os sinais de maior e de menor são apenas marcadores de posição — no lugar deles vão o nome de quem fez a foto, a licença & a fonte de onde ela veio."
+        },
+        {
+          "type": "callout",
+          "text": "Não envie foto de terceiros. Envie apenas imagens que você mesmo fez, porque o registro passa a fazer parte do acervo do projeto.",
+          "tone": "error"
+        },
+        {
+          "type": "paragraph",
+          "text": "Dúvidas sobre um registro já enviado podem ir para o projeto pelo site, em <a href=\"https://mergulhovirtual.dev\"><u>mergulhovirtual.dev</u></a>."
+        }
+      ]
+    }
+  ]
+}
